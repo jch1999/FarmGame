@@ -4,6 +4,9 @@
 #include "GameFramework/Character.h"
 #include "CPlayer.generated.h"
 
+class USpringArmComponent;
+class UCameraComponent;
+
 UCLASS()
 class FARMGAME_API ACPlayer : public ACharacter
 {
@@ -18,4 +21,10 @@ protected:
 public:	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+protected:
+	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	USpringArmComponent* SpringArmComp;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	UCameraComponent* CameraComp;
 };
