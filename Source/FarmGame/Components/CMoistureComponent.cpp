@@ -13,10 +13,6 @@ void UCMoistureComponent::BeginPlay()
 void UCMoistureComponent::AddMoisture(float Amount)
 {
 	NowMoisture += Amount;
-	if (NowMoisture < 0.0f)
-	{
-		NowMoisture = 0.0f;
-	}
 
 	if (ISOver())
 	{
@@ -28,7 +24,35 @@ void UCMoistureComponent::AddMoisture(float Amount)
 	}
 }
 
+void UCMoistureComponent::ReduceMoisture(float Amount)
+{
+	NowMoisture -= Amount;
+	NowMoisture = FMath::Clamp(NowMoisture, 0, NowMoisture > MoistureSafeRange.Y ? NowMoisture : MoistureSafeRange.Y);
+	if (IsUnder())
+	{
+		DrawDebugString(GetWorld(), GetOwner()->GetActorLocation(), "Moisture is under the safe rnage!", nullptr, FColor::Red, 0.8f);
+	}
+}
+
 void UCMoistureComponent::SetSafeRange(FVector2D NewRange)
 {
 	MoistureSafeRange = NewRange;
+}
+
+void UCMoistureComponent::SetAutoReduceAmount(float InReduceAmount)
+{
+	AutoReduceAmount = InReduceAmount;
+}
+
+void UCMoistureComponent::SetAutoReduceTimer(float InReduceAmount, float InFirstDelay, bool InbLoop, float InLoopDelay)
+{
+	GetWorld()->GetTimerManager().ClearTimer(MoistureReduceTimer);
+
+	SetAutoReduceAmount(InReduceAmount);
+	GetWorld()->GetTimerManager().SetTimer(MoistureReduceTimer, this, &UCMoistureComponent::AutoReduceMoisture, InLoopDelay, InbLoop, InFirstDelay);
+}
+
+void UCMoistureComponent::AutoReduceMoisture()
+{
+	ReduceMoisture(AutoReduceAmount);
 }

@@ -5,6 +5,7 @@
 #include "CBase_Crop.generated.h"
 
 class UCMoistureComponent;
+class UCNutritionComponent;
 
 UCLASS()
 class FARMGAME_API ACBase_Crop : public AActor

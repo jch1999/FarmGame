@@ -9,4 +9,6 @@ class FARMGAME_API ACGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+public:
+	ACGameModeBase();
 };

@@ -13,7 +13,18 @@ void UCNutritionComponent::BeginPlay()
 void UCNutritionComponent::AddNutrition(float Amount)
 {
 	NowNutrition += Amount;
-	FMath::Clamp(NowNutrition, 0, NutritionSafeRange.Y);
+	NowNutrition=FMath::Clamp(NowNutrition, 0, NutritionSafeRange.Y);
+
+	if (IsUnder())
+	{
+		DrawDebugString(GetWorld(), GetOwner()->GetActorLocation(), "Nutrition is under the safe rnage!", nullptr, FColor::Red, 0.8f);
+	}
+}
+
+void UCNutritionComponent::ReduceNutrition(float Amount)
+{
+	NowNutrition -= Amount;
+	NowNutrition = FMath::Clamp(NowNutrition, 0, NutritionSafeRange.Y);
 
 	if (IsUnder())
 	{
@@ -24,4 +35,22 @@ void UCNutritionComponent::AddNutrition(float Amount)
 void UCNutritionComponent::SetSafeRange(FVector2D NewRange)
 {
 	NutritionSafeRange = NewRange;
+}
+
+void UCNutritionComponent::SetAutoReduceAmount(float InReduceAmount)
+{
+	AutoReduceAmount = InReduceAmount;
+}
+
+void UCNutritionComponent::SetAutoReduceTimer(float InReduceAmount, float InFirstDelay, bool InbLoop, float InLoopDelay)
+{
+	GetWorld()->GetTimerManager().ClearTimer(NutiritionReduceTimer);
+
+	SetAutoReduceAmount(InReduceAmount);
+	GetWorld()->GetTimerManager().SetTimer(NutiritionReduceTimer, this, &UCNutritionComponent::AutoReduceNutirition, InLoopDelay, InbLoop, InFirstDelay);
+}
+
+void UCNutritionComponent::AutoReduceNutirition()
+{
+	ReduceNutrition(AutoReduceAmount);
 }

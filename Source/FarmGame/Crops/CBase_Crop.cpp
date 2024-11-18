@@ -10,5 +10,4 @@ void ACBase_Crop::BeginPlay()
 	Super::BeginPlay();
 	
 }
-}
 

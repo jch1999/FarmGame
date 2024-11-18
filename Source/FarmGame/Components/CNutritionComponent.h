@@ -22,15 +22,26 @@ public:
 	FORCEINLINE bool ISOver() { return NowNutrition > NutritionSafeRange.Y; }
 	FORCEINLINE FVector2D GetSafeRange() { return NutritionSafeRange; }
 
-	void AddNutrition(float Amount);
-	void SetSafeRange(FVector2D NewRange);
+	void AddNutrition(float InAmount);
+	void ReduceNutrition(float ImAmount);
+	void SetSafeRange(FVector2D InNewRange);
+	void SetAutoReduceAmount(float InReduceAmount);
+
+	void SetAutoReduceTimer(float InReduceAmount, float InFirstDelay, bool InbLoop = false, float InLoopDelay = 0.0f);
+
+private:
+	void AutoReduceNutirition();
+
 protected:
 	UPROPERTY(EditAnywhere, Category = "Moisture")
 	float NowNutrition;
 
 	UPROPERTY(EditAnywhere, Category = "Moisture")
+	float AutoReduceAmount;
+
+	UPROPERTY(EditAnywhere, Category = "Moisture")
 	FVector2D NutritionSafeRange;
 
 private:
-	FTimeHandle NutiritionReduceTimer;
+	FTimerHandle NutiritionReduceTimer;
 };
