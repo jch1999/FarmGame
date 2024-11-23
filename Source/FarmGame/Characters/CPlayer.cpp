@@ -3,6 +3,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CStateComponent.h"
 #include "Components/CAttributeComponent.h"
 #include "Components/COptionComponent.h"
 #include "EnhancedInputComponent.h"
@@ -15,6 +16,7 @@ ACPlayer::ACPlayer()
 	CHelpers::GetAsset(&DefaultContext, "/Game/Input/IMC_Player");
 	CHelpers::GetAsset(&MoveAction, "/Game/Input/IA_PlayerMove");
 	CHelpers::GetAsset(&LookAction, "/Game/Input/IA_PlayerRotate");
+	CHelpers::GetAsset(&LookAction, "/Game/Input/IA_PlayerInteract");
 
 	// SpringArm Comp
 	CHelpers::CreateSceneComponent(this, &SpringArmComp, "SpringArmComp", GetMesh());
@@ -38,6 +40,9 @@ ACPlayer::ACPlayer()
 	CHelpers::GetClass(&AnimClass, "/Game/Player/ABP_CPlayer");
 	GetMesh()->SetAnimInstanceClass(AnimClass);
 
+	// State Comp
+	CHelpers::CreateActorComponent(this, &StateComp, "StateComp");
+
 	// Attribute Comp
 	CHelpers::CreateActorComponent(this, &AttributeComp, "AttributeComp");
 
@@ -49,6 +54,10 @@ ACPlayer::ACPlayer()
 	GetCharacterMovement()->RotationRate = FRotator(0, 720, 0);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
+
+	// Interactable
+	SetType(EInteractObjectType::Player);
+	SetInteractable();
 }
 
 void ACPlayer::BeginPlay()
@@ -76,6 +85,7 @@ void ACPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACPlayer::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACPlayer::Look);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ACPlayer::OnInteract);
 	}
 }
 
@@ -103,5 +113,46 @@ void ACPlayer::Look(const FInputActionInstance& InInstance)
 		AddControllerYawInput(InputValue.X);
 		AddControllerPitchInput(-InputValue.Y);
 	}
+}
+
+void ACPlayer::OnInteract(const FInputActionInstance& InInstance)
+{
+	bool bValue = InInstance.GetValue().Get<bool>();
+
+	if (bValue)
+	{
+		Interact();
+	}
+}
+
+// override from ICInterface_Interactable
+bool ACPlayer::IsInteractable()
+{
+	return bInteractable;
+}
+
+void ACPlayer::SetInteractable()
+{
+	bInteractable = true;
+}
+
+void ACPlayer::SetUnInteractable()
+{
+	bInteractable = false;
+}
+
+void ACPlayer::Interact()
+{
+	CLog::Log("Interact Test!");
+}
+
+EInteractObjectType ACPlayer::GetType()
+{
+	return Type;
+}
+
+void ACPlayer::SetType(EInteractObjectType InNewType)
+{
+	Type = InNewType;
 }
 
