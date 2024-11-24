@@ -21,13 +21,14 @@ public:
 	FORCEINLINE bool IsUnder() { return NowMoisture < MoistureSafeRange.X; }
 	FORCEINLINE bool ISOver() { return NowMoisture > MoistureSafeRange.Y; }
 	FORCEINLINE FVector2D GetSafeRange() { return MoistureSafeRange; }
+	FORCEINLINE float GetMoistureValue() { return NowMoisture; }
 
 	void AddMoisture(float Amount);
 	void ReduceMoisture(float Amount);
 	void SetSafeRange(FVector2D NewRange);
 	void SetAutoReduceAmount(float InReduceAmount);
 
-	void SetAutoReduceTimer(float InReduceAmount, float InFirstDelay, bool InbLoop = false, float InLoopDelay = 0.0f);
+	void SetAutoReduceTimer(float InFirstDelay, bool InbLoop = false, float InLoopDelay = 0.0f);
 
 private:
 	void AutoReduceMoisture();

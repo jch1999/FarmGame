@@ -42,11 +42,10 @@ void UCNutritionComponent::SetAutoReduceAmount(float InReduceAmount)
 	AutoReduceAmount = InReduceAmount;
 }
 
-void UCNutritionComponent::SetAutoReduceTimer(float InReduceAmount, float InFirstDelay, bool InbLoop, float InLoopDelay)
+void UCNutritionComponent::SetAutoReduceTimer(float InFirstDelay, bool InbLoop, float InLoopDelay)
 {
 	GetWorld()->GetTimerManager().ClearTimer(NutiritionReduceTimer);
 
-	SetAutoReduceAmount(InReduceAmount);
 	GetWorld()->GetTimerManager().SetTimer(NutiritionReduceTimer, this, &UCNutritionComponent::AutoReduceNutirition, InLoopDelay, InbLoop, InFirstDelay);
 }
 

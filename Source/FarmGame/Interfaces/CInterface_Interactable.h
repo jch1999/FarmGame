@@ -8,7 +8,7 @@
 UENUM(BlueprintType)
 enum class EInteractObjectType :uint8
 {
-	None, Player, Crop, Marchandise, Max
+	None, Player, Crop, Marchandise, FarmField, Max
 };
 
 UINTERFACE(MinimalAPI)

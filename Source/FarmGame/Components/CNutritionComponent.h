@@ -21,13 +21,14 @@ public:
 	FORCEINLINE bool IsUnder() { return NowNutrition < NutritionSafeRange.X; }
 	FORCEINLINE bool ISOver() { return NowNutrition > NutritionSafeRange.Y; }
 	FORCEINLINE FVector2D GetSafeRange() { return NutritionSafeRange; }
-
+	FORCEINLINE float GetNutritionValue() { return NowNutrition; }
+	
 	void AddNutrition(float InAmount);
 	void ReduceNutrition(float ImAmount);
 	void SetSafeRange(FVector2D InNewRange);
 	void SetAutoReduceAmount(float InReduceAmount);
 
-	void SetAutoReduceTimer(float InReduceAmount, float InFirstDelay, bool InbLoop = false, float InLoopDelay = 0.0f);
+	void SetAutoReduceTimer(float InFirstDelay, bool InbLoop = false, float InLoopDelay = 0.0f);
 
 private:
 	void AutoReduceNutirition();

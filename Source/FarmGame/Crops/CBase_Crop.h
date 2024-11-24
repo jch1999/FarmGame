@@ -22,19 +22,30 @@ struct FCropData
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(EditAnywhere)
+	FName CropName;
+
+	UPROPERTY(EditAnywhere)
+	int32 GrowthLevel;
+
 	// Grow Time
-	float TargetGrowTime;
-	float NowGrowTime;
+	float TargetGrowthValue;
 
 	// Moisture
 	FVector2D SafeRange_M;
 
+	UPROPERTY(EditAnywhere)
+	float ConsumeMoisture;
+
 	// Nutirtion
 	FVector2D SafeRange_N;
 
+	UPROPERTY(EditAnywhere)
+	float ConsumeNutrition;
+
 	// Mesh
-	TSubclassOf<UStaticMesh> MeshAssetClass;
-	FTransform MeshTransform;
+	UPROPERTY(EditAnywhere)
+	FString MeshRef;
 };
 
 UCLASS()

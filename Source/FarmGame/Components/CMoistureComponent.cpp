@@ -44,11 +44,10 @@ void UCMoistureComponent::SetAutoReduceAmount(float InReduceAmount)
 	AutoReduceAmount = InReduceAmount;
 }
 
-void UCMoistureComponent::SetAutoReduceTimer(float InReduceAmount, float InFirstDelay, bool InbLoop, float InLoopDelay)
+void UCMoistureComponent::SetAutoReduceTimer(float InFirstDelay, bool InbLoop, float InLoopDelay)
 {
 	GetWorld()->GetTimerManager().ClearTimer(MoistureReduceTimer);
 
-	SetAutoReduceAmount(InReduceAmount);
 	GetWorld()->GetTimerManager().SetTimer(MoistureReduceTimer, this, &UCMoistureComponent::AutoReduceMoisture, InLoopDelay, InbLoop, InFirstDelay);
 }
 
