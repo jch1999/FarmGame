@@ -12,12 +12,12 @@ ACFarmField::ACFarmField()
 	CHelpers::CreateActorComponent(this, &NutritionComp, "NutritionComp");
 	CHelpers::CreateActorComponent(this, &CultivationComp, "CultivationComp");
 
-	//UStaticMesh* MeshAsset;
-	//CHelpers::GetAsset(&MeshAsset, "/Game/");
-	/*if (MeshAsset)
+	UStaticMesh* MeshAsset;
+	CHelpers::GetAsset(&MeshAsset, "/Game/CroupOutAssets/Environment/Meshes/Crops/SM_Crop_Corn_04");
+	if (MeshAsset)
 	{
 		MeshComp->SetStaticMesh(MeshAsset);
-	}*/
+	}
 }
 
 void ACFarmField::BeginPlay()
