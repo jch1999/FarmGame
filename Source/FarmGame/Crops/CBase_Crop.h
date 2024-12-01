@@ -5,46 +5,64 @@
 #include "Interfaces/CInterface_Interactable.h"
 #include "Components/CMoistureComponent.h"
 #include "Components/CNutritionComponent.h"
+#include "Engine/DataTable.h"
 #include "CBase_Crop.generated.h"
 
 class UCMoistureComponent;
 class UCNutritionComponent;
+class ACFarmField;
+class UStaticMesh;
 
-UENUM(BlueprintType)
-enum class ECropGrowType :uint8
-{
-	VegetativeGrowth, ReproductiveGrowth, Maturity, Senescence, MAX
-};
+//UENUM(BlueprintType)
+//enum class ECropGrowType :uint8
+//{
+//	VegetativeGrowth, ReproductiveGrowth, Maturity, Senescence, MAX
+//};
 
 USTRUCT(BlueprintType)
-struct FCropData
+struct FCropData:public FTableRowBase
 {
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName CropName;
-
-	UPROPERTY(EditAnywhere)
+	
+	// Grow
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 GrowthLevel;
 
-	// Grow Time
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float TargetGrowthValue;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float DefaultGrowUpValue;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float GrowDelay;
+
 	// Moisture
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector2D SafeRange_M;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ConsumeMoisture;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ReduceDelay_M;
+
 	// Nutirtion
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector2D SafeRange_N;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ConsumeNutrition;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ReduceDelay_N;
+
 	// Mesh
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString MeshRef;
 };
 
@@ -59,6 +77,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 public:	
 	// Inherited via ICInterface_Interactable
 	bool IsInteractable() override;
@@ -67,15 +86,33 @@ public:
 
 	void SetUnInteractable() override;
 
-	EInteractObjectType GetType() override;
+	FORCEINLINE EInteractObjectType GetType() override { return Type; };
 
 	void SetType(EInteractObjectType InNewType) override;
 
 	void Interact() override;
 
-	FCropData GetCurrentCropData();
-	void Grow();
-	void SetGrowType();
+	// CropData
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE FCropData GetCurrentCropData() { return Datas[NowGrowLevel]; }
+	
+	// Grow
+	UFUNCTION(BlueprintCallable)
+	void SetAutoGrowTimer(float InFirstDelay, bool InbLoop = false, float InLoopDelay = 0.0f);
+
+	UFUNCTION(BlueprintCallable)
+	void GrowUp();
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsHarvestable() { return NowGrowLevel == MaxGrowLevel; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetOwnerField(ACFarmField* InOwnerField);
+
+private:
+	void SetCropData();
+
+	void AutoGrow();
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Component")
@@ -88,6 +125,23 @@ protected:
 	UCNutritionComponent* NutritionComp;
 
 protected:
-	FCropData Datas[(int32)ECropGrowType::MAX];
-	ECropGrowType GrowType;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "DataTable")
+	FName CropName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	int32 NowGrowLevel;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "DataTable")
+	int32 MaxGrowLevel;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "DataTable")
+	float NowGrowValue;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="DataTable")
+	UDataTable* CropData;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "DataTable")
+	TArray<FCropData> Datas;
+
+private:
+	FTimerHandle AutoGrowTimer;
+	ACFarmField* OwnerField;
+	TArray<UStaticMesh*> CropMeshes;
 };

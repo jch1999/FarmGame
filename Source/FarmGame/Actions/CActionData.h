@@ -80,9 +80,6 @@ public:
 	TSubclassOf<ACEquipment> EquipmentClass;
 
 	UPROPERTY(EditAnywhere, Category = "Equipment")
-	FLinearColor EquipmentColor;
-
-	UPROPERTY(EditAnywhere, Category = "Equipment")
 	FEquipmentData EquipmentData;
 
 	// Attachment

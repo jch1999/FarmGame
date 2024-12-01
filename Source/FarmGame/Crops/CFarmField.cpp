@@ -57,3 +57,12 @@ void ACFarmField::SetType(EInteractObjectType InNewType)
 void ACFarmField::Interact()
 {
 }
+
+void ACFarmField::PlantCrop(ACBase_Crop* InCrop, FTransform& InTM)
+{
+	CheckNull(InCrop);
+	CheckTrue(Crop != nullptr);
+
+	Crop = InCrop;
+	Crop->SetOwnerField(this);
+}

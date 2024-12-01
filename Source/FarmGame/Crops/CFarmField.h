@@ -31,6 +31,10 @@ public:
 	void SetType(EInteractObjectType InNewType) override;
 	void Interact() override;
 
+	// Crop
+	UFUNCTION(BlueprintCallable)
+	void PlantCrop(ACBase_Crop* InCrop, FTransform& InTM);
+
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	UStaticMeshComponent* MeshComp;

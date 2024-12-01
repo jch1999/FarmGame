@@ -28,6 +28,7 @@ public:
 	void SetSafeRange(FVector2D NewRange);
 	void SetAutoReduceAmount(float InReduceAmount);
 
+	UFUNCTION(BlueprintCallable)
 	void SetAutoReduceTimer(float InFirstDelay, bool InbLoop = false, float InLoopDelay = 0.0f);
 
 private:
