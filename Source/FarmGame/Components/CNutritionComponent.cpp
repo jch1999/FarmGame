@@ -1,4 +1,5 @@
 #include "Components/CNutritionComponent.h"
+#include "Global.h"
 
 UCNutritionComponent::UCNutritionComponent()
 {
@@ -10,15 +11,29 @@ void UCNutritionComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
+void UCNutritionComponent::SetFamineState()
+{
+	DrawDebugString(GetWorld(), GetOwner()->GetActorLocation(), "Nutrition is under the safe rnage!", nullptr, FColor::Red, 0.8f);
+	ChangeState(ENutritionState::Famine);
+}
+
+void UCNutritionComponent::SetEnoughState()
+{
+	ChangeState(ENutritionState::Enough);
+}
+
+void UCNutritionComponent::SetOverState()
+{
+	DrawDebugString(GetWorld(), GetOwner()->GetActorLocation(), "Nutrition is over the safe rnage!", nullptr, FColor::Red, 0.8f);
+	ChangeState(ENutritionState::Over);
+}
+
 void UCNutritionComponent::AddNutrition(float Amount)
 {
 	NowNutrition += Amount;
 	NowNutrition=FMath::Clamp(NowNutrition, 0, NutritionSafeRange.Y);
 
-	if (IsUnder())
-	{
-		DrawDebugString(GetWorld(), GetOwner()->GetActorLocation(), "Nutrition is under the safe rnage!", nullptr, FColor::Red, 0.8f);
-	}
+	CheckState();
 }
 
 void UCNutritionComponent::ReduceNutrition(float Amount)
@@ -26,10 +41,7 @@ void UCNutritionComponent::ReduceNutrition(float Amount)
 	NowNutrition -= Amount;
 	NowNutrition = FMath::Clamp(NowNutrition, 0, NutritionSafeRange.Y);
 
-	if (IsUnder())
-	{
-		DrawDebugString(GetWorld(), GetOwner()->GetActorLocation(), "Nutrition is under the safe rnage!", nullptr, FColor::Red, 0.8f);
-	}
+	CheckState();
 }
 
 void UCNutritionComponent::SetSafeRange(FVector2D NewRange)
@@ -52,4 +64,29 @@ void UCNutritionComponent::SetAutoReduceTimer(float InFirstDelay, bool InbLoop, 
 void UCNutritionComponent::AutoReduceNutirition()
 {
 	ReduceNutrition(AutoReduceAmount);
+}
+
+void UCNutritionComponent::CheckState()
+{
+	if (NowNutrition < NutritionSafeRange.X)
+	{
+		SetFamineState();
+		return;
+	}
+	else if (NowNutrition > NutritionSafeRange.Y)
+	{
+		SetOverState();
+		return;
+	}
+
+	SetEnoughState();
+}
+
+void UCNutritionComponent::ChangeState(ENutritionState state)
+{
+	CheckTrue(NutritionState == state);
+
+	NutritionState = state;
+
+	OnNutritionStateChanged.Broadcast(state);
 }

@@ -3,8 +3,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interfaces/CInterface_Interactable.h"
-#include "Components/CMoistureComponent.h"
-#include "Components/CNutritionComponent.h"
 #include "Engine/DataTable.h"
 #include "CBase_Crop.generated.h"
 
@@ -43,23 +41,37 @@ public:
 
 	// Moisture
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector2D SafeRange_M;
+	FVector2D SafeRange_Moisture;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Max_Moisture;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ConsumeMoisture;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float ReduceDelay_M;
+	float ReduceDelay_Moisture;
 
 	// Nutirtion
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector2D SafeRange_N;
+	FVector2D SafeRange_Nutrition;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Max_Nutrition;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ConsumeNutrition;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float ReduceDelay_N;
+	float ReduceDelay_Nutrition;
+
+	// Health
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Max_Health;
+
+	// Price Range
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector2D PriceRange;
 
 	// Mesh
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -110,8 +122,6 @@ public:
 	void SetOwnerField(ACFarmField* InOwnerField);
 
 private:
-	void SetCropData();
-
 	void AutoGrow();
 
 protected:
@@ -140,8 +150,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "DataTable")
 	TArray<FCropData> Datas;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly,Category="Meshes")
+	TArray<UStaticMesh*> CropMeshes;
+
 private:
 	FTimerHandle AutoGrowTimer;
 	ACFarmField* OwnerField;
-	TArray<UStaticMesh*> CropMeshes;
+
 };

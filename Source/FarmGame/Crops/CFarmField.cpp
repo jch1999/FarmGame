@@ -24,9 +24,17 @@ void ACFarmField::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	//MoistureComp->SetAutoReduceTimer()
-	//NutritionComp->SetAutoReduceTimer()
-	//CultivationComp->SetAutoReduceTimer()
+	MoistureComp->AddMoisture(30.0f);
+	MoistureComp->SetAutoReduceAmount(0.05f);
+	MoistureComp->SetAutoReduceTimer(1.0f, true, 1.0f);
+
+	NutritionComp->AddNutrition(50.0f);
+	NutritionComp->SetAutoReduceAmount(0.05f);
+	NutritionComp->SetAutoReduceTimer(1.0f, true, 1.0f);
+
+	CultivationComp->AddCultivation(25.0f);
+	CultivationComp->SetAutoReduceAmount(5.0f);
+	CultivationComp->SetAutoReduceTimer(10.0f, true, 10.0f);
 }
 
 bool ACFarmField::IsInteractable()

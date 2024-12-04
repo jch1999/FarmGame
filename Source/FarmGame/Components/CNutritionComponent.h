@@ -4,6 +4,13 @@
 #include "Components/ActorComponent.h"
 #include "CNutritionComponent.generated.h"
 
+UENUM(BlueprintType)
+enum class ENutritionState :uint8
+{
+	Famine, Enough, Over
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FNutritionStateChanged, ENutritionState, InNewState);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FARMGAME_API UCNutritionComponent : public UActorComponent
@@ -18,11 +25,15 @@ protected:
 
 public:
 	FORCEINLINE bool IsEnough() { return (NutritionSafeRange.X <= NowNutrition) && (NutritionSafeRange.Y >= NowNutrition); }
-	FORCEINLINE bool IsUnder() { return NowNutrition < NutritionSafeRange.X; }
+	FORCEINLINE bool IsFamine() { return NowNutrition < NutritionSafeRange.X; }
 	FORCEINLINE bool ISOver() { return NowNutrition > NutritionSafeRange.Y; }
 	FORCEINLINE FVector2D GetSafeRange() { return NutritionSafeRange; }
 	FORCEINLINE float GetNutritionValue() { return NowNutrition; }
-	
+
+	void SetFamineState();
+	void SetEnoughState();
+	void SetOverState();
+
 	void AddNutrition(float InAmount);
 	void ReduceNutrition(float ImAmount);
 	void SetSafeRange(FVector2D InNewRange);
@@ -32,6 +43,13 @@ public:
 
 private:
 	void AutoReduceNutirition();
+
+	void CheckState();
+	void ChangeState(ENutritionState state);
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FNutritionStateChanged OnNutritionStateChanged;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Moisture")
@@ -45,4 +63,5 @@ protected:
 
 private:
 	FTimerHandle NutiritionReduceTimer;
+	ENutritionState NutritionState;
 };

@@ -1,6 +1,8 @@
 #include "Crops/CBase_Crop.h"
 #include "Global.h"
 #include "CFarmField.h"
+#include "Components/CMoistureComponent.h"
+#include "Components/CNutritionComponent.h"
 
 ACBase_Crop::ACBase_Crop()
 {
@@ -16,31 +18,46 @@ ACBase_Crop::ACBase_Crop()
 
 	if (CropData)
 	{
-		SetCropData();
+		TArray<FCropData*> CropDatas;
+		CropData->GetAllRows(TEXT("Fetching all rows"), CropDatas);
+
+		for (const auto& Data : CropDatas)
+		{
+			if (Data->CropName == CropName)
+			{
+				Datas.Add(*Data);
+				UStaticMesh* MeshAsset;
+				CLog::Log(Data->MeshRef);
+				CHelpers::GetAsset(&MeshAsset, Data->MeshRef);
+				CropMeshes.Add(MeshAsset);
+			}
+		}
 	}
 
 	// Property
 	NowGrowLevel = 0;
 	NowGrowValue = 0.0f;
+
+	// Set Components
+	if (Datas.Num() > 0)
+	{
+		MeshComp->SetStaticMesh(CropMeshes[0]);
+		MoistureComp->SetAutoReduceTimer(GetCurrentCropData().ReduceDelay_Moisture, true, GetCurrentCropData().ReduceDelay_Moisture);
+		NutritionComp->SetAutoReduceTimer(GetCurrentCropData().ReduceDelay_Nutrition, true, GetCurrentCropData().ReduceDelay_Nutrition);
+		SetAutoGrowTimer(Datas[0].GrowDelay, true, Datas[0].GrowDelay);
+	}
 }
 
 void ACBase_Crop::BeginPlay()
 {
 	Super::BeginPlay();
-
-	MoistureComp->SetAutoReduceTimer(GetCurrentCropData().ReduceDelay_M, true, GetCurrentCropData().ReduceDelay_M);
-	NutritionComp->SetAutoReduceTimer(GetCurrentCropData().ReduceDelay_N, true, GetCurrentCropData().ReduceDelay_N);
-	SetAutoGrowTimer(Datas[0].GrowDelay, true, Datas[0].GrowDelay);
 }
 
 void ACBase_Crop::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
-	if (!CropData && !IsRunningGame())
-	{
-		SetCropData();
-	}
+	
 }
 	
 
@@ -76,9 +93,12 @@ void ACBase_Crop::SetAutoGrowTimer(float InFirstDelay, bool InbLoop, float InLoo
 
 void ACBase_Crop::GrowUp()
 {
-	/*GrowType = (ECropGrowType)((int32)GrowType + 1);
-	CheckTrue(GrowType == ECropGrowType::MAX);*/
 	CheckTrue(NowGrowLevel == MaxGrowLevel);
+
+	++NowGrowLevel;
+	MeshComp->SetStaticMesh(CropMeshes[NowGrowLevel]);
+	NutritionComp->SetSafeRange(Datas[NowGrowLevel].SafeRange_Nutrition);
+	MoistureComp->SetSafeRange(Datas[NowGrowLevel].SafeRange_Moisture);
 }
 
 void ACBase_Crop::SetOwnerField(ACFarmField* InOwnerField)
@@ -86,36 +106,11 @@ void ACBase_Crop::SetOwnerField(ACFarmField* InOwnerField)
 	OwnerField = InOwnerField;
 }
 
-void ACBase_Crop::SetCropData()
-{
-	TArray<FCropData*> CropDatas;
-	CropData->GetAllRows(TEXT("Fetching all rows"), CropDatas);
-	
-	for (const auto& Data : CropDatas)
-	{
-		if (Data->CropName == CropName)
-		{
-			Datas.Add(*Data);
-		}
-	}
-
-	CropMeshes.SetNum(Datas.Num());
-	for (int32 i = 0; i< CropMeshes.Num(); ++i)
-	{
-		CHelpers::GetAssetDynamic(&CropMeshes[i], Datas[i].MeshRef);
-	}
-
-	MeshComp->SetStaticMesh(CropMeshes[0]);
-	NutritionComp->SetSafeRange(Datas[0].SafeRange_N);
-	MoistureComp->SetSafeRange(Datas[0].SafeRange_M);
-}
-
 void ACBase_Crop::AutoGrow()
 {
 	CheckNull(OwnerField);
 
 	// Drain Nutrition From Field
-	// Nutrition has Max Limit.
 	if (NutritionComp->GetNutritionValue() < NutritionComp->GetSafeRange().Y)
 	{
 		UCNutritionComponent* FieldNutrtitionComp = CHelpers::GetComponent<UCNutritionComponent>(OwnerField);
@@ -132,7 +127,6 @@ void ACBase_Crop::AutoGrow()
 	}
 
 	// Drain Moisture From Field
-	// Moisture dosen't have Max Limit.
 	UCMoistureComponent* FieldMoistureComp = CHelpers::GetComponent<UCMoistureComponent>(OwnerField);
 	float NowConsumeMoisture = FieldMoistureComp->GetMoistureValue() >= Datas[NowGrowLevel].ConsumeNutrition
 		? Datas[NowGrowLevel].ConsumeMoisture
@@ -142,6 +136,7 @@ void ACBase_Crop::AutoGrow()
 
 	// Grow
 	float GrowUpValue = GetCurrentCropData().DefaultGrowUpValue;
+
 	// Calc Weather, Moisture, Nutrition Effect
 
 	NowGrowValue += GrowUpValue;
