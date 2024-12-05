@@ -9,8 +9,6 @@ UCAttributeComponent::UCAttributeComponent()
 	WalkSpeeds[(int32)ESpeedType::Walk] = 400.0f;
 	WalkSpeeds[(int32)ESpeedType::Sprint] = 600.0f;
 
-	MaxHealth = 30.0f;
-	CurrentHealth = MaxHealth;
 	bCanMove = true;
 }
 
@@ -24,14 +22,6 @@ void UCAttributeComponent::SetStop()
 	bCanMove = false;
 }
 
-void UCAttributeComponent::SetMaxHealth(float InMaxHealth, bool bResetCurrentHealth)
-{
-	MaxHealth = InMaxHealth;
-
-	CheckFalse(bResetCurrentHealth);
-	CurrentHealth = MaxHealth;
-}
-
 void UCAttributeComponent::SetSpeed(ESpeedType InType)
 {
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
@@ -40,12 +30,3 @@ void UCAttributeComponent::SetSpeed(ESpeedType InType)
 	OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed = WalkSpeeds[(int32)InType];
 }
 
-void UCAttributeComponent::IncreaseHealth(float InAmount)
-{
-	CurrentHealth = FMath::Clamp(CurrentHealth + InAmount, 0, MaxHealth);
-}
-
-void UCAttributeComponent::DecreaseHealth(float InAmount)
-{
-	CurrentHealth = FMath::Clamp(CurrentHealth - InAmount, 0, MaxHealth);
-}

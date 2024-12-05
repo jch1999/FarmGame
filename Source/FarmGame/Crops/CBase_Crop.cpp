@@ -3,6 +3,7 @@
 #include "CFarmField.h"
 #include "Components/CMoistureComponent.h"
 #include "Components/CNutritionComponent.h"
+#include "Components/CHealthComponent.h"
 
 ACBase_Crop::ACBase_Crop()
 {
@@ -12,6 +13,7 @@ ACBase_Crop::ACBase_Crop()
 	// Mosisture & Nutrition
 	CHelpers::CreateActorComponent(this, &MoistureComp, "MoistureComp");
 	CHelpers::CreateActorComponent(this, &NutritionComp, "NutritionComp");
+	CHelpers::CreateActorComponent(this, &HealthComp, "HealthComp");
 
 	// DataAsset
 	CHelpers::GetAsset(&CropData, "/Game/Datas/DT_CropDatas");
@@ -43,7 +45,10 @@ ACBase_Crop::ACBase_Crop()
 	{
 		MeshComp->SetStaticMesh(CropMeshes[0]);
 		MoistureComp->SetAutoReduceTimer(GetCurrentCropData().ReduceDelay_Moisture, true, GetCurrentCropData().ReduceDelay_Moisture);
+		MoistureComp->AddMoisture(MoistureComp->GetSafeRange().Y);
 		NutritionComp->SetAutoReduceTimer(GetCurrentCropData().ReduceDelay_Nutrition, true, GetCurrentCropData().ReduceDelay_Nutrition);
+		NutritionComp->AddNutrition(NutritionComp->GetSafeRange().Y);
+		HealthComp->SetMaxHealth(GetCurrentCropData().Max_Health, true);
 		SetAutoGrowTimer(Datas[0].GrowDelay, true, Datas[0].GrowDelay);
 	}
 }
@@ -97,8 +102,9 @@ void ACBase_Crop::GrowUp()
 
 	++NowGrowLevel;
 	MeshComp->SetStaticMesh(CropMeshes[NowGrowLevel]);
-	NutritionComp->SetSafeRange(Datas[NowGrowLevel].SafeRange_Nutrition);
-	MoistureComp->SetSafeRange(Datas[NowGrowLevel].SafeRange_Moisture);
+	NutritionComp->SetSafeRange(GetCurrentCropData().SafeRange_Nutrition);
+	MoistureComp->SetSafeRange(GetCurrentCropData().SafeRange_Moisture);
+	HealthComp->SetMaxHealth(GetCurrentCropData().Max_Health, true);
 }
 
 void ACBase_Crop::SetOwnerField(ACFarmField* InOwnerField)
@@ -111,28 +117,26 @@ void ACBase_Crop::AutoGrow()
 	CheckNull(OwnerField);
 
 	// Drain Nutrition From Field
-	if (NutritionComp->GetNutritionValue() < NutritionComp->GetSafeRange().Y)
-	{
-		UCNutritionComponent* FieldNutrtitionComp = CHelpers::GetComponent<UCNutritionComponent>(OwnerField);
-		float NowConsumeNutrition = NutritionComp->GetSafeRange().Y - NutritionComp->GetNutritionValue();
-		NowConsumeNutrition = FMath::Min
-		(
-			NowConsumeNutrition, 
-			FieldNutrtitionComp->GetNutritionValue() >= Datas[NowGrowLevel].ConsumeNutrition
-			? Datas[NowGrowLevel].ConsumeNutrition
-			: FieldNutrtitionComp->GetNutritionValue()
-		);
-		NutritionComp->AddNutrition(NowConsumeNutrition);
-		FieldNutrtitionComp->ReduceNutrition(NowConsumeNutrition);
-	}
+	float LeftNutritionapacity = GetCurrentCropData().Max_Nutrition - NutritionComp->GetNutritionValue();
+	float NowConsumeNutrition = LeftNutritionapacity > GetCurrentCropData().ConsumeNutrition ? GetCurrentCropData().ConsumeMoisture : LeftNutritionapacity;
+
+	UCNutritionComponent* FieldNutrtitionComp = CHelpers::GetComponent<UCNutritionComponent>(OwnerField);
+	float FieldNutrtion = FieldNutrtitionComp->GetNutritionValue();
+	NowConsumeNutrition = FieldNutrtion < NowConsumeNutrition ? FieldNutrtion : NowConsumeNutrition;
+	
+	NutritionComp->AddNutrition(NowConsumeNutrition);
+	FieldNutrtitionComp->ReduceNutrition(NowConsumeNutrition);
 
 	// Drain Moisture From Field
-	UCMoistureComponent* FieldMoistureComp = CHelpers::GetComponent<UCMoistureComponent>(OwnerField);
-	float NowConsumeMoisture = FieldMoistureComp->GetMoistureValue() >= Datas[NowGrowLevel].ConsumeNutrition
-		? Datas[NowGrowLevel].ConsumeMoisture
-		: FieldMoistureComp->GetMoistureValue();
+	float LeftMoistureCapacity = GetCurrentCropData().Max_Moisture - MoistureComp->GetMoistureValue();
+	float NowConsumeMoisture = LeftMoistureCapacity > GetCurrentCropData().ConsumeMoisture ? GetCurrentCropData().ConsumeMoisture : LeftMoistureCapacity;
+
+	UCMoistureComponent* FieldMoisutreComp = CHelpers::GetComponent<UCMoistureComponent>(OwnerField);
+	float FieldMoisture = FieldMoisutreComp->GetMoistureValue();
+	NowConsumeMoisture = FieldMoisture < NowConsumeMoisture ? FieldMoisture : NowConsumeMoisture;
+
 	MoistureComp->AddMoisture(NowConsumeMoisture);
-	FieldMoistureComp->ReduceMoisture(NowConsumeMoisture);
+	FieldMoisutreComp->ReduceMoisture(NowConsumeMoisture);
 
 	// Grow
 	float GrowUpValue = GetCurrentCropData().DefaultGrowUpValue;

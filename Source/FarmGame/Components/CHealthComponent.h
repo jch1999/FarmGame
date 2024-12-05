@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -13,16 +11,25 @@ class FARMGAME_API UCHealthComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
 	UCHealthComponent();
 
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+public:
+	FORCEINLINE float GetCurrentHealth() { return CurrentHealth; }
+	FORCEINLINE float GetMaxHealth() { return MaxHealth; }
 
+	void SetMaxHealth(float InMaxHealth, bool bResetCurrentHealth = false);
+
+	void IncreaseHealth(float InAmount);
+	void DecreaseHealth(float InAmount);
+
+protected:
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Health")
+	float MaxHealth;
+
+private:
+	float CurrentHealth;
 		
 };

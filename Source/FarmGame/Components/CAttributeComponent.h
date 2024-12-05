@@ -19,8 +19,6 @@ public:
 	UCAttributeComponent();
 
 public:
-	FORCEINLINE float GetCurrentHealth() { return CurrentHealth; }
-	FORCEINLINE float GetMaxHealth() { return MaxHealth; }
 	FORCEINLINE float GetSneakSpeed() { return WalkSpeeds[(int32)ESpeedType::Sneak]; }
 	FORCEINLINE float GetWalkSpeed() { return WalkSpeeds[(int32)ESpeedType::Walk]; }
 	FORCEINLINE float GetSprintSpeed() { return WalkSpeeds[(int32)ESpeedType::Sprint]; }
@@ -28,20 +26,12 @@ public:
 
 	void SetMove();
 	void SetStop();
-	void SetMaxHealth(float InMaxHealth, bool bResetCurrentHealth=false);
 	void SetSpeed(ESpeedType InType);
 
-	void IncreaseHealth(float InAmount);
-	void DecreaseHealth(float InAmount);
-
 protected:
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Health")
-	float MaxHealth;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Speed")
 	float WalkSpeeds[(int32)ESpeedType::Max];
 
 private:
-	float CurrentHealth;
 	bool bCanMove;
 };

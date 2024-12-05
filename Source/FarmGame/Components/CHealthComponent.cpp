@@ -1,34 +1,32 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Components/CHealthComponent.h"
+#include "Global.h"
 
-// Sets default values for this component's properties
 UCHealthComponent::UCHealthComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 }
 
 
-// Called when the game starts
 void UCHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-	
+	CurrentHealth = MaxHealth;
 }
 
-
-// Called every frame
-void UCHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UCHealthComponent::SetMaxHealth(float InMaxHealth, bool bResetCurrentHealth)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	MaxHealth = InMaxHealth;
 
-	// ...
+	CheckFalse(bResetCurrentHealth);
+	CurrentHealth = MaxHealth;
 }
 
+void UCHealthComponent::IncreaseHealth(float InAmount)
+{
+	CurrentHealth = FMath::Clamp(CurrentHealth + InAmount, 0, MaxHealth);
+}
+
+void UCHealthComponent::DecreaseHealth(float InAmount)
+{
+	CurrentHealth = FMath::Clamp(CurrentHealth - InAmount, 0, MaxHealth);
+}

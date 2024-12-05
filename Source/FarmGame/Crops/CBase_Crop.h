@@ -8,6 +8,7 @@
 
 class UCMoistureComponent;
 class UCNutritionComponent;
+class UCHealthComponent;
 class ACFarmField;
 class UStaticMesh;
 
@@ -133,6 +134,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	UCNutritionComponent* NutritionComp;
+
+	UPROPERTY(VisibleAnywhere, Category = "Component")
+	UCHealthComponent* HealthComp;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "DataTable")
