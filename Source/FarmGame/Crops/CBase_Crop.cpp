@@ -1,11 +1,14 @@
 #include "Crops/CBase_Crop.h"
 #include "Global.h"
+#include "CGameModeBase.h"
 #include "CFarmField.h"
 #include "Components/CMoistureComponent.h"
 #include "Components/CNutritionComponent.h"
 #include "Components/CHealthComponent.h"
+#include "UI/CCropWidget.h"
 
 ACBase_Crop::ACBase_Crop()
+	: OwnerField(nullptr)
 {
 	// Mesh
 	CHelpers::CreateSceneComponent(this, &MeshComp, "MeshComp", RootComponent);
@@ -39,17 +42,18 @@ ACBase_Crop::ACBase_Crop()
 	// Property
 	NowGrowLevel = 0;
 	NowGrowValue = 0.0f;
+	UpdateTime = 1.0f;
 
 	// Set Components
 	if (Datas.Num() > 0)
 	{
 		MeshComp->SetStaticMesh(CropMeshes[0]);
-		MoistureComp->SetAutoReduceTimer(GetCurrentCropData().ReduceDelay_Moisture, true, GetCurrentCropData().ReduceDelay_Moisture);
+		MoistureComp->SetAutoReduceTimer(UpdateTime, true, UpdateTime);
 		MoistureComp->AddMoisture(MoistureComp->GetSafeRange().Y);
-		NutritionComp->SetAutoReduceTimer(GetCurrentCropData().ReduceDelay_Nutrition, true, GetCurrentCropData().ReduceDelay_Nutrition);
+		NutritionComp->SetAutoReduceTimer(UpdateTime, true, UpdateTime);
 		NutritionComp->AddNutrition(NutritionComp->GetSafeRange().Y);
 		HealthComp->SetMaxHealth(GetCurrentCropData().Max_Health, true);
-		SetAutoGrowTimer(Datas[0].GrowDelay, true, Datas[0].GrowDelay);
+		SetAutoGrowTimer(UpdateTime, true, UpdateTime);
 	}
 }
 
@@ -88,6 +92,20 @@ void ACBase_Crop::SetType(EInteractObjectType InNewType)
 
 void ACBase_Crop::Interact()
 {
+	CheckFalse(bInteractable);
+
+	ACGameModeBase* GameMode = Cast<ACGameModeBase>(GetWorld()->GetAuthGameMode());
+	CheckNull(GameMode);
+
+	UCCropWidget* CropWidget = GameMode->GetCropWidget();
+	CheckNull(CropWidget);
+
+	CheckFalse(CropWidget->IsAvailable());
+
+	CropWidget->SetCrop(this);
+	CropWidget->AddToViewport();
+
+	SetUnInteractable();
 }
 
 void ACBase_Crop::SetAutoGrowTimer(float InFirstDelay, bool InbLoop, float InLoopDelay)
@@ -117,26 +135,24 @@ void ACBase_Crop::AutoGrow()
 	CheckNull(OwnerField);
 
 	// Drain Nutrition From Field
-	float LeftNutritionapacity = GetCurrentCropData().Max_Nutrition - NutritionComp->GetNutritionValue();
+	float LeftNutritionapacity = GetCurrentCropData().Max_Nutrition - NutritionComp->GetCurrentNutrition();
 	float NowConsumeNutrition = LeftNutritionapacity > GetCurrentCropData().ConsumeNutrition ? GetCurrentCropData().ConsumeMoisture : LeftNutritionapacity;
 
-	UCNutritionComponent* FieldNutrtitionComp = CHelpers::GetComponent<UCNutritionComponent>(OwnerField);
-	float FieldNutrtion = FieldNutrtitionComp->GetNutritionValue();
+	float FieldNutrtion = OwnerField->GetNutritionComp()->GetCurrentNutrition();
 	NowConsumeNutrition = FieldNutrtion < NowConsumeNutrition ? FieldNutrtion : NowConsumeNutrition;
 	
 	NutritionComp->AddNutrition(NowConsumeNutrition);
-	FieldNutrtitionComp->ReduceNutrition(NowConsumeNutrition);
+	OwnerField->GetNutritionComp()->ReduceNutrition(NowConsumeNutrition);
 
 	// Drain Moisture From Field
-	float LeftMoistureCapacity = GetCurrentCropData().Max_Moisture - MoistureComp->GetMoistureValue();
+	float LeftMoistureCapacity = GetCurrentCropData().Max_Moisture - MoistureComp->GetCurrentMoisture();
 	float NowConsumeMoisture = LeftMoistureCapacity > GetCurrentCropData().ConsumeMoisture ? GetCurrentCropData().ConsumeMoisture : LeftMoistureCapacity;
 
-	UCMoistureComponent* FieldMoisutreComp = CHelpers::GetComponent<UCMoistureComponent>(OwnerField);
-	float FieldMoisture = FieldMoisutreComp->GetMoistureValue();
+	float FieldMoisture = OwnerField->GetMoistureComp()->GetCurrentMoisture();
 	NowConsumeMoisture = FieldMoisture < NowConsumeMoisture ? FieldMoisture : NowConsumeMoisture;
 
 	MoistureComp->AddMoisture(NowConsumeMoisture);
-	FieldMoisutreComp->ReduceMoisture(NowConsumeMoisture);
+	OwnerField->GetMoistureComp()->ReduceMoisture(NowConsumeMoisture);
 
 	// Grow
 	float GrowUpValue = GetCurrentCropData().DefaultGrowUpValue;

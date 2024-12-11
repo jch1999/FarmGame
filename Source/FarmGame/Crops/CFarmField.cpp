@@ -4,6 +4,7 @@
 #include "Components/CNutritionComponent.h"
 #include "Components/CCultivationComponent.h"
 #include "CBase_Crop.h"
+#include "CGameModeBase.h"
 
 ACFarmField::ACFarmField()
 {
@@ -64,13 +65,23 @@ void ACFarmField::SetType(EInteractObjectType InNewType)
 
 void ACFarmField::Interact()
 {
+	ACGameModeBase* GameMode = Cast<ACGameModeBase>(GetWorld()->GetAuthGameMode());
+	CheckNull(GameMode);
+
+	
+	SetUnInteractable();
 }
 
-void ACFarmField::PlantCrop(ACBase_Crop* InCrop, FTransform& InTM)
+bool ACFarmField::PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, FTransform& InTM)
 {
-	CheckNull(InCrop);
-	CheckTrue(Crop != nullptr);
+	CheckNullResult(InCropClass, false);
+	CheckTrueResult(Crop != nullptr, false);
 
-	Crop = InCrop;
+	Crop = GetWorld()->SpawnActorDeferred<ACBase_Crop>(InCropClass, InTM, this, nullptr);
+	Crop->FinishSpawning(InTM);
+	CheckNullResult(Crop, false);
+
 	Crop->SetOwnerField(this);
+
+	return true;
 }

@@ -37,9 +37,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float DefaultGrowUpValue;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float GrowDelay;
-
 	// Moisture
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector2D SafeRange_Moisture;
@@ -50,9 +47,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ConsumeMoisture;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float ReduceDelay_Moisture;
-
 	// Nutirtion
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector2D SafeRange_Nutrition;
@@ -62,9 +56,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ConsumeNutrition;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float ReduceDelay_Nutrition;
 
 	// Health
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -119,7 +110,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsHarvestable() { return NowGrowLevel == MaxGrowLevel; }
 
-	UFUNCTION(BlueprintCallable)
+	// Get Components
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE UCHealthComponent* const GetHealthComp() { return HealthComp; }
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE UCNutritionComponent* const GetNutritionComp() { return NutritionComp; }
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE UCMoistureComponent* const GetMoistureComp() { return MoistureComp; }
+
 	void SetOwnerField(ACFarmField* InOwnerField);
 
 private:
@@ -147,6 +147,9 @@ protected:
 	int32 MaxGrowLevel;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "DataTable")
 	float NowGrowValue;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	float UpdateTime;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="DataTable")
 	UDataTable* CropData;

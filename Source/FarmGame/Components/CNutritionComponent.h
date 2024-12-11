@@ -10,7 +10,9 @@ enum class ENutritionState :uint8
 	Famine, Enough, Over
 };
 
+// Delegate
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FNutritionStateChanged, ENutritionState, InNewState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FNutritionChanged);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FARMGAME_API UCNutritionComponent : public UActorComponent
@@ -24,11 +26,21 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	FORCEINLINE bool IsEnough() { return (NutritionSafeRange.X <= NowNutrition) && (NutritionSafeRange.Y >= NowNutrition); }
-	FORCEINLINE bool IsFamine() { return NowNutrition < NutritionSafeRange.X; }
-	FORCEINLINE bool ISOver() { return NowNutrition > NutritionSafeRange.Y; }
+	FORCEINLINE bool IsEnough() { return NutritionState == ENutritionState::Enough; }
+	FORCEINLINE bool IsFamine() { return NutritionState == ENutritionState::Famine; }
+	FORCEINLINE bool ISOver() { return NutritionState == ENutritionState::Over; }
+
+	UFUNCTION(BlueprintPure)
 	FORCEINLINE FVector2D GetSafeRange() { return NutritionSafeRange; }
-	FORCEINLINE float GetNutritionValue() { return NowNutrition; }
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE float GetMaxNutrition() { return MaxNutrition; }
+	
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE float GetCurrentNutrition() { return CurrentNutrition; }
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE float GetCurrentRate() { return CurrentNutrition / MaxNutrition; }
 
 	void SetFamineState();
 	void SetEnoughState();
@@ -51,14 +63,20 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FNutritionStateChanged OnNutritionStateChanged;
 
-protected:
-	UPROPERTY(EditAnywhere, Category = "Moisture")
-	float NowNutrition;
+	UPROPERTY(BlueprintAssignable)
+	FNutritionChanged OnNutritionChanged;
 
-	UPROPERTY(EditAnywhere, Category = "Moisture")
+protected:
+	UPROPERTY(EditAnywhere, Category = "Nutrition")
+	float CurrentNutrition;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Nutrition")
+	float MaxNutrition;
+
+	UPROPERTY(EditAnywhere, Category = "Nutrition")
 	float AutoReduceAmount;
 
-	UPROPERTY(EditAnywhere, Category = "Moisture")
+	UPROPERTY(EditAnywhere, Category = "Nutrition")
 	FVector2D NutritionSafeRange;
 
 private:

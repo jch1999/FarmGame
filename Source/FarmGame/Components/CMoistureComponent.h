@@ -4,13 +4,17 @@
 #include "Components/ActorComponent.h"
 #include "CMoistureComponent.generated.h"
 
+
+
 UENUM(BlueprintType)
 enum class EMoistureState :uint8
 {
 	Dry, Enough, Humid
 };
 
+// Delegate
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMoisutreStateChanged, EMoistureState, InNewState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMoistureChanged);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FARMGAME_API UCMoistureComponent : public UActorComponent
@@ -27,8 +31,18 @@ public:
 	FORCEINLINE bool IsEnough() { return MoistureState==EMoistureState::Enough; }
 	FORCEINLINE bool IsDry() { return MoistureState==EMoistureState::Dry; }
 	FORCEINLINE bool ISHumid() { return MoistureState == EMoistureState::Humid;}
+
+	UFUNCTION(BlueprintPure)
 	FORCEINLINE FVector2D GetSafeRange() { return MoistureSafeRange; }
-	FORCEINLINE float GetMoistureValue() { return NowMoisture; }
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE float GetMaxMoisture() { return MaxMoisture; }
+	
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE float GetCurrentMoisture() { return CurrentMoisture; }
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE float GetCurrentRate() { return CurrentMoisture /MaxMoisture; }
 
 	void AddMoisture(float Amount);
 	void ReduceMoisture(float Amount);
@@ -52,9 +66,15 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FMoisutreStateChanged OnMoistureStateChanged;
 
+	UPROPERTY(BlueprintAssignable)
+	FMoistureChanged OnMoistureChanged;
+
 protected:
 	UPROPERTY(EditAnywhere, Category="Moisture")
-	float NowMoisture;
+	float CurrentMoisture;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Moisture")
+	float MaxMoisture;
 
 	UPROPERTY(EditAnywhere, Category = "Moisture")
 	float AutoReduceAmount;

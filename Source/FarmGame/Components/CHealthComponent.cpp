@@ -19,14 +19,20 @@ void UCHealthComponent::SetMaxHealth(float InMaxHealth, bool bResetCurrentHealth
 
 	CheckFalse(bResetCurrentHealth);
 	CurrentHealth = MaxHealth;
+
+	OnHealthChanged.Broadcast();
 }
 
 void UCHealthComponent::IncreaseHealth(float InAmount)
 {
 	CurrentHealth = FMath::Clamp(CurrentHealth + InAmount, 0, MaxHealth);
+
+	OnHealthChanged.Broadcast();
 }
 
 void UCHealthComponent::DecreaseHealth(float InAmount)
 {
 	CurrentHealth = FMath::Clamp(CurrentHealth - InAmount, 0, MaxHealth);
+
+	OnHealthChanged.Broadcast();
 }

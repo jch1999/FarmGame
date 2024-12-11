@@ -2,6 +2,7 @@
 
 UCCultivationComponent::UCCultivationComponent()
 {
+	MaxCultivation = 100.0f;
 }
 
 
@@ -12,19 +13,25 @@ void UCCultivationComponent::BeginPlay()
 
 void UCCultivationComponent::AddCultivation(float InAmount)
 {
-	NowCultivation += InAmount;
-	NowCultivation = FMath::Clamp(NowCultivation, CultivationRange.X, CultivationRange.Y);
+	CurrentCultivation += InAmount;
+	CurrentCultivation = FMath::Clamp(CurrentCultivation, CultivationRange.X, CultivationRange.Y);
+
+	OnCultivationChanged.Broadcast();
 }
 
 void UCCultivationComponent::ReduceCultivation(float InAmount)
 {
-	NowCultivation -= InAmount;
-	NowCultivation = FMath::Clamp(NowCultivation, CultivationRange.X, CultivationRange.Y);
+	CurrentCultivation -= InAmount;
+	CurrentCultivation = FMath::Clamp(CurrentCultivation, CultivationRange.X, CultivationRange.Y);
+
+	OnCultivationChanged.Broadcast();
 }
 
 void UCCultivationComponent::SetCultivationRange(FVector2D InNewRange)
 {
 	CultivationRange = InNewRange;
+
+	OnCultivationChanged.Broadcast();
 }
 
 void UCCultivationComponent::SetAutoReduceAmount(float InReduceAmount)

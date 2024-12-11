@@ -33,7 +33,17 @@ public:
 
 	// Crop
 	UFUNCTION(BlueprintCallable)
-	void PlantCrop(ACBase_Crop* InCrop, FTransform& InTM);
+	bool PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, FTransform& InTM);
+
+	// Component
+	UFUNCTION(BlueprintPure)
+	UCCultivationComponent* const GetCultivationComp() { return CultivationComp; }
+	
+	UFUNCTION(BlueprintPure)
+	UCMoistureComponent* const GetMoistureComp() { return MoistureComp; }
+	
+	UFUNCTION(BlueprintPure)
+	UCNutritionComponent* const GetNutritionComp() { return NutritionComp; }
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Component")
