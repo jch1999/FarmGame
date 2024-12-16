@@ -9,6 +9,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "Interfaces/CItemInterface.h"
 
 ACPlayer::ACPlayer()
 {
@@ -16,7 +17,7 @@ ACPlayer::ACPlayer()
 	CHelpers::GetAsset(&DefaultContext, "/Game/Input/IMC_Player");
 	CHelpers::GetAsset(&MoveAction, "/Game/Input/IA_PlayerMove");
 	CHelpers::GetAsset(&LookAction, "/Game/Input/IA_PlayerRotate");
-	CHelpers::GetAsset(&LookAction, "/Game/Input/IA_PlayerInteract");
+	CHelpers::GetAsset(&InteractAction, "/Game/Input/IA_PlayerInteract");
 
 	// SpringArm Comp
 	CHelpers::CreateSceneComponent(this, &SpringArmComp, "SpringArmComp", GetMesh());
@@ -74,6 +75,8 @@ void ACPlayer::BeginPlay()
 			SubSystem->AddMappingContext(DefaultContext, 0);
 		}
 	}
+
+	ItemContainer.SetNum(ItemContainerSize);
 }
 
 void ACPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -97,7 +100,6 @@ void ACPlayer::Move(const FInputActionInstance& InInstance)
 	FVector ForwardDirection = FQuat(ControlRot).GetForwardVector();
 	FVector SideDirection = FQuat(ControlRot).GetRightVector();
 
-	PrintLine();
 	AddMovementInput(ForwardDirection, Axis2D.Y);
 	AddMovementInput(SideDirection, Axis2D.X);
 }
@@ -105,6 +107,7 @@ void ACPlayer::Move(const FInputActionInstance& InInstance)
 void ACPlayer::Look(const FInputActionInstance& InInstance)
 {
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	
 	if (PlayerController)
 	{
 		FVector2D InputValue = InInstance.GetValue().Get<FVector2D>();
@@ -143,7 +146,11 @@ void ACPlayer::SetUnInteractable()
 
 void ACPlayer::Interact()
 {
-	CLog::Log("Interact Test!");
+	ICInterface_Interactable* InteractActor=nullptr;
+	if (Trace(InteractActor))
+	{
+
+	}
 }
 
 EInteractObjectType ACPlayer::GetType()
@@ -156,3 +163,41 @@ void ACPlayer::SetType(EInteractObjectType InNewType)
 	Type = InNewType;
 }
 
+bool ACPlayer::Trace(const ICInterface_Interactable* OutInteract)
+{
+	FVector Start = GetActorLocation() + CameraComp->GetRelativeLocation();
+	FVector End = Start + CameraComp->GetForwardVector() * 150.0f;
+
+	//TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	TArray<AActor*> Ignores;
+	Ignores.Add(this);
+
+	TArray<FHitResult> Hits;
+	UKismetSystemLibrary::LineTraceMulti
+	(
+		GetWorld(),
+		Start,
+		End,
+		UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility),
+		false,
+		Ignores,
+		EDrawDebugTrace::ForDuration,
+		Hits,
+		true
+	);
+
+	if (Hits.Num() > 0)
+	{
+		for (FHitResult& Hit : Hits)
+		{
+			ICInterface_Interactable* OtherActor = Cast<ICInterface_Interactable>(Hit.GetActor());
+			if (OtherActor && OtherActor->IsInteractable())
+			{
+				OtherActor->Interact();
+				OutInteract = OtherActor;
+				return true;
+			}
+		}
+	}
+	return false;
+}

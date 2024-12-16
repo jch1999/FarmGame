@@ -120,8 +120,6 @@ public:
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE UCMoistureComponent* const GetMoistureComp() { return MoistureComp; }
 
-	void SetOwnerField(ACFarmField* InOwnerField);
-
 private:
 	void AutoGrow();
 

@@ -58,6 +58,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	UCCultivationComponent* CultivationComp;
 
-	UPROPERTY(EditAnywhere, Category="Crop")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Crop")
 	ACBase_Crop* Crop;
+
+private:
+	UMaterialInstanceDynamic* FieldMaterial;
 };

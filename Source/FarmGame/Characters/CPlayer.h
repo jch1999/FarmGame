@@ -14,6 +14,7 @@ class UCameraComponent;
 class UCStateComponent;
 class UCAttributeComponent;
 class UCOptionComponent;
+class ICItemInterface;
 
 UCLASS()
 class FARMGAME_API ACPlayer : public ACharacter, public ICInterface_Interactable
@@ -29,10 +30,30 @@ protected:
 public:	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+public:
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE TScriptInterface<ICItemInterface> const GetCurrentSlotItem() const { return ItemContainer[ItemIndex]; }
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE TArray<TScriptInterface<ICItemInterface>> GetItemContainer() const { return ItemContainer; }
+
+protected:
+	// Inherited via ICInterface_Interactable
+	bool IsInteractable() override;
+	void SetInteractable() override;
+	void SetUnInteractable() override;
+	void Interact() override;
+
+	EInteractObjectType GetType() override;
+	void SetType(EInteractObjectType InNewType) override;
+
 protected:
 	void Move(const FInputActionInstance& InInstance);
 	void Look(const FInputActionInstance& InInstance);
 	void OnInteract(const FInputActionInstance& InInstance);
+
+private:
+	bool Trace(const ICInterface_Interactable* OutInteract);
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category="Input")
@@ -62,12 +83,12 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UCOptionComponent* OptionComp;
 
-	// Inherited via ICInterface_Interactable
-	bool IsInteractable() override;
-	void SetInteractable() override;
-	void SetUnInteractable() override;
-	void Interact() override;
+	UPROPERTY(VisibleAnywhere, Category="Item")
+	TArray<TScriptInterface<ICItemInterface>> ItemContainer;
 
-	EInteractObjectType GetType() override;
-	void SetType(EInteractObjectType InNewType) override;
+	UPROPERTY(VisibleAnywhere, Category = "Item")
+	int32 ItemContainerSize;
+
+	UPROPERTY(VisibleAnywhere, Category = "Item")
+	int32 ItemIndex;
 };

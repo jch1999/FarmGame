@@ -1,7 +1,7 @@
 #include "Crops/CBase_Crop.h"
 #include "Global.h"
 #include "CGameModeBase.h"
-#include "CFarmField.h"
+#include "Farm/CFarmField.h"
 #include "Components/CMoistureComponent.h"
 #include "Components/CNutritionComponent.h"
 #include "Components/CHealthComponent.h"
@@ -123,11 +123,6 @@ void ACBase_Crop::GrowUp()
 	NutritionComp->SetSafeRange(GetCurrentCropData().SafeRange_Nutrition);
 	MoistureComp->SetSafeRange(GetCurrentCropData().SafeRange_Moisture);
 	HealthComp->SetMaxHealth(GetCurrentCropData().Max_Health, true);
-}
-
-void ACBase_Crop::SetOwnerField(ACFarmField* InOwnerField)
-{
-	OwnerField = InOwnerField;
 }
 
 void ACBase_Crop::AutoGrow()

@@ -5,6 +5,7 @@
 #include "CGameModeBase.generated.h"
 
 class UCCropWidget;
+class UCFarmFieldWidget;
 
 UCLASS()
 class FARMGAME_API ACGameModeBase : public AGameModeBase
@@ -18,7 +19,20 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	FORCEINLINE UCCropWidget* GetCropWidget() { return CropWidget; }
+	UFUNCTION(BlueprintPure)
+	UCCropWidget* GetCropWidget();
+
+	UFUNCTION(BlueprintPure)
+	UCFarmFieldWidget* GetFarmFieldWidget();
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE float GetFarmValue() { return FarmValue; }
+
+	UFUNCTION(BlueprintCallable)
+	void AddFarmVale(float InAddAmount);
+
+	UFUNCTION(BlueprintCallable)
+	void ReduceFarmVale(float InReduceAmount);
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Widget")
@@ -26,6 +40,9 @@ private:
 	UCCropWidget* CropWidget;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Widget")
-	TSubclassOf<UUserWidget> FarmFieldWidgetClass;
-	UUserWidget* FarmFieldWidget;
+	TSubclassOf<UCFarmFieldWidget> FarmFieldWidgetClass;
+	UCFarmFieldWidget* FarmFieldWidget;
+
+	UPROPERTY(VisibleAnywhere,Category="Farm")
+	float FarmValue;
 };
