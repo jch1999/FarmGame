@@ -89,7 +89,7 @@ void ACFarmField::Interact()
 	SetUnInteractable();
 }
 
-bool ACFarmField::PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, FTransform& InTM)
+bool ACFarmField::PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, const FTransform& InTM)
 {
 	CheckNullResult(InCropClass, false);
 	CheckTrueResult(Crop != nullptr, false);

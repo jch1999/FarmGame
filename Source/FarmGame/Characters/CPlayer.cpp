@@ -149,7 +149,11 @@ void ACPlayer::Interact()
 	ICInterface_Interactable* InteractActor=nullptr;
 	if (Trace(InteractActor))
 	{
+		APlayerController* PC = GetController<APlayerController>();
+		CheckNull(PC);
 
+		PC->bShowMouseCursor = true;
+		PC->SetInputMode(FInputModeGameAndUI());
 	}
 }
 

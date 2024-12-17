@@ -33,7 +33,7 @@ public:
 
 	// Crop
 	UFUNCTION(BlueprintCallable)
-	bool PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, FTransform& InTM);
+	bool PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, const FTransform& InTM);
 
 	// Component
 	UFUNCTION(BlueprintPure)

@@ -38,10 +38,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int32 GetAvailableCount() const override;
 
-private:
-	UPROPERTY(EditDefaultsOnly, Category = "Crop")
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Crop")
 	TSubclassOf<ACBase_Crop> CropClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Crop")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Crop")
+	FTransform CropTransform;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Crop")
 	float NeedCultivation;
 };
