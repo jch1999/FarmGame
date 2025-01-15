@@ -90,13 +90,19 @@ void ACPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACPlayer::Look);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ACPlayer::OnInteract);
 	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("'%s' Failed to find an Enhanced Input component!"), *GetNameSafe(this));
+	}
 }
 
-void ACPlayer::Move(const FInputActionInstance& InInstance)
+void ACPlayer::Move(const FInputActionValue& Value)
 {
-	FVector2D Axis2D = InInstance.GetValue().Get<FVector2D>();
+	FVector2D Axis2D = Value.Get<FVector2D>();
 	
-	FRotator ControlRot = FRotator(0, GetControlRotation().Yaw, 0);
+	if (!Controller) return;
+	
+	FRotator ControlRot = FRotator(0, Controller->GetControlRotation().Yaw, 0);
 	FVector ForwardDirection = FQuat(ControlRot).GetForwardVector();
 	FVector SideDirection = FQuat(ControlRot).GetRightVector();
 
@@ -104,18 +110,15 @@ void ACPlayer::Move(const FInputActionInstance& InInstance)
 	AddMovementInput(SideDirection, Axis2D.X);
 }
 
-void ACPlayer::Look(const FInputActionInstance& InInstance)
+void ACPlayer::Look(const FInputActionValue& Value)
 {
-	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	
-	if (PlayerController)
-	{
-		FVector2D InputValue = InInstance.GetValue().Get<FVector2D>();
-		InputValue.X *= OptionComp->GetMouseXSpeed() * GetWorld()->GetDeltaSeconds();
-		InputValue.Y *= OptionComp->GetMouseYSpeed() * GetWorld()->GetDeltaSeconds();
-		AddControllerYawInput(InputValue.X);
-		AddControllerPitchInput(-InputValue.Y);
-	}
+	if (!Controller)return;
+
+	FVector2D InputValue = Value.Get<FVector2D>();
+	InputValue.X *= OptionComp->GetMouseXSpeed() * GetWorld()->GetDeltaSeconds();
+	InputValue.Y *= OptionComp->GetMouseYSpeed() * GetWorld()->GetDeltaSeconds();
+	AddControllerYawInput(InputValue.X);
+	AddControllerPitchInput(-InputValue.Y);
 }
 
 void ACPlayer::OnInteract(const FInputActionInstance& InInstance)

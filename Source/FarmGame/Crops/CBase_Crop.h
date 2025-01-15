@@ -81,7 +81,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	//virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+
 public:	
 	// Inherited via ICInterface_Interactable
 	bool IsInteractable() override;

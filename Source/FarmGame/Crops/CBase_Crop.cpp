@@ -61,13 +61,6 @@ void ACBase_Crop::BeginPlay()
 {
 	Super::BeginPlay();
 }
-
-void ACBase_Crop::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-
-	
-}
 	
 
 bool ACBase_Crop::IsInteractable()

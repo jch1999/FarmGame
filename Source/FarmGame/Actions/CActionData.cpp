@@ -13,7 +13,10 @@ void UCActionData::BeginPlay(ACharacter* InOwnerCharacter)
 	{
 		FTransform TM;
 		Attachment = InOwnerCharacter->GetWorld()->SpawnActorDeferred<ACAttachment>(AttachmentClass, TM, InOwnerCharacter, nullptr);
+
+#if WITH_EDITOR
 		Attachment->SetActorLabel(MakeLabel(InOwnerCharacter, "Attachment"));
+#endif
 		Attachment->FinishSpawning(TM);
 	}
 
@@ -21,7 +24,10 @@ void UCActionData::BeginPlay(ACharacter* InOwnerCharacter)
 	{
 		FTransform TM;
 		Equipment = InOwnerCharacter->GetWorld()->SpawnActorDeferred<ACEquipment>(EquipmentClass, TM, InOwnerCharacter, nullptr);
+
+#if WITH_EDITOR
 		Equipment->SetActorLabel(MakeLabel(InOwnerCharacter, "Equipment"));
+#endif
 		Equipment->SetData(EquipmentData);
 		Equipment->FinishSpawning(TM);
 
@@ -36,7 +42,10 @@ void UCActionData::BeginPlay(ACharacter* InOwnerCharacter)
 	{
 		FTransform TM;
 		DoAction = InOwnerCharacter->GetWorld()->SpawnActorDeferred<ACDoAction>(DoActionClass, TM, InOwnerCharacter, nullptr);
+
+#if WITH_EDITOR
 		DoAction->SetActorLabel(MakeLabel(InOwnerCharacter, "DoAction"));
+#endif
 		DoAction->SetDatas(DoActionDatas);
 		DoAction->FinishSpawning(TM);
 
@@ -50,7 +59,10 @@ void UCActionData::BeginPlay(ACharacter* InOwnerCharacter)
 FString UCActionData::MakeLabel(ACharacter* InOwnerCharacter, FString InMiddleName)
 {
 	FString Label;
+
+#if WITH_EDITOR
 	Label.Append(InOwnerCharacter->GetActorLabel());
+#endif
 	Label.Append("_");
 	Label.Append(InMiddleName);
 	Label.Append(GetName().Replace(TEXT("DA"), TEXT("")));

@@ -48,8 +48,8 @@ protected:
 	void SetType(EInteractObjectType InNewType) override;
 
 protected:
-	void Move(const FInputActionInstance& InInstance);
-	void Look(const FInputActionInstance& InInstance);
+	void Move(const FInputActionValue& Value);
+	void Look(const FInputActionValue& Value);
 	void OnInteract(const FInputActionInstance& InInstance);
 
 private:
