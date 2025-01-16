@@ -24,12 +24,24 @@ protected:
 
 public:	
 	// Inherited via ICInterface_Interactable
-	bool IsInteractable() override;
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
+	FORCEINLINE bool IsInteractable() override { return bInteractable; }
+
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	void SetInteractable() override;
+
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	void SetUnInteractable() override;
-	EInteractObjectType GetType() override;
+
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	void SetType(EInteractObjectType InNewType) override;
+
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
+	FORCEINLINE EInteractObjectType GetType() override { return InteractType; }
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "InteracteInterface")
 	void Interact() override;
+	virtual void Interact_Implementation() override;
 
 	// Crop
 	UFUNCTION(BlueprintCallable)

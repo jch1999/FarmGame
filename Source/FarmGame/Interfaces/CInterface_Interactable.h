@@ -8,7 +8,7 @@
 UENUM(BlueprintType)
 enum class EInteractObjectType :uint8
 {
-	None, Player, Crop, Marchandise, FarmField, Max
+	None, Player, Crop, Marchandise, FarmField, Item, Max
 };
 
 UINTERFACE(MinimalAPI)
@@ -22,15 +22,25 @@ class FARMGAME_API ICInterface_Interactable
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintCallable, Category = "InteractInterface")
 	virtual bool IsInteractable() = 0;
+
+	UFUNCTION(BlueprintCallable, Category = "InteractInterface")
 	virtual void SetInteractable() = 0;
+
+	UFUNCTION(BlueprintCallable, Category = "InteractInterface")
 	virtual void SetUnInteractable() = 0;
+
+	UFUNCTION(BlueprintCallable, Category = "InteractInterface")
 	virtual EInteractObjectType GetType() = 0;
+
+	UFUNCTION(BlueprintCallable, Category = "InteractInterface")
 	virtual void SetType(EInteractObjectType InNewType) = 0;
 
-	virtual void Interact() = 0;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "InteractInterface")
+	void Interact();
 
 protected:
 	bool bInteractable;
-	EInteractObjectType Type;
+	EInteractObjectType InteractType;
 };

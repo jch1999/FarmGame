@@ -58,7 +58,6 @@ ACPlayer::ACPlayer()
 
 	// Interactable
 	SetType(EInteractObjectType::Player);
-	SetInteractable();
 }
 
 void ACPlayer::BeginPlay()
@@ -77,6 +76,7 @@ void ACPlayer::BeginPlay()
 	}
 
 	ItemContainer.SetNum(ItemContainerSize);
+	SetInteractable();
 }
 
 void ACPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -132,11 +132,6 @@ void ACPlayer::OnInteract(const FInputActionInstance& InInstance)
 }
 
 // override from ICInterface_Interactable
-bool ACPlayer::IsInteractable()
-{
-	return bInteractable;
-}
-
 void ACPlayer::SetInteractable()
 {
 	bInteractable = true;
@@ -147,7 +142,7 @@ void ACPlayer::SetUnInteractable()
 	bInteractable = false;
 }
 
-void ACPlayer::Interact()
+void ACPlayer::Interact_Implementation()
 {
 	ICInterface_Interactable* InteractActor=nullptr;
 	if (Trace(InteractActor))
@@ -160,14 +155,9 @@ void ACPlayer::Interact()
 	}
 }
 
-EInteractObjectType ACPlayer::GetType()
-{
-	return Type;
-}
-
 void ACPlayer::SetType(EInteractObjectType InNewType)
 {
-	Type = InNewType;
+	InteractType = InNewType;
 }
 
 bool ACPlayer::Trace(const ICInterface_Interactable* OutInteract)

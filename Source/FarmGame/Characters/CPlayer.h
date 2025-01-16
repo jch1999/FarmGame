@@ -39,13 +39,23 @@ public:
 
 protected:
 	// Inherited via ICInterface_Interactable
-	bool IsInteractable() override;
-	void SetInteractable() override;
-	void SetUnInteractable() override;
-	void Interact() override;
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
+	FORCEINLINE bool IsInteractable() override { return bInteractable; }
 
-	EInteractObjectType GetType() override;
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
+	void SetInteractable() override;
+
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
+	void SetUnInteractable() override;
+
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	void SetType(EInteractObjectType InNewType) override;
+
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
+	FORCEINLINE EInteractObjectType GetType() override { return InteractType; }
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "InteracteInterface")
+	void Interact() override;
 
 protected:
 	void Move(const FInputActionValue& Value);

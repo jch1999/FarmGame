@@ -55,17 +55,15 @@ ACBase_Crop::ACBase_Crop()
 		HealthComp->SetMaxHealth(GetCurrentCropData().Max_Health, true);
 		SetAutoGrowTimer(UpdateTime, true, UpdateTime);
 	}
+
+	SetType(EInteractObjectType::Crop);
 }
 
 void ACBase_Crop::BeginPlay()
 {
 	Super::BeginPlay();
-}
-	
 
-bool ACBase_Crop::IsInteractable()
-{
-	return false;
+	SetInteractable();
 }
 
 void ACBase_Crop::SetInteractable()
@@ -80,12 +78,12 @@ void ACBase_Crop::SetUnInteractable()
 
 void ACBase_Crop::SetType(EInteractObjectType InNewType)
 {
-	Type = InNewType;
+	InteractType = InNewType;
 }
 
-void ACBase_Crop::Interact()
+void ACBase_Crop::Interact_Implementation()
 {
-	CheckFalse(bInteractable);
+	/*CheckFalse(bInteractable);
 
 	ACGameModeBase* GameMode = Cast<ACGameModeBase>(GetWorld()->GetAuthGameMode());
 	CheckNull(GameMode);
@@ -96,7 +94,7 @@ void ACBase_Crop::Interact()
 	CheckFalse(CropWidget->IsAvailable());
 
 	CropWidget->SetCrop(this);
-	CropWidget->AddToViewport();
+	CropWidget->AddToViewport();*/
 
 	SetUnInteractable();
 }

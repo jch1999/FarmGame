@@ -22,6 +22,8 @@ ACFarmField::ACFarmField()
 	{
 		MeshComp->SetStaticMesh(MeshAsset);
 	}
+
+	SetType(EInteractObjectType::FarmField);
 }
 
 void ACFarmField::BeginPlay()
@@ -48,11 +50,6 @@ void ACFarmField::BeginPlay()
 	FieldMaterial = UMaterialInstanceDynamic::Create(MeshComp->GetMaterial(0), nullptr);
 }
 
-bool ACFarmField::IsInteractable()
-{
-	return bInteractable;
-}
-
 void ACFarmField::SetInteractable()
 {
 	bInteractable = true;
@@ -63,22 +60,15 @@ void ACFarmField::SetUnInteractable()
 	bInteractable = false;
 }
 
-EInteractObjectType ACFarmField::GetType()
-{
-	return Type;
-}
 
 void ACFarmField::SetType(EInteractObjectType InNewType)
 {
-	Type = InNewType;
+	InteractType = InNewType;
 }
 
-void ACFarmField::Interact()
+void ACFarmField::Interact_Implementation()
 {
-	ACGameModeBase* GameMode = Cast<ACGameModeBase>(GetWorld()->GetAuthGameMode());
-	CheckNull(GameMode);
-
-	UCFarmFieldWidget* FarmFieldWidget = GameMode->GetFarmFieldWidget();
+	/*UCFarmFieldWidget* FarmFieldWidget = GameMode->GetFarmFieldWidget();
 	CheckNull(FarmFieldWidget);
 
 	CheckFalse(FarmFieldWidget->IsAvailable());
@@ -86,7 +76,7 @@ void ACFarmField::Interact()
 	FarmFieldWidget->SetFarmField(this);
 	FarmFieldWidget->AddToViewport();
 
-	SetUnInteractable();
+	SetUnInteractable();*/
 }
 
 bool ACFarmField::PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, const FTransform& InTM)
