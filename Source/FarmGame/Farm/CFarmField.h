@@ -8,7 +8,9 @@
 class UCMoistureComponent;
 class UCNutritionComponent;
 class UCCultivationComponent;
+class UWidgetComponent;
 class UStaticMeshComponent;
+class UCFarmFieldWidget;
 class ACBase_Crop;
 
 UCLASS()
@@ -25,7 +27,7 @@ protected:
 public:	
 	// Inherited via ICInterface_Interactable
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
-	FORCEINLINE bool IsInteractable() override { return bInteractable; }
+	bool IsInteractable() override { return bInteractable; }
 
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	void SetInteractable() override;
@@ -37,11 +39,9 @@ public:
 	void SetType(EInteractObjectType InNewType) override;
 
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
-	FORCEINLINE EInteractObjectType GetType() override { return InteractType; }
+	EInteractObjectType GetType() override { return InteractType; }
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "InteracteInterface")
-	void Interact() override;
-	virtual void Interact_Implementation() override;
+	virtual void Interact(AActor* OtherActor) override;
 
 	// Crop
 	UFUNCTION(BlueprintCallable)
@@ -69,6 +69,16 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	UCCultivationComponent* CultivationComp;
+
+	UPROPERTY(VisibleAnywhere, Category = "Component")
+	UWidgetComponent* InfoWidgetComp;
+
+	// Widget
+	UPROPERTY(VisibleAnywhere, Category = "Widget")
+	TSubclassOf<UCFarmFieldWidget> WidgetClass;
+
+	UPROPERTY(VisibleAnywhere, Category = "Widget")
+	UCFarmFieldWidget* InfoWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Crop")
 	ACBase_Crop* Crop;

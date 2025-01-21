@@ -81,7 +81,7 @@ void ACBase_Crop::SetType(EInteractObjectType InNewType)
 	InteractType = InNewType;
 }
 
-void ACBase_Crop::Interact_Implementation()
+void ACBase_Crop::Interact(AActor* OtherActor)
 {
 	/*CheckFalse(bInteractable);
 

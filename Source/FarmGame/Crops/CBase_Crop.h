@@ -85,8 +85,9 @@ protected:
 
 public:	
 	// Inherited via ICInterface_Interactable
+	// Inherited via ICInterface_Interactable
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
-	FORCEINLINE bool IsInteractable() override { return bInteractable; }
+	bool IsInteractable() override { return bInteractable; }
 
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	void SetInteractable() override;
@@ -98,10 +99,9 @@ public:
 	void SetType(EInteractObjectType InNewType) override;
 
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
-	FORCEINLINE EInteractObjectType GetType() override { return InteractType; }
+	EInteractObjectType GetType() override { return InteractType; }
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "InteracteInterface")
-	void Interact() override;
+	virtual void Interact(AActor* OtherActor) override;
 
 	// CropData
 	UFUNCTION(BlueprintCallable)

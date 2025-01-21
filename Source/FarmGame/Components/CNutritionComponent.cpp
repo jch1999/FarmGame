@@ -31,20 +31,22 @@ void UCNutritionComponent::SetOverState()
 
 void UCNutritionComponent::AddNutrition(float Amount)
 {
+	float PrevValue = CurrentNutrition;
 	CurrentNutrition += Amount;
 	CurrentNutrition =FMath::Clamp(CurrentNutrition, 0, NutritionSafeRange.Y);
 
-	OnNutritionChanged.Broadcast();
+	OnNutritionChanged.Broadcast(PrevValue,CurrentNutrition, GetMaxNutrition());
 
 	CheckState();
 }
 
 void UCNutritionComponent::ReduceNutrition(float Amount)
 {
+	float PrevValue = CurrentNutrition;
 	CurrentNutrition -= Amount;
 	CurrentNutrition = FMath::Clamp(CurrentNutrition, 0, NutritionSafeRange.Y);
 
-	OnNutritionChanged.Broadcast();
+	OnNutritionChanged.Broadcast(PrevValue, CurrentNutrition, GetMaxNutrition());
 
 	CheckState();
 }
@@ -52,8 +54,6 @@ void UCNutritionComponent::ReduceNutrition(float Amount)
 void UCNutritionComponent::SetSafeRange(FVector2D NewRange)
 {
 	NutritionSafeRange = NewRange;
-
-	OnNutritionChanged.Broadcast();
 }
 
 void UCNutritionComponent::SetAutoReduceAmount(float InReduceAmount)

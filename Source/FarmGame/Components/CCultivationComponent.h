@@ -4,7 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "CCultivationComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCultivationChanged);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FCultivationChanged, float, OldValue, float, NewValue,float, MaxValue);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FARMGAME_API UCCultivationComponent : public UActorComponent
@@ -24,9 +24,6 @@ public:
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE float GetMaxCultivation() { return MaxCultivation; }
 	
-	UFUNCTION(BlueprintPure)
-	FORCEINLINE float GetNowRate() { return CurrentCultivation / MaxCultivation; }
-	
 	void AddCultivation(float InAmount);
 	void ReduceCultivation(float InAmount);
 	void SetCultivationRange(FVector2D InNewRange);
@@ -42,13 +39,13 @@ public:
 	FCultivationChanged OnCultivationChanged;
 
 protected:
-	UPROPERTY(EditAnywhere, Category = "Moisture")
+	UPROPERTY(EditAnywhere, Category = "Cultivation")
 	float CurrentCultivation;
 
-	UPROPERTY(EditAnywhere, Category = "Moisture")
+	UPROPERTY(EditAnywhere, Category = "Cultivation")
 	float AutoReduceAmount;
 
-	UPROPERTY(EditAnywhere, Category = "Moisture")
+	UPROPERTY(EditAnywhere, Category = "Cultivation")
 	FVector2D CultivationRange;
 
 private:

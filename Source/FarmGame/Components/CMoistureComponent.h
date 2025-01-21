@@ -14,7 +14,8 @@ enum class EMoistureState :uint8
 
 // Delegate
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMoisutreStateChanged, EMoistureState, InNewState);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMoistureChanged);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FMoistureChanged, float, OldValue, float, NewValue, float, MaxValue);
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FARMGAME_API UCMoistureComponent : public UActorComponent
@@ -68,7 +69,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FMoistureChanged OnMoistureChanged;
-
+	
 protected:
 	UPROPERTY(EditAnywhere, Category="Moisture")
 	float CurrentMoisture;

@@ -22,23 +22,12 @@ class FARMGAME_API ICInterface_Interactable
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "InteractInterface")
 	virtual bool IsInteractable() = 0;
-
-	UFUNCTION(BlueprintCallable, Category = "InteractInterface")
 	virtual void SetInteractable() = 0;
-
-	UFUNCTION(BlueprintCallable, Category = "InteractInterface")
 	virtual void SetUnInteractable() = 0;
-
-	UFUNCTION(BlueprintCallable, Category = "InteractInterface")
 	virtual EInteractObjectType GetType() = 0;
-
-	UFUNCTION(BlueprintCallable, Category = "InteractInterface")
 	virtual void SetType(EInteractObjectType InNewType) = 0;
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "InteractInterface")
-	void Interact();
+	virtual void Interact(AActor* OtherActor) = 0;
 
 protected:
 	bool bInteractable;

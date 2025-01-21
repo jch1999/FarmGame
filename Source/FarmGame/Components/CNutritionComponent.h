@@ -12,7 +12,7 @@ enum class ENutritionState :uint8
 
 // Delegate
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FNutritionStateChanged, ENutritionState, InNewState);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FNutritionChanged);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FNutritionChanged, float, OldValue, float, NewValue, float, MaxValue);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FARMGAME_API UCNutritionComponent : public UActorComponent

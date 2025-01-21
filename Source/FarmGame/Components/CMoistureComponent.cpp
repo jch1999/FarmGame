@@ -14,20 +14,22 @@ void UCMoistureComponent::BeginPlay()
 
 void UCMoistureComponent::AddMoisture(float Amount)
 {
+	float PrevValue = CurrentMoisture;
 	CurrentMoisture += Amount;
 	CurrentMoisture = FMath::Clamp(CurrentMoisture, 0, CurrentMoisture > MoistureSafeRange.Y ? CurrentMoisture : MoistureSafeRange.Y);
 
-	OnMoistureChanged.Broadcast();
+	OnMoistureChanged.Broadcast(PrevValue, CurrentMoisture, GetMaxMoisture());
 
 	CheckState();
 }
 
 void UCMoistureComponent::ReduceMoisture(float Amount)
 {
+	float PrevValue = CurrentMoisture;
 	CurrentMoisture -= Amount;
 	CurrentMoisture = FMath::Clamp(CurrentMoisture, 0, CurrentMoisture > MoistureSafeRange.Y ? CurrentMoisture : MoistureSafeRange.Y);
 	
-	OnMoistureChanged.Broadcast();
+	OnMoistureChanged.Broadcast(PrevValue, CurrentMoisture, GetMaxMoisture());
 
 	CheckState();
 }
@@ -35,8 +37,8 @@ void UCMoistureComponent::ReduceMoisture(float Amount)
 void UCMoistureComponent::SetSafeRange(FVector2D NewRange)
 {
 	MoistureSafeRange = NewRange;
-
-	OnMoistureChanged.Broadcast();
+	
+	CheckState();
 }
 
 void UCMoistureComponent::SetAutoReduceAmount(float InReduceAmount)

@@ -5,6 +5,7 @@
 #include "CFarmFieldWidget.generated.h"
 
 class ACFarmField;
+class UProgressBar;
 
 UCLASS()
 class FARMGAME_API UCFarmFieldWidget : public UUserWidget
@@ -12,17 +13,32 @@ class FARMGAME_API UCFarmFieldWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintImplementableEvent)
-	void SetFarmField(const ACFarmField* const InFarmField);
+	UFUNCTION(BlueprintNativeEvent)
+	void SetFarmField(ACFarmField* InFarmField);
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintNativeEvent)
 	void ResetFarmField();
 
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE  bool IsAvailable() { return FarmField == nullptr; }
+	UFUNCTION(BlueprintNativeEvent)
+	void UpdateCultivation(float OldValue, float NewValue, float MaxValue);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void UpdateNutrition(float OldValue, float NewValue, float MaxValue);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void UpdateMoisture(float OldValue, float NewValue, float MaxValue);
 
 protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category="FarmField")
 	ACFarmField* FarmField;
-	
+
+	// Info Progress Bar
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* CultivationBar;
+
+	UPROPERTY(meta=(BindWidget))
+	UProgressBar* NutritionBar;
+
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* MositureBar;
 };

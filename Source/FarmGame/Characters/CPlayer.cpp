@@ -18,6 +18,7 @@ ACPlayer::ACPlayer()
 	CHelpers::GetAsset(&MoveAction, "/Game/Input/IA_PlayerMove");
 	CHelpers::GetAsset(&LookAction, "/Game/Input/IA_PlayerRotate");
 	CHelpers::GetAsset(&InteractAction, "/Game/Input/IA_PlayerInteract");
+	CHelpers::GetAsset(&ScrollAction, "/Game/Input/IA_PlayerScroll");
 
 	// SpringArm Comp
 	CHelpers::CreateSceneComponent(this, &SpringArmComp, "SpringArmComp", GetMesh());
@@ -58,6 +59,8 @@ ACPlayer::ACPlayer()
 
 	// Interactable
 	SetType(EInteractObjectType::Player);
+
+	InteractIndex = 0;
 }
 
 void ACPlayer::BeginPlay()
@@ -89,10 +92,35 @@ void ACPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACPlayer::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACPlayer::Look);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ACPlayer::OnInteract);
+		EnhancedInputComponent->BindAction(ScrollAction, ETriggerEvent::Triggered, this, &ACPlayer::Scroll);
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("'%s' Failed to find an Enhanced Input component!"), *GetNameSafe(this));
+	}
+}
+
+void ACPlayer::AddInteractableObject(UObject* InObj)
+{
+	if (InObj && InObj->Implements<UCInterface_Interactable>())
+	{
+		TScriptInterface<ICInterface_Interactable> InterfaceObj;
+		InterfaceObj.SetObject(InObj);
+		InterfaceObj.SetInterface(Cast<ICInterface_Interactable>(InObj));
+
+		InteractableObjects.Add(InterfaceObj);
+	}
+}
+
+void ACPlayer::RemoveInteractableObject(UObject* InObj)
+{
+	if (InObj && InObj->Implements<UCInterface_Interactable>())
+	{
+		TScriptInterface<ICInterface_Interactable> InterfaceObj;
+		InterfaceObj.SetObject(InObj);
+		InterfaceObj.SetInterface(Cast<ICInterface_Interactable>(InObj));
+
+		InteractableObjects.Remove(InterfaceObj);
 	}
 }
 
@@ -127,7 +155,29 @@ void ACPlayer::OnInteract(const FInputActionInstance& InInstance)
 
 	if (bValue)
 	{
-		Interact();
+		Interact(nullptr);
+	}
+}
+
+void ACPlayer::Scroll(const FInputActionValue& Value)
+{
+	float inputValue = Value.Get<float>();
+
+	if (InteractableObjects.Num() > 0)
+	{
+		if (inputValue > 0)
+		{
+			++InteractIndex;
+		}
+		else if (inputValue < 0)
+		{
+			--InteractIndex;
+		}
+		InteractIndex %= InteractableObjects.Num();
+	}
+	else
+	{
+		InteractIndex = 0;
 	}
 }
 
@@ -142,9 +192,11 @@ void ACPlayer::SetUnInteractable()
 	bInteractable = false;
 }
 
-void ACPlayer::Interact_Implementation()
+void ACPlayer::Interact(AActor* OtherActor)
 {
-	ICInterface_Interactable* InteractActor=nullptr;
+	if (InteractableObjects.Num() == 0) return;
+
+	/*ICInterface_Interactable* InteractActor=nullptr;
 	if (Trace(InteractActor))
 	{
 		APlayerController* PC = GetController<APlayerController>();
@@ -152,7 +204,8 @@ void ACPlayer::Interact_Implementation()
 
 		PC->bShowMouseCursor = true;
 		PC->SetInputMode(FInputModeGameAndUI());
-	}
+	}*/
+	InteractableObjects[InteractIndex]->Interact(this);
 }
 
 void ACPlayer::SetType(EInteractObjectType InNewType)
@@ -190,7 +243,7 @@ bool ACPlayer::Trace(const ICInterface_Interactable* OutInteract)
 			ICInterface_Interactable* OtherActor = Cast<ICInterface_Interactable>(Hit.GetActor());
 			if (OtherActor && OtherActor->IsInteractable())
 			{
-				OtherActor->Interact();
+				OtherActor->Interact(this);
 				OutInteract = OtherActor;
 				return true;
 			}

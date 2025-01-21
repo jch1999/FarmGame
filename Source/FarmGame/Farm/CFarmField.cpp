@@ -3,6 +3,7 @@
 #include "Components/CMoistureComponent.h"
 #include "Components/CNutritionComponent.h"
 #include "Components/CCultivationComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Crops/CBase_Crop.h"
 #include "CGameModeBase.h"
 #include "Materials/MaterialInstanceConstant.h"
@@ -15,6 +16,20 @@ ACFarmField::ACFarmField()
 	CHelpers::CreateActorComponent(this,&MoistureComp, "MoistureComp");
 	CHelpers::CreateActorComponent(this, &NutritionComp, "NutritionComp");
 	CHelpers::CreateActorComponent(this, &CultivationComp, "CultivationComp");
+	CHelpers::CreateSceneComponent(this, &InfoWidgetComp, "InfoWidgetComp", MeshComp);
+
+	if (InfoWidgetComp)
+	{
+		InfoWidgetComp->SetRelativeLocation(FVector(0, 0, 130.0f));
+		InfoWidgetComp->SetWidgetSpace(EWidgetSpace::World);
+		InfoWidgetComp->SetDrawSize(FVector2D(200.0f, 60.0f));
+
+		CHelpers::GetClass<UCFarmFieldWidget>(&WidgetClass, "/Game/UI/WB_FarmFieldWidget");
+		if (WidgetClass)
+		{
+			InfoWidgetComp->SetWidgetClass(WidgetClass);
+		}
+	}
 
 	UStaticMesh* MeshAsset;
 	CHelpers::GetAsset(&MeshAsset, "/Game/Farm/Mesh/SM_FarmField");
@@ -23,6 +38,7 @@ ACFarmField::ACFarmField()
 		MeshComp->SetStaticMesh(MeshAsset);
 	}
 
+	SetInteractable();
 	SetType(EInteractObjectType::FarmField);
 }
 
@@ -44,6 +60,19 @@ void ACFarmField::BeginPlay()
 	CultivationComp->SetAutoReduceAmount(0.5f);
 	CultivationComp->SetAutoReduceTimer(1.0f, true, 1.0f);
 
+	// Widget
+	UUserWidget* Widget = InfoWidgetComp->GetWidget();
+	if (Widget)
+	{
+		InfoWidget = Cast<UCFarmFieldWidget>(Widget);
+		if (InfoWidget)
+		{
+			InfoWidget->SetFarmField(this);
+			InfoWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+
+	// Interact
 	SetInteractable();
 
 	// Set Dynamic Material
@@ -66,7 +95,7 @@ void ACFarmField::SetType(EInteractObjectType InNewType)
 	InteractType = InNewType;
 }
 
-void ACFarmField::Interact_Implementation()
+void ACFarmField::Interact(AActor* OtherActor)
 {
 	/*UCFarmFieldWidget* FarmFieldWidget = GameMode->GetFarmFieldWidget();
 	CheckNull(FarmFieldWidget);
@@ -75,8 +104,14 @@ void ACFarmField::Interact_Implementation()
 
 	FarmFieldWidget->SetFarmField(this);
 	FarmFieldWidget->AddToViewport();
+	*/
+	if (InfoWidget)
+	{
+		InfoWidgetComp->SetWorldRotation((OtherActor->GetActorForwardVector() * -1.0f).Rotation());
+		InfoWidget->SetVisibility(ESlateVisibility::Visible);
+	}
 
-	SetUnInteractable();*/
+	SetUnInteractable();
 }
 
 bool ACFarmField::PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, const FTransform& InTM)

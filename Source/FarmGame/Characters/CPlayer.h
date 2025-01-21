@@ -31,6 +31,12 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 public:
+	UFUNCTION(BlueprintCallable, Category = "Interaction", meta = (DisplayName = "Add Interactable Object"))
+	void AddInteractableObject(UObject* InObj);
+
+	UFUNCTION(BlueprintCallable, Category = "Interaction", meta = (DisplayName = "Remove Interactable Object"))
+	void RemoveInteractableObject(UObject* InObj);
+
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE TScriptInterface<ICItemInterface> const GetCurrentSlotItem() const { return ItemContainer[ItemIndex]; }
 
@@ -40,27 +46,27 @@ public:
 protected:
 	// Inherited via ICInterface_Interactable
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
-	FORCEINLINE bool IsInteractable() override { return bInteractable; }
+	virtual bool IsInteractable() override { return bInteractable; }
 
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
-	void SetInteractable() override;
+	virtual void SetInteractable() override;
 
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
-	void SetUnInteractable() override;
+	virtual void SetUnInteractable() override;
 
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
-	void SetType(EInteractObjectType InNewType) override;
+	virtual void SetType(EInteractObjectType InNewType) override;
 
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
-	FORCEINLINE EInteractObjectType GetType() override { return InteractType; }
+	EInteractObjectType GetType() override { return InteractType; }
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "InteracteInterface")
-	void Interact() override;
+	virtual void Interact(AActor* OtherActor) override;
 
 protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void OnInteract(const FInputActionInstance& InInstance);
+	void Scroll(const FInputActionValue& Value);
 
 private:
 	bool Trace(const ICInterface_Interactable* OutInteract);
@@ -78,6 +84,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Input")
 	UInputAction* InteractAction;
 
+	UPROPERTY(VisibleAnywhere, Category = "Input")
+	UInputAction* ScrollAction;
+
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	USpringArmComponent* SpringArmComp;
 
@@ -92,6 +101,12 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UCOptionComponent* OptionComp;
+
+	UPROPERTY(EditAnywhere, Category="Interact")
+	TArray<TScriptInterface<ICInterface_Interactable>> InteractableObjects;
+
+	UPROPERTY(EditAnywhere, Category = "Interact")
+	int32 InteractIndex;
 
 	UPROPERTY(VisibleAnywhere, Category="Item")
 	TArray<TScriptInterface<ICItemInterface>> ItemContainer;
