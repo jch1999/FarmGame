@@ -8,6 +8,7 @@ ACGameModeBase::ACGameModeBase()
 {
 	CHelpers::GetClass(&DefaultPawnClass, "/Game/Player/BP_CPlayer");
 	CHelpers::GetClass(&PlayerControllerClass, "/Game/Controller/BP_CPlayerController");
+	//CHelpers::GetClass(&)
 }
 
 void ACGameModeBase::BeginPlay()

@@ -26,6 +26,7 @@ public:
 	virtual void SetInteractable() = 0;
 	virtual void SetUnInteractable() = 0;
 	virtual EInteractObjectType GetType() = 0;
+	virtual FName GetInteractName() = 0;
 	virtual void SetType(EInteractObjectType InNewType) = 0;
 	virtual void Interact(AActor* OtherActor) = 0;
 

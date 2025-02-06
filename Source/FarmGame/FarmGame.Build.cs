@@ -7,7 +7,9 @@ public class FarmGame : ModuleRules
 	public FarmGame(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-
+		PublicIncludePaths.AddRange(new string[] {
+    		"FarmGame/Public"
+		});
         PublicIncludePaths.Add(ModuleDirectory);
 
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG" });
