@@ -129,13 +129,15 @@ void ACPlayer::AddInteractableObject(AActor* InActor)
 					HudWidget->AddInteractRow(InActor);
 				}
 			}
-			//UE_LOG(LogTemp, Warning, TEXT("Added Interactable Object: %s"), *InActor->GetName());
+			UE_LOG(LogTemp, Warning, TEXT("Added Interactable Object: %s"), *(InActor->GetActorLabel()));
 		}
 	}
 }
 
 void ACPlayer::RemoveInteractableObject(AActor* InActor)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Before Remove: InteractableObjects.Num() = %d"), InteractableObjects.Num());
+
 	if (InActor && InActor->Implements<UCInterface_Interactable>())
 	{
 		/*TScriptInterface<ICInterface_Interactable> InterfaceObj;
@@ -165,8 +167,10 @@ void ACPlayer::RemoveInteractableObject(AActor* InActor)
 				}
 			}
 		}
-		UE_LOG(LogTemp, Warning, TEXT("Removed Interactable Object: %s"), *GetNameSafe(InActor));
+		//UE_LOG(LogTemp, Warning, TEXT("Removed Interactable Object: %s"), *GetNameSafe(InActor)); 
+		UE_LOG(LogTemp, Warning, TEXT("Removed Interactable Object: %s"), *InActor->GetActorLabel());
 	}
+	UE_LOG(LogTemp, Warning, TEXT("After Remove: InteractableObjects.Num() = %d, InteractIndex = %d"), InteractableObjects.Num(), InteractIndex);
 }
 
 bool ACPlayer::SetDetectInterval(float InTime)
@@ -235,16 +239,17 @@ void ACPlayer::Scroll(const FInputActionValue& Value)
 	}
 	LastScrollTime = CurrentTime;
 
-	float inputValue = Value.Get<float>();
+	float InputValue = Value.Get<float>();
+	if (InputValue == 0.0f)return;
 
 	if (InteractableObjects.Num() > 0)
 	{
 		int32 PreviousIndex = InteractIndex;
-		if (inputValue > 0)
+		if (InputValue > 0)
 		{
 			InteractIndex = (InteractIndex + 1) % InteractableObjects.Num();
 		}
-		else if (inputValue < 0)
+		else if (InputValue < 0)
 		{
 			InteractIndex = (InteractIndex - 1 + InteractableObjects.Num()) % InteractableObjects.Num();
 		}
@@ -270,6 +275,7 @@ void ACPlayer::Scroll(const FInputActionValue& Value)
 	{
 		InteractIndex = 0;
 	}
+	UE_LOG(LogTemp, Warning, TEXT("Scroll After: InteractIndex = %d"), InteractIndex);
 }
 
 // override from ICInterface_Interactable
@@ -303,6 +309,7 @@ void ACPlayer::Interact(AActor* OtherActor)
 
 void ACPlayer::DetectInteractableObjects()
 {
+	// Find Objects away from detect range
 	TArray<AActor*> ToRemoveActors;
 	for (auto Obj : InteractableObjects)
 	{
@@ -312,6 +319,7 @@ void ACPlayer::DetectInteractableObjects()
 		}
 	}
 	
+	// Delete Objects
 	for (auto RemoveActor : ToRemoveActors)
 	{
 		RemoveInteractableObject(RemoveActor);
@@ -359,6 +367,8 @@ bool ACPlayer::Trace(ECollisionChannel TraceChannel)
 
 	if (Hits.Num() > 0)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Trace Result: Hits.Num() = %d"), Hits.Num());
+
 		for (FHitResult& Hit : Hits)
 		{
 			if (Hit.GetActor())

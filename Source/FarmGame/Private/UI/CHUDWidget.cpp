@@ -18,6 +18,16 @@ bool UCHUDWidget::AddInteractRow(AActor* InActor)
 	UWorld* World = GetWorld();
 	if (!World) return false;
 
+	// 이미 존재하는 경우 추가하지 않음
+	for (UCInteractRow* ExistingRow : InteractRows)
+	{
+		if (ExistingRow->GetTarget() == InActor)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("AddInteractRow: Target already exists -> %s"), *InActor->GetName());
+			return false;
+		}
+	}
+
 	UCInteractRow* InteractRow=CreateWidget<UCInteractRow>(World, InteractRowClass);
 	if (!InteractRow) return false;
 
@@ -47,22 +57,35 @@ bool UCHUDWidget::RemoveInteractRow(AActor* InActor)
 			return false;  // 삭제 조건 충족하지 않으면 유지
 		});
 	
+	// 인덱스 보정
+	int32 AfterLen = InteractRows.Num();
+	if (InteractIndex >= AfterLen)
+	{
+		InteractIndex = FMath::Max(0, AfterLen - 1);
+	}
+
 	return BeforeLen != InteractRows.Num();
 }
 
 void UCHUDWidget::SetInteractIndex(int32 InIdx)
 {
-	if (InteractRows.Num() == 0)return;
+	UE_LOG(LogTemp, Warning, TEXT("SetInteractIndex Called: InIdx = %d, InteractIdx Before = %d"), InIdx, InteractIdx);
+	if (InteractRows.Num() == 0) 
+	{
+		InteractIdx = 0;
+		return;
+	}
+
 	if (InIdx<0 || InIdx>=InteractRows.Num()) return;
 
-	if (InteractIdx>=0 && InteractIdx < InteractRows.Num())
+	if (InteractIdx < InteractRows.Num())
 	{
 		InteractRows[InteractIdx]->DisableTextOutline();
 	}
 
 	int32 PreviousIndex = InteractIdx;
-	InteractIdx = InIdx;
 	InteractRows[InIdx]->EnableTextOutline();
+	InteractIdx = InIdx;
 
 	UE_LOG(LogTemp, Warning, TEXT("SetInteractIndex PrevIndex: %d -> NewIndex: %d, NowSize: %d"), PreviousIndex, InteractIdx, InteractRows.Num());
 
