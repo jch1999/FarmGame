@@ -165,7 +165,7 @@ void ACPlayer::RemoveInteractableObject(AActor* InActor)
 				}
 			}
 		}
-		//UE_LOG(LogTemp, Warning, TEXT("Removed Interactable Object: %s"), *GetNameSafe(InActor));
+		UE_LOG(LogTemp, Warning, TEXT("Removed Interactable Object: %s"), *GetNameSafe(InActor));
 	}
 }
 
@@ -304,11 +304,11 @@ void ACPlayer::Interact(AActor* OtherActor)
 void ACPlayer::DetectInteractableObjects()
 {
 	TArray<AActor*> ToRemoveActors;
-	for (auto Interact : InteractableObjects)
+	for (auto Obj : InteractableObjects)
 	{
-		if (GetDistanceTo(Interact) > TraceRange)
+		if (GetDistanceTo(Obj) > TraceRange)
 		{
-			ToRemoveActors.Add(Interact);
+			ToRemoveActors.Add(Obj);
 		}
 	}
 	
@@ -333,7 +333,7 @@ void ACPlayer::SetType(EInteractObjectType InNewType)
 
 bool ACPlayer::Trace(ECollisionChannel TraceChannel)
 {
-	UE_LOG(LogTemp, Warning, TEXT("TraceChannel: %d"), TraceChannel);
+	//UE_LOG(LogTemp, Warning, TEXT("TraceChannel: %d"), TraceChannel);
 
 	FVector Start = GetActorLocation() + CameraComp->GetRelativeLocation();
 	FVector End = Start + CameraComp->GetForwardVector() * 150.0f;
