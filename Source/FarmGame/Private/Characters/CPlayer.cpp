@@ -64,7 +64,8 @@ ACPlayer::ACPlayer()
 	SetType(EInteractObjectType::Player);
 
 	InteractIndex = 0;
-	TraceRange = 150.0f;
+	DetectRange = 150.0f;
+	RemoveRange = 250.0f;
 }
 
 void ACPlayer::BeginPlay()
@@ -187,11 +188,19 @@ bool ACPlayer::SetDetectInterval(float InTime)
 	return true;
 }
 
-bool ACPlayer::SetTraceRange(float InRange)
+bool ACPlayer::SetDetectRange(float InRange)
 {
 	if (InRange < 0.0f) return false;
 
-	TraceRange = InRange;
+	DetectRange = InRange;
+	return true;
+}
+
+bool ACPlayer::SetRemoveRange(float InRange)
+{
+	if (InRange < DetectRange) return false;
+
+	RemoveRange = InRange;
 	return true;
 }
 
@@ -244,7 +253,7 @@ void ACPlayer::Scroll(const FInputActionValue& Value)
 
 	if (InteractableObjects.Num() > 0)
 	{
-		int32 PreviousIndex = InteractIndex;
+		/*int32 PreviousIndex = InteractIndex;
 		if (InputValue > 0)
 		{
 			InteractIndex = (InteractIndex + 1) % InteractableObjects.Num();
@@ -255,7 +264,7 @@ void ACPlayer::Scroll(const FInputActionValue& Value)
 		}
 		InteractIndex = FMath::Clamp(InteractIndex, 0, InteractableObjects.Num() - 1);
 
-		UE_LOG(LogTemp, Warning, TEXT("Scroll: PrevIndex: %d -> NewIndex: %d, Now Side: %d"), PreviousIndex, InteractIndex, InteractableObjects.Num());
+		UE_LOG(LogTemp, Warning, TEXT("Scroll: PrevIndex: %d -> NewIndex: %d, Now Side: %d"), PreviousIndex, InteractIndex, InteractableObjects.Num());*/
 
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		if (PC)
@@ -266,7 +275,15 @@ void ACPlayer::Scroll(const FInputActionValue& Value)
 				UCHUDWidget* HudWidget = MyHud->GetHUD();
 				if (HudWidget)
 				{
-					HudWidget->SetInteractIndex(InteractIndex);
+					//HudWidget->SetInteractIndex(InteractIndex); 
+					if (InputValue > 0)
+					{
+						HudWidget->UpInteractIndex();
+					}
+					else if (InputValue < 0)
+					{
+						HudWidget->DownInteractIndex();
+					}
 				}
 			}
 		}
@@ -302,9 +319,24 @@ void ACPlayer::Interact(AActor* OtherActor)
 		PC->bShowMouseCursor = true;
 		PC->SetInputMode(FInputModeGameAndUI());
 	}*/
-	ICInterface_Interactable* InteractActor = Cast<ICInterface_Interactable>(InteractableObjects[InteractIndex]);
-	InteractActor->Interact(this);
-	RemoveInteractableObject(InteractableObjects[InteractIndex]);
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (PC)
+	{
+		ACHUD* MyHud = Cast<ACHUD>(PC->GetHUD());
+		if (MyHud)
+		{
+			UCHUDWidget* HudWidget = MyHud->GetHUD();
+			CheckNull(HudWidget);
+
+			AActor* InteractTarget = HudWidget->GetInteractTarget();
+			CheckNull(InteractTarget);
+
+			HudWidget->RemoveInteractRow(InteractTarget);
+			ICInterface_Interactable* InteractActor = Cast<ICInterface_Interactable>(InteractTarget);
+			InteractActor->Interact(this);
+			RemoveInteractableObject(InteractTarget);
+		}
+	}
 }
 
 void ACPlayer::DetectInteractableObjects()
@@ -313,7 +345,7 @@ void ACPlayer::DetectInteractableObjects()
 	TArray<AActor*> ToRemoveActors;
 	for (auto Obj : InteractableObjects)
 	{
-		if (GetDistanceTo(Obj) > TraceRange)
+		if (GetDistanceTo(Obj) > RemoveRange)
 		{
 			ToRemoveActors.Add(Obj);
 		}
@@ -356,7 +388,7 @@ bool ACPlayer::Trace(ECollisionChannel TraceChannel)
 		GetWorld(),
 		Start,
 		End,
-		TraceRange,
+		DetectRange,
 		UEngineTypes::ConvertToTraceType(TraceChannel),
 		false,
 		Ignores,

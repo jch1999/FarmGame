@@ -22,7 +22,11 @@ public:
 	bool AddInteractRow(AActor* InActor);
 	bool RemoveInteractRow(AActor* InActor);
 	void SetInteractIndex(int32 InIdx);
+	void UpInteractIndex();
+	void DownInteractIndex();
 	int32 GetInteractIndex();
+	AActor* GetInteractTarget();
+	void EnsureVisibleInteractRow();
 
 	// Abuot Item
 	bool AddItemNotification(FName InItemName, int32 InItemAmount, UTexture2D* InItemIcon);

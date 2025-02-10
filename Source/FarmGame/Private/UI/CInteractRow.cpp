@@ -8,7 +8,8 @@ void UCInteractRow::SetTarget(AActor* InActor)
 
 	TargetActor = InActor;
 	ICInterface_Interactable* Interact = Cast<ICInterface_Interactable>(InActor);
-	NameText->SetText(FText::FromName(Interact->GetInteractName()));
+	//NameText->SetText(FText::FromName(Interact->GetInteractName()));
+	NameText->SetText(FText::FromString(InActor->GetActorLabel()));
 }
 
 AActor* UCInteractRow::GetTarget()

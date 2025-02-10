@@ -77,9 +77,14 @@ public:
 	float GetDetectInterval() { return DetectInterval; }
 
 	UFUNCTION(BlueprintCallable, Category = "InteractSystem")
-	bool SetTraceRange(float InRange);
+	bool SetDetectRange(float InRange);
 	UFUNCTION(BlueprintCallable, Category = "InteractSystem")
-	float GetTraceRange() { return TraceRange; }
+	float GetDetectRange() { return DetectRange; }
+
+	UFUNCTION(BlueprintCallable, Category = "InteractSystem")
+	bool SetRemoveRange(float InRange);
+	UFUNCTION(BlueprintCallable, Category = "InteractSystem")
+	float GetRemoveRange() { return RemoveRange; }
 
 protected:
 	void Move(const FInputActionValue& Value);
@@ -91,6 +96,7 @@ private:
 	bool Trace(ECollisionChannel TraceChannel);
 
 protected:
+	// Input
 	UPROPERTY(VisibleAnywhere, Category="Input")
 	UInputMappingContext* DefaultContext;
 
@@ -106,6 +112,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Input")
 	UInputAction* ScrollAction;
 
+	// Components
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	USpringArmComponent* SpringArmComp;
 
@@ -121,6 +128,7 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UCOptionComponent* OptionComp;
 
+	// Interact
 	UPROPERTY(EditAnywhere, Category="Interact")
 	//TArray<TScriptInterface<ICInterface_Interactable>> InteractableObjects;
 	TArray<AActor*> InteractableObjects;
@@ -128,6 +136,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Interact")
 	int32 InteractIndex;
 
+	// Item
 	UPROPERTY(VisibleAnywhere, Category="Item")
 	TArray<TScriptInterface<ICItemInterface>> ItemContainer;
 
@@ -138,9 +147,11 @@ protected:
 	int32 ItemIndex;
 
 private:
+	// Trace
 	FTimerHandle DetectTimer;
 	float DetectInterval;
-	float TraceRange;
+	float DetectRange;
+	float RemoveRange;
 
 	// Scroll delay
 	float LastScrollTime = 0.0f;

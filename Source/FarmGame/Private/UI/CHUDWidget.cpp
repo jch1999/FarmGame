@@ -59,9 +59,9 @@ bool UCHUDWidget::RemoveInteractRow(AActor* InActor)
 	
 	// ÀÎµ¦½º º¸Á¤
 	int32 AfterLen = InteractRows.Num();
-	if (InteractIndex >= AfterLen)
+	if (InteractIdx >= AfterLen)
 	{
-		InteractIndex = FMath::Max(0, AfterLen - 1);
+		InteractIdx = FMath::Max(0, AfterLen - 1);
 	}
 
 	return BeforeLen != InteractRows.Num();
@@ -91,9 +91,70 @@ void UCHUDWidget::SetInteractIndex(int32 InIdx)
 
 }
 
+void UCHUDWidget::UpInteractIndex()
+{
+	if (InteractRows.Num() <= 0)return;
+
+	if (InteractIdx < InteractRows.Num())
+	{
+		InteractRows[InteractIdx]->DisableTextOutline();
+	}
+
+	int32 PreviousIndex = InteractIdx;
+	++InteractIdx %= InteractRows.Num();
+	InteractRows[InteractIdx]->EnableTextOutline();
+
+	UE_LOG(LogTemp, Warning, TEXT("SetInteractIndex PrevIndex: %d -> NewIndex: %d, NowSize: %d"), PreviousIndex, InteractIdx, InteractRows.Num());
+	EnsureVisibleInteractRow();
+}
+
+void UCHUDWidget::DownInteractIndex()
+{
+	if (InteractRows.Num() <= 0)return;
+
+	if (InteractIdx < InteractRows.Num())
+	{
+		InteractRows[InteractIdx]->DisableTextOutline();
+	}
+
+	int32 PreviousIndex = InteractIdx;
+	--InteractIdx;
+	if (InteractIdx < 0)
+	{
+		InteractIdx = InteractRows.Num() - 1;
+	}
+
+	InteractRows[InteractIdx]->EnableTextOutline();
+
+	UE_LOG(LogTemp, Warning, TEXT("SetInteractIndex PrevIndex: %d -> NewIndex: %d, NowSize: %d"), PreviousIndex, InteractIdx, InteractRows.Num());
+	EnsureVisibleInteractRow();
+}
+
 int32 UCHUDWidget::GetInteractIndex()
 {
 	return InteractIdx;
+}
+
+AActor* UCHUDWidget::GetInteractTarget()
+{
+	if (InteractRows.Num() <= 0)
+	{
+		return nullptr;
+	}
+	AActor* TargetACtor = InteractRows[InteractIdx]->GetTarget();
+	return TargetACtor;
+}
+
+void UCHUDWidget::EnsureVisibleInteractRow()
+{
+	if (!InteractRowScroll || InteractRows.Num() == 0) return;
+
+	if (InteractIdx < 0 || InteractIdx >= InteractRows.Num()) return;
+
+	UCInteractRow* SelectedRow = InteractRows[InteractIdx];
+	if (!SelectedRow) return;
+
+	InteractRowScroll->ScrollToWidget(SeletedRow);
 }
 
 bool UCHUDWidget::AddItemNotification(FName InItemName, int32 InItemAmount, UTexture2D* InItemIcon)
