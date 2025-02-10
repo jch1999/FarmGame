@@ -3,6 +3,8 @@
 #include "UI/CItemNotification.h"
 #include "Components/ScrollBox.h"
 #include "Components/VerticalBox.h"
+#include "Components/PanelSlot.h"
+#include "Components/ScrollBoxSlot.h"
 
 void UCHUDWidget::NativeConstruct()
 {
@@ -154,7 +156,28 @@ void UCHUDWidget::EnsureVisibleInteractRow()
 	UCInteractRow* SelectedRow = InteractRows[InteractIdx];
 	if (!SelectedRow) return;
 
-	InteractRowScroll->ScrollToWidget(SeletedRow);
+	InteractRowScroll->ScrollWidgetIntoView(SelectedRow);
+	//GetWorld()->GetTimerManager().ClearTimer(InteractScrollLerpTimer);
+	//GetWorld()->GetTimerManager().SetTimer(InteractScrollLerpTimer, this, &UCHUDWidget::ScrollLerp, 0.02f, true, 0.0f);
+}
+
+void UCHUDWidget::ScrollLerp()
+{
+	UCInteractRow* SelectedRow = InteractRows[InteractIdx];
+	if (!SelectedRow)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(InteractScrollLerpTimer);
+		return;
+	}
+
+	float CurrentOffset = InteractRowScroll->GetScrollOffset();
+	float TargetOffset = GetChildWidgetOffset(InteractRowScroll,SelectedRow);
+	if (FMath::IsNearlyZero(TargetOffset - CurrentOffset, 0.01f))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(InteractScrollLerpTimer);
+		return;
+	}
+	InteractRowScroll->SetScrollOffset(FMath::Lerp(CurrentOffset, TargetOffset, 0.2f));
 }
 
 bool UCHUDWidget::AddItemNotification(FName InItemName, int32 InItemAmount, UTexture2D* InItemIcon)
@@ -170,4 +193,31 @@ bool UCHUDWidget::AddItemNotification(FName InItemName, int32 InItemAmount, UTex
 	ItemNotification->InitializeNotification(InItemName, InItemAmount, InItemIcon);
 	VB_ItemNotifications->AddChild(ItemNotification);
 	return true;
+}
+
+float UCHUDWidget::GetChildWidgetOffset(UScrollBox* ScrollBox, UWidget* TargetWidget)
+{
+	if (!ScrollBox || !TargetWidget) return -1.0f;
+
+	// 자식 위젯 리스트 가져오기
+	TArray<UWidget*> Children = ScrollBox->GetAllChildren();
+
+	float Offset = 0.0f;
+
+	for (UWidget* Child : Children)
+	{
+		if (Child == TargetWidget)
+		{
+			return Offset;
+		}
+
+		// Slot 정보를 가져와서 Offset 계산
+		UPanelSlot* PanelSlot = Child->Slot;
+		if (UScrollBoxSlot* ScrollSlot = Cast<UScrollBoxSlot>(PanelSlot))
+		{
+			Offset += ScrollSlot->Padding.Top + ScrollSlot->Padding.Bottom;
+		}
+	}
+
+	return Offset;
 }

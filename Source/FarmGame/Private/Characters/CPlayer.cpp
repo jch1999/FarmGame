@@ -183,6 +183,7 @@ bool ACPlayer::SetDetectInterval(float InTime)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(DetectTimer);
 	}
+	//UKismetSystemLibrary::K2_SetTimer(this, "DetectInteractableObjects", DetectInterval, true);
 	GetWorld()->GetTimerManager().SetTimer(DetectTimer, this, &ACPlayer::DetectInteractableObjects, DetectInterval, true);
 
 	return true;
@@ -341,6 +342,8 @@ void ACPlayer::Interact(AActor* OtherActor)
 
 void ACPlayer::DetectInteractableObjects()
 {
+	if (!IsInteractable()) return;
+
 	// Find Objects away from detect range
 	TArray<AActor*> ToRemoveActors;
 	for (auto Obj : InteractableObjects)

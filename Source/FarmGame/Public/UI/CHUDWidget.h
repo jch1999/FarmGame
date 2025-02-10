@@ -27,9 +27,13 @@ public:
 	int32 GetInteractIndex();
 	AActor* GetInteractTarget();
 	void EnsureVisibleInteractRow();
+	void ScrollLerp();
 
 	// Abuot Item
 	bool AddItemNotification(FName InItemName, int32 InItemAmount, UTexture2D* InItemIcon);
+
+	// Etc
+	float GetChildWidgetOffset(UScrollBox* ScrollBox, UWidget* TargetWidget);
 
 protected:
 	// About Interact Variables
@@ -41,6 +45,7 @@ protected:
 	TArray<UCInteractRow*> InteractRows;
 	int32 InteractIdx;
 	UCInteractRow* NowSelectedRow;
+	FTimerHandle InteractScrollLerpTimer;
 
 	// About Item
 	UPROPERTY(BlueprintReadWrite, Category = "Item", meta = (BindWidget))
