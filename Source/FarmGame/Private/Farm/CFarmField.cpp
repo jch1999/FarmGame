@@ -122,10 +122,12 @@ bool ACFarmField::PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, const FTransfo
 	CheckTrueResult(Crop != nullptr, false);
 
 	Crop = GetWorld()->SpawnActorDeferred<ACBase_Crop>(InCropClass, InTM, this, nullptr);
+
 	Crop->FinishSpawning(InTM);
 	CheckNullResult(Crop, false);
 
 	Crop->SetOwner(this);
+	SetUnInteractable();
 
 	return true;
 }

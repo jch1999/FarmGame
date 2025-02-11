@@ -12,11 +12,11 @@ class UCHealthComponent;
 class ACFarmField;
 class UStaticMesh;
 
-//UENUM(BlueprintType)
-//enum class ECropGrowType :uint8
-//{
-//	VegetativeGrowth, ReproductiveGrowth, Maturity, Senescence, MAX
-//};
+UENUM(BlueprintType)
+enum class ECropGrowStage :uint8
+{
+	VegetativeGrowth, ReproductiveGrowth, Maturity, Senescence, MAX
+};
 
 USTRUCT(BlueprintType)
 struct FCropData:public FTableRowBase

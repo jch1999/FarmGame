@@ -43,6 +43,8 @@ bool UCHUDWidget::AddInteractRow(AActor* InActor)
 		InteractRows[0]->EnableTextOutline();
 		MouseWheelIcon->SetVisibility(ESlateVisibility::Visible);
 	}
+	EnsureVisibleInteractRow();
+
 	return true;
 }
 
@@ -70,9 +72,13 @@ bool UCHUDWidget::RemoveInteractRow(AActor* InActor)
 
 	if (InteractRows.Num() <= 0)
 	{
-
 		MouseWheelIcon->SetVisibility(ESlateVisibility::Hidden);
 	}
+	else
+	{
+		InteractRows[InteractIdx]->EnableTextOutline();
+	}
+	EnsureVisibleInteractRow();
 
 	return BeforeLen != InteractRows.Num();
 }

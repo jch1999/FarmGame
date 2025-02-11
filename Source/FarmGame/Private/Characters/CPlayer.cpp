@@ -7,6 +7,7 @@
 #include "Components/CAttributeComponent.h"
 #include "Components/COptionComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/CInteractComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
@@ -54,18 +55,14 @@ ACPlayer::ACPlayer()
 	// Option Comp
 	CHelpers::CreateActorComponent(this, &OptionComp, "OptionComp");
 
+	// Interact Comp
+	CHelpers::CreateActorComponent(this, &InteractComp, "InteractComp");
+	
 	// Movement Comp
 	GetCharacterMovement()->MaxWalkSpeed = AttributeComp->GetWalkSpeed();
 	GetCharacterMovement()->RotationRate = FRotator(0, 720, 0);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
-
-	// Interactable
-	SetType(EInteractObjectType::Player);
-
-	InteractIndex = 0;
-	DetectRange = 150.0f;
-	RemoveRange = 300.0f;
 }
 
 void ACPlayer::BeginPlay()
@@ -83,10 +80,8 @@ void ACPlayer::BeginPlay()
 		}
 	}
 
-	ItemContainer.SetNum(ItemContainerSize);
 	SetInteractable();
-	
-	SetDetectInterval(0.2f);
+	ItemContainer.SetNum(ItemContainerSize);
 }
 
 void ACPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -107,103 +102,7 @@ void ACPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	}
 }
 
-void ACPlayer::AddInteractableObject(AActor* InActor)
-{
-	if (InActor && InActor->Implements<UCInterface_Interactable>())
-	{
-		/*TScriptInterface<ICInterface_Interactable> InterfaceObj;
-		InterfaceObj.SetObject(InActor);
-		InterfaceObj.SetInterface(Cast<ICInterface_Interactable>(InActor));*/
-		
-		int32 BeforeLen = InteractableObjects.Num();
-		InteractableObjects.AddUnique(InActor);
 
-		if (BeforeLen != InteractableObjects.Num())
-		{
-			APlayerController* PC = Cast<APlayerController>(GetController());
-			if (PC)
-			{
-				ACHUD* MyHud = Cast<ACHUD>(PC->GetHUD());
-				if (MyHud)
-				{
-					UCHUDWidget* HudWidget = MyHud->GetHUD();
-					HudWidget->AddInteractRow(InActor);
-				}
-			}
-			UE_LOG(LogTemp, Warning, TEXT("Added Interactable Object: %s"), *(InActor->GetActorLabel()));
-		}
-	}
-}
-
-void ACPlayer::RemoveInteractableObject(AActor* InActor)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Before Remove: InteractableObjects.Num() = %d"), InteractableObjects.Num());
-
-	if (InActor && InActor->Implements<UCInterface_Interactable>())
-	{
-		/*TScriptInterface<ICInterface_Interactable> InterfaceObj;
-		InterfaceObj.SetObject(InActor);
-		InterfaceObj.SetInterface(Cast<ICInterface_Interactable>(InActor));*/
-
-		int32 BeforeLen = InteractableObjects.Num();
-		InteractableObjects.RemoveAll([&](AActor* Actor) {return Actor == InActor; });
-		int32 AfterLen = InteractableObjects.Num();;
-
-		if (InteractIndex >= AfterLen)
-		{
-			InteractIndex = FMath::Max(0, AfterLen - 1);
-		}
-
-		if (BeforeLen != AfterLen)
-		{
-			APlayerController* PC = Cast<APlayerController>(GetController());
-			if (PC)
-			{
-				ACHUD* MyHud = Cast<ACHUD>(PC->GetHUD());
-				if (MyHud)
-				{
-					UCHUDWidget* HudWidget = MyHud->GetHUD();
-					HudWidget->RemoveInteractRow(InActor);
-					HudWidget->SetInteractIndex(InteractIndex);
-				}
-			}
-		}
-		//UE_LOG(LogTemp, Warning, TEXT("Removed Interactable Object: %s"), *GetNameSafe(InActor)); 
-		UE_LOG(LogTemp, Warning, TEXT("Removed Interactable Object: %s"), *InActor->GetActorLabel());
-	}
-	UE_LOG(LogTemp, Warning, TEXT("After Remove: InteractableObjects.Num() = %d, InteractIndex = %d"), InteractableObjects.Num(), InteractIndex);
-}
-
-bool ACPlayer::SetDetectInterval(float InTime)
-{
-	if (InTime < 0.0f) return false;
-
-	DetectInterval = InTime;
-	if (GetWorld()->GetTimerManager().TimerExists(DetectTimer))
-	{
-		GetWorld()->GetTimerManager().ClearTimer(DetectTimer);
-	}
-	//UKismetSystemLibrary::K2_SetTimer(this, "DetectInteractableObjects", DetectInterval, true);
-	GetWorld()->GetTimerManager().SetTimer(DetectTimer, this, &ACPlayer::DetectInteractableObjects, DetectInterval, true);
-
-	return true;
-}
-
-bool ACPlayer::SetDetectRange(float InRange)
-{
-	if (InRange < 0.0f) return false;
-
-	DetectRange = InRange;
-	return true;
-}
-
-bool ACPlayer::SetRemoveRange(float InRange)
-{
-	if (InRange < DetectRange) return false;
-
-	RemoveRange = InRange;
-	return true;
-}
 
 void ACPlayer::Move(const FInputActionValue& Value)
 {
@@ -229,6 +128,29 @@ void ACPlayer::Look(const FInputActionValue& Value)
 	AddControllerYawInput(InputValue.X);
 	AddControllerPitchInput(-InputValue.Y);
 }
+// override from ICInterface_Interactable
+
+void ACPlayer::SetInteractable()
+{
+	bInteractable = true;
+}
+
+void ACPlayer::SetUnInteractable()
+{
+	bInteractable = false;
+}
+
+void ACPlayer::SetType(EInteractObjectType InNewType)
+{
+	InteractType = InNewType;
+}
+
+void ACPlayer::Interact(AActor* OtherActor)
+{
+	if (!InteractComp) return;
+	
+	InteractComp->DoInteract(nullptr);
+}
 
 void ACPlayer::OnInteract(const FInputActionInstance& InInstance)
 {
@@ -242,183 +164,11 @@ void ACPlayer::OnInteract(const FInputActionInstance& InInstance)
 
 void ACPlayer::Scroll(const FInputActionValue& Value)
 {
-	float CurrentTime = GetWorld()->GetTimeSeconds();
-	if (CurrentTime - LastScrollTime < ScrollCooldown)
-	{
-		return;
-	}
-	LastScrollTime = CurrentTime;
-
 	float InputValue = Value.Get<float>();
 	if (InputValue == 0.0f)return;
 
-	if (InteractableObjects.Num() > 0)
-	{
-		/*int32 PreviousIndex = InteractIndex;
-		if (InputValue > 0)
-		{
-			InteractIndex = (InteractIndex + 1) % InteractableObjects.Num();
-		}
-		else if (InputValue < 0)
-		{
-			InteractIndex = (InteractIndex - 1 + InteractableObjects.Num()) % InteractableObjects.Num();
-		}
-		InteractIndex = FMath::Clamp(InteractIndex, 0, InteractableObjects.Num() - 1);
-
-		UE_LOG(LogTemp, Warning, TEXT("Scroll: PrevIndex: %d -> NewIndex: %d, Now Side: %d"), PreviousIndex, InteractIndex, InteractableObjects.Num());*/
-
-		APlayerController* PC = Cast<APlayerController>(GetController());
-		if (PC)
-		{
-			ACHUD* MyHud = Cast<ACHUD>(PC->GetHUD());
-			if (MyHud)
-			{
-				UCHUDWidget* HudWidget = MyHud->GetHUD();
-				if (HudWidget)
-				{
-					//HudWidget->SetInteractIndex(InteractIndex); 
-					if (InputValue > 0)
-					{
-						HudWidget->UpInteractIndex();
-					}
-					else if (InputValue < 0)
-					{
-						HudWidget->DownInteractIndex();
-					}
-				}
-			}
-		}
-	}
-	else
-	{
-		InteractIndex = 0;
-	}
-	UE_LOG(LogTemp, Warning, TEXT("Scroll After: InteractIndex = %d"), InteractIndex);
+	InteractComp->Scroll(InputValue);
 }
 
-// override from ICInterface_Interactable
-void ACPlayer::SetInteractable()
-{
-	bInteractable = true;
-}
 
-void ACPlayer::SetUnInteractable()
-{
-	bInteractable = false;
-}
 
-void ACPlayer::Interact(AActor* OtherActor)
-{
-	if (InteractableObjects.Num() == 0) return;
-
-	/*ICInterface_Interactable* InteractActor=nullptr;
-	if (Trace(InteractActor))
-	{
-		APlayerController* PC = GetController<APlayerController>();
-		CheckNull(PC);
-
-		PC->bShowMouseCursor = true;
-		PC->SetInputMode(FInputModeGameAndUI());
-	}*/
-	APlayerController* PC = Cast<APlayerController>(GetController());
-	if (PC)
-	{
-		ACHUD* MyHud = Cast<ACHUD>(PC->GetHUD());
-		if (MyHud)
-		{
-			UCHUDWidget* HudWidget = MyHud->GetHUD();
-			CheckNull(HudWidget);
-
-			AActor* InteractTarget = HudWidget->GetInteractTarget();
-			CheckNull(InteractTarget);
-
-			HudWidget->RemoveInteractRow(InteractTarget);
-			ICInterface_Interactable* InteractActor = Cast<ICInterface_Interactable>(InteractTarget);
-			InteractActor->Interact(this);
-			RemoveInteractableObject(InteractTarget);
-		}
-	}
-}
-
-void ACPlayer::DetectInteractableObjects()
-{
-	if (!IsInteractable()) return;
-
-	// Find Objects away from detect range
-	TArray<AActor*> ToRemoveActors;
-	for (auto Obj : InteractableObjects)
-	{
-		if (GetDistanceTo(Obj) > RemoveRange)
-		{
-			ToRemoveActors.Add(Obj);
-		}
-	}
-	
-	// Delete Objects
-	for (auto RemoveActor : ToRemoveActors)
-	{
-		RemoveInteractableObject(RemoveActor);
-	}
-	
-	if (InteractIndex >= InteractableObjects.Num())
-	{
-		InteractIndex = FMath::Max(0, InteractableObjects.Num() - 1);
-	}
-
-	Trace(ECollisionChannel::ECC_GameTraceChannel1);
-
-}
-
-void ACPlayer::SetType(EInteractObjectType InNewType)
-{
-	InteractType = InNewType;
-}
-
-bool ACPlayer::Trace(ECollisionChannel TraceChannel)
-{
-	//UE_LOG(LogTemp, Warning, TEXT("TraceChannel: %d"), TraceChannel);
-
-	FVector Start = GetActorLocation() + CameraComp->GetRelativeLocation();
-	FVector End = Start + CameraComp->GetForwardVector() * 150.0f;
-
-	//TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-	TArray<AActor*> Ignores;
-	Ignores.Add(this);
-
-	TArray<FHitResult> Hits;
-	UKismetSystemLibrary::SphereTraceMulti
-	(
-		GetWorld(),
-		Start,
-		End,
-		DetectRange,
-		UEngineTypes::ConvertToTraceType(TraceChannel),
-		false,
-		Ignores,
-		EDrawDebugTrace::ForDuration,
-		Hits,
-		true
-	);
-
-	if (Hits.Num() > 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Trace Result: Hits.Num() = %d"), Hits.Num());
-
-		for (FHitResult& Hit : Hits)
-		{
-			if (Hit.GetActor())
-			{
-				ICInterface_Interactable* OtherActor = Cast<ICInterface_Interactable>(Hit.GetActor());
-				if (OtherActor && OtherActor->IsInteractable())
-				{
-					AddInteractableObject(Hit.GetActor());
-				}
-			}
-		}
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
