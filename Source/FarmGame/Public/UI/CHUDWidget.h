@@ -8,6 +8,7 @@ class UScrollBox;
 class UVerticalBox;
 class UCInteractRow;
 class UCItemNotification;
+class UImage;
 
 UCLASS()
 class FARMGAME_API UCHUDWidget : public UUserWidget
@@ -39,6 +40,8 @@ protected:
 	// About Interact Variables
 	UPROPERTY(BlueprintReadWrite, Category = "Interact", meta=(BindWidget))
 	UScrollBox* InteractRowScroll;
+	UPROPERTY(BlueprintReadWrite, Category = "Interact", meta = (BindWidget))
+	UImage* MouseWheelIcon;
 	UPROPERTY(EditDefaultsOnly,Category="Interact")
 	TSubclassOf<UCInteractRow> InteractRowClass;
 	UPROPERTY(VisibleAnywhere, Category = "Interact")

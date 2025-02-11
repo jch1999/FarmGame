@@ -65,7 +65,7 @@ ACPlayer::ACPlayer()
 
 	InteractIndex = 0;
 	DetectRange = 150.0f;
-	RemoveRange = 250.0f;
+	RemoveRange = 300.0f;
 }
 
 void ACPlayer::BeginPlay()

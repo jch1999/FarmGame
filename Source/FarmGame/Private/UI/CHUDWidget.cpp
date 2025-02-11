@@ -5,6 +5,7 @@
 #include "Components/VerticalBox.h"
 #include "Components/PanelSlot.h"
 #include "Components/ScrollBoxSlot.h"
+#include "Components/Image.h"
 
 void UCHUDWidget::NativeConstruct()
 {
@@ -40,6 +41,7 @@ bool UCHUDWidget::AddInteractRow(AActor* InActor)
 	if (InteractRows.Num() == 1)
 	{
 		InteractRows[0]->EnableTextOutline();
+		MouseWheelIcon->SetVisibility(ESlateVisibility::Visible);
 	}
 	return true;
 }
@@ -64,6 +66,12 @@ bool UCHUDWidget::RemoveInteractRow(AActor* InActor)
 	if (InteractIdx >= AfterLen)
 	{
 		InteractIdx = FMath::Max(0, AfterLen - 1);
+	}
+
+	if (InteractRows.Num() <= 0)
+	{
+
+		MouseWheelIcon->SetVisibility(ESlateVisibility::Hidden);
 	}
 
 	return BeforeLen != InteractRows.Num();
