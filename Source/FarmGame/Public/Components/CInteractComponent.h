@@ -35,6 +35,7 @@ public:
 	// DoTrace
 	void DetectInteractableObjects();
 	bool RangeTrace(ECollisionChannel TraceChannel, TArray<FHitResult>& Hits);
+	bool CameraTrace(ECollisionChannel TraceChannel, FHitResult& Hit);
 
 	// Return currently seleted interact object
 	AActor* GetCurrentInteractTarget();
@@ -60,7 +61,8 @@ private:
 	ACPlayer* OwnerCharacter;
 	UPROPERTY(EditAnywhere, Category = "Interact")
 	TArray<AActor*> InteractableObjects;
-	
+	AActor* ActionInteractTarget;
+
 	// Trace
 	FTimerHandle DetectTimer;
 

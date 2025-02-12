@@ -153,6 +153,7 @@ void UCInteractComponent::DetectInteractableObjects()
 	if (!OwnerCharacter) return;
 	if (!OwnerCharacter->IsInteractable()) return;
 
+	// Range Detect
 	// Find Objects away from detect range
 	TArray<AActor*> ToRemoveActors;
 	for (auto Obj : InteractableObjects)
@@ -182,6 +183,24 @@ void UCInteractComponent::DetectInteractableObjects()
 					AddInteractableObject(Hit.GetActor());
 				}
 			}
+		}
+	}
+
+	// Camera Detect
+
+	if (ActionInteractTarget != nullptr)
+	{
+		if (OwnerCharacter->GetDistanceTo(ActionInteractTarget) > RemoveRange)
+		{
+			ActionInteractTarget = nullptr;
+		}
+	}
+	FHitResult Hit;
+	if (CameraTrace(ECollisionChannel::ECC_GameTraceChannel2, Hit))
+	{
+		if (OwnerCharacter->GetDistanceTo(ActionInteractTarget) > OwnerCharacter->GetDistanceTo(Hit.GetActor()))
+		{
+			ActionInteractTarget = Hit.GetActor();
 		}
 	}
 }
@@ -268,4 +287,26 @@ bool UCInteractComponent::RangeTrace(ECollisionChannel TraceChannel, TArray<FHit
 	{
 		return false;
 	}
+}
+
+bool UCInteractComponent::CameraTrace(ECollisionChannel TraceChannel, FHitResult& Hit)
+{
+	FVector Start = OwnerCharacter->GetActorLocation() + OwnerCharacter->GetCameraComponent()->GetRelativeLocation();
+	FVector End = Start + OwnerCharacter->GetCameraComponent()->GetForwardVector();
+
+	TArray<AActor*> Ignores;
+	Ignores.Add(OwnerCharacter);
+
+	return UKismetSystemLibrary::LineTraceSingle
+	(
+		GetWorld(),
+		Start,
+		End,
+		UEngineTypes::ConvertToTraceType(TraceChannel),
+		false,
+		Ignores,
+		EDrawDebugTrace::ForDuration,
+		Hit,
+		true
+	);
 }
