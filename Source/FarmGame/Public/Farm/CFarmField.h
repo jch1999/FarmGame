@@ -44,7 +44,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	virtual FName GetInteractName() override { return "FarmField"; }
 
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	virtual void Interact(AActor* OtherActor) override;
+
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
+	bool OnHovered() override;
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
+	bool OnUnhovered() override;
+
 
 	// Crop
 	UFUNCTION(BlueprintCallable)

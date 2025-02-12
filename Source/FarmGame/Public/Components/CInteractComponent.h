@@ -55,6 +55,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "InteractSystem")
 	float GetRemoveRange() { return RemoveRange; }
 
+	UFUNCTION(BlueprintCallable, Category = "InteractSystem")
+	bool SetDetectDistance(float InDistance);
+	UFUNCTION(BlueprintCallable, Category = "InteractSystem")
+	float GetDetectDistance() { return DetectDistance; }
+
+	UFUNCTION(BlueprintCallable, Category = "InteractSystem")
+	bool SetRemoveDistance(float InDistance);
+	UFUNCTION(BlueprintCallable, Category = "InteractSystem")
+	float GetRemoveDistance() { return RemoveDistance; }
+
 private:
 	// Owner Player (이 컴포넌트가 부착된 액터)
 	UPROPERTY()
@@ -69,14 +79,22 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Trace")
 	float DetectInterval;
 
-	UPROPERTY(EditAnywhere, Category = "Trace")
+	// For Range Detect
+	UPROPERTY(EditAnywhere, Category = "Trace|Range")
 	float DetectRange;
 
-	UPROPERTY(EditAnywhere, Category = "Trace")
+	UPROPERTY(EditAnywhere, Category = "Trace|Range")
 	float RemoveRange;
 
+	// For CameraDetect
+	UPROPERTY(EditAnywhere, Category = "Trace|Camera")
+	float DetectDistance;
+
+	UPROPERTY(EditAnywhere, Category = "Trace|Camera")
+	float RemoveDistance;
+
 	// Scroll delay
-	float LastScrollTime = 0.0f;
+	float LastScrollTime;
 	UPROPERTY(EditAnywhere, Category = "Scroll")
-	float ScrollCooldown = 0.2f;
+	float ScrollCooldown;
 };

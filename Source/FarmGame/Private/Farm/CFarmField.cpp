@@ -131,3 +131,15 @@ bool ACFarmField::PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, const FTransfo
 
 	return true;
 }
+
+bool ACFarmField::OnHovered()
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s is Hovered!"), *GetInteractName().ToString());
+	return false;
+}
+
+bool ACFarmField::OnUnhovered()
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s is Unhovered!"), *GetInteractName().ToString());
+	return false;
+}

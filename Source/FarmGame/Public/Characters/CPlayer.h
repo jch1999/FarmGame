@@ -48,6 +48,10 @@ public:
 	void SetType(EInteractObjectType InNewType) override;
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	void Interact(AActor* OtherActor) override;
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
+	bool OnHovered() override;
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
+	bool OnUnhovered() override;
 
 public:
 	FORCEINLINE UCameraComponent* GetCameraComponent() { return CameraComp; }
@@ -64,8 +68,6 @@ protected:
 	void OnInteract(const FInputActionInstance& InInstance);
 	void Scroll(const FInputActionValue& Value);
 
-private:
-	bool Trace(ECollisionChannel TraceChannel, TArray<FHitResult>& Hits);
 
 protected:
 	// Input

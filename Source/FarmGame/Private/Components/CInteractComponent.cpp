@@ -9,8 +9,12 @@
 
 UCInteractComponent::UCInteractComponent()
 {
-	DetectRange = 150.0f;
-	RemoveRange = 300.0f;
+	SetDetectRange(150.0f);
+	SetRemoveRange(300.0f);
+	SetDetectDistance(300.0f);
+	SetRemoveDistance(500.0f);
+	LastScrollTime = 0.0f;
+	ScrollCooldown = 0.1f;
 }
 
 void UCInteractComponent::BeginPlay()
@@ -190,18 +194,33 @@ void UCInteractComponent::DetectInteractableObjects()
 
 	if (ActionInteractTarget != nullptr)
 	{
-		if (OwnerCharacter->GetDistanceTo(ActionInteractTarget) > RemoveRange)
+		if (OwnerCharacter->GetDistanceTo(ActionInteractTarget) > RemoveDistance)
 		{
 			ActionInteractTarget = nullptr;
 		}
 	}
+
 	FHitResult Hit;
 	if (CameraTrace(ECollisionChannel::ECC_GameTraceChannel2, Hit))
 	{
-		if (OwnerCharacter->GetDistanceTo(ActionInteractTarget) > OwnerCharacter->GetDistanceTo(Hit.GetActor()))
+		if (ActionInteractTarget)
 		{
-			ActionInteractTarget = Hit.GetActor();
+			if (OwnerCharacter->GetDistanceTo(ActionInteractTarget) > OwnerCharacter->GetDistanceTo(Hit.GetActor()))
+			{
+				ICInterface_Interactable* InteractObject = Cast<ICInterface_Interactable>(ActionInteractTarget);
+				InteractObject->OnUnhovered();
+				UE_LOG(LogTemp, Warning, TEXT("%s is undetected!"), *(InteractObject->GetInteractName().ToString()));
+			}
+			else
+			{
+				return;
+			}
 		}
+
+		ActionInteractTarget = Hit.GetActor();
+		ICInterface_Interactable* InteractObject = Cast<ICInterface_Interactable>(ActionInteractTarget);
+		InteractObject->OnHovered();
+		UE_LOG(LogTemp, Warning, TEXT("%s is detected!"), *(InteractObject->GetInteractName().ToString()));
 	}
 }
 
@@ -255,15 +274,37 @@ bool UCInteractComponent::SetRemoveRange(float InRange)
 	return true;
 }
 
+bool UCInteractComponent::SetDetectDistance(float InDistance)
+{
+	if (InDistance < 0.0f) return false;
+
+	DetectDistance = InDistance;
+	return true;
+}
+
+bool UCInteractComponent::SetRemoveDistance(float InDistance)
+{
+	if (InDistance < 0.0f) return false;
+
+	RemoveDistance = InDistance;
+	return true;
+}
+
 bool UCInteractComponent::RangeTrace(ECollisionChannel TraceChannel, TArray<FHitResult>& Hits)
 {
 	FVector Start = OwnerCharacter->GetActorLocation() + OwnerCharacter->GetCameraComponent()->GetRelativeLocation();
 	FVector End = Start + OwnerCharacter->GetCameraComponent()->GetForwardVector();
 
-	//TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-	TArray<AActor*> Ignores;
-	Ignores.Add(OwnerCharacter);
 
+	// 트레이스 파라미터 설정
+	FCollisionQueryParams TraceParams;
+	TraceParams.AddIgnoredActor(OwnerCharacter);
+	// 충돌 반경 설정
+	FCollisionShape SphereShape = FCollisionShape::MakeSphere(DetectRange);
+	GetWorld()->SweepMultiByChannel(Hits, Start, End, FQuat::Identity, TraceChannel, SphereShape, TraceParams);
+
+	/*TArray<AActor*> Ignores;
+	Ignores.Add(OwnerCharacter); 
 	UKismetSystemLibrary::SphereTraceMulti
 	(
 		GetWorld(),
@@ -276,7 +317,8 @@ bool UCInteractComponent::RangeTrace(ECollisionChannel TraceChannel, TArray<FHit
 		EDrawDebugTrace::ForDuration,
 		Hits,
 		true
-	);
+	);*/
+
 	if (Hits.Num() > 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Trace Result: Hits.Num() = %d"), Hits.Num());
@@ -292,9 +334,10 @@ bool UCInteractComponent::RangeTrace(ECollisionChannel TraceChannel, TArray<FHit
 bool UCInteractComponent::CameraTrace(ECollisionChannel TraceChannel, FHitResult& Hit)
 {
 	FVector Start = OwnerCharacter->GetActorLocation() + OwnerCharacter->GetCameraComponent()->GetRelativeLocation();
-	FVector End = Start + OwnerCharacter->GetCameraComponent()->GetForwardVector();
+	FVector End = Start + OwnerCharacter->GetCameraComponent()->GetForwardVector() * DetectDistance;
 
-	TArray<AActor*> Ignores;
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 1.0f, 0, 2.0f);
+	/*TArray<AActor*> Ignores;
 	Ignores.Add(OwnerCharacter);
 
 	return UKismetSystemLibrary::LineTraceSingle
@@ -308,5 +351,14 @@ bool UCInteractComponent::CameraTrace(ECollisionChannel TraceChannel, FHitResult
 		EDrawDebugTrace::ForDuration,
 		Hit,
 		true
-	);
+	);*/
+	// Sphere Trace로 변경 (반지름 10.0f)
+	FCollisionShape SphereShape = FCollisionShape::MakeSphere(10.0f);
+
+	FCollisionQueryParams TraceParams;
+	TraceParams.AddIgnoredActor(OwnerCharacter);
+
+	// Sweep을 사용하여 감지
+	return GetWorld()->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, TraceChannel, SphereShape, TraceParams);
+
 }

@@ -170,5 +170,15 @@ void ACPlayer::Scroll(const FInputActionValue& Value)
 	InteractComp->Scroll(InputValue);
 }
 
+bool ACPlayer::OnHovered()
+{
+	return false;
+}
+
+bool ACPlayer::OnUnhovered()
+{
+	return false;
+}
+
 
 

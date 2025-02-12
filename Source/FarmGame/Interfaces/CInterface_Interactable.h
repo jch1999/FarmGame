@@ -29,6 +29,8 @@ public:
 	virtual FName GetInteractName() = 0;
 	virtual void SetType(EInteractObjectType InNewType) = 0;
 	virtual void Interact(AActor* OtherActor) = 0;
+	virtual bool OnHovered() = 0;
+	virtual bool OnUnhovered() = 0;
 
 protected:
 	bool bInteractable;
