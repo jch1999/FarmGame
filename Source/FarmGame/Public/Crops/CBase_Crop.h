@@ -28,9 +28,12 @@ enum class EQualityType : uint8
 };
 
 USTRUCT(BlueprintType)
-struct FCropGrowthData
+struct FCropGrowthData: public FTableRowBase
 {
 	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName CropName;
 
 	// Growth
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -68,8 +71,8 @@ struct FCropGrowthData
 	FString MeshRef;
 };
 
-UCLASS(Blueprintable)
-class FARMGAME_API UCropData:public UObject
+USTRUCT(BlueprintType)
+struct FCropData:public FTableRowBase
 {
 	GENERATED_BODY()
 
@@ -79,9 +82,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 MaxLevel;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FCropGrowthData> GrowthStages;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<float> PriceForQuality;
@@ -114,10 +114,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	void SetType(EInteractObjectType InNewType) override;
 
-	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
+	UFUNCTION(BlueprintPure, Category = "InteracteInterface")
 	EInteractObjectType GetType() override { return InteractType; }
 
-	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
+	UFUNCTION(BlueprintPure, Category = "InteracteInterface")
 	virtual FName GetInteractName() override { return "Crop"; }
 
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
@@ -131,8 +131,11 @@ public:
 
 	// CropData
 	UFUNCTION(BlueprintCallable)
+	const TOptional<FCropData>& GetCropDefaultData(FName InCropName);
 
-	FORCEINLINE FCropGrowthData GetCurrentGrowthData() { return CropData ? CropData->GrowthStages[NowGrowLevel] : FCropGrowthData(); }
+	UFUNCTION(BlueprintCallable)
+	const TOptional<FCropGrowthData>& GetCropGrowthData(FName InCropName, int32 InLevel);
+
 	// Grow
 	UFUNCTION(BlueprintCallable)
 	void SetAutoGrowTimer(float InFirstDelay, bool InbLoop = false, float InLoopDelay = 0.0f);
@@ -140,8 +143,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void GrowUp();
 
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE bool IsHarvestable() { return NowGrowLevel == MaxGrowLevel; }
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE bool IsHarvestable() { return CurrentGrowLevel == GetCropDefaultData(CropName).MaxLevel; }
 
 	// Get Components
 	UFUNCTION(BlueprintPure)
@@ -155,7 +158,7 @@ public:
 
 private:
 	void AutoGrow();
-	void LoadCropData();
+	void SetCropDatas();
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Component")
@@ -171,26 +174,25 @@ protected:
 	UCHealthComponent* HealthComp;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "DataTable")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crop|Defualt")
 	FName CropName;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
-	int32 NowGrowLevel;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "DataTable")
-	int32 MaxGrowLevel;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "DataTable")
-	float NowGrowValue;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|Defualt")
+	int32 CurrentGrowLevel;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crop|Defualt")
+	float CurrentGrowValue;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crop|DataTable")
+	UDataTable* CropDefaultTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crop|DataTable")
+	UDataTable* CropGrowthTable;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|Time")
 	float UpdateTime;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="DataTable")
-	UDataTable* CropDataTable;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "DataTable")
-	UCropData* CropData;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly,Category="Meshes")
-	TArray<UStaticMesh*> CropMeshes;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly,Category="Crop|Mesh")
+	//TArray<UStaticMesh*> CropMeshes;
 
 private:
 	FTimerHandle AutoGrowTimer;

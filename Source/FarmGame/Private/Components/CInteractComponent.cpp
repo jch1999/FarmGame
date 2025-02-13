@@ -360,5 +360,4 @@ bool UCInteractComponent::CameraTrace(ECollisionChannel TraceChannel, FHitResult
 
 	// Sweep을 사용하여 감지
 	return GetWorld()->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, TraceChannel, SphereShape, TraceParams);
-
 }

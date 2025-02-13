@@ -19,11 +19,11 @@ ACBase_Crop::ACBase_Crop()
 	CHelpers::CreateActorComponent(this, &HealthComp, "HealthComp");
 
 	// DataAsset
-	CHelpers::GetAsset(&CropDataTable, "/Game/Datas/DT_CropDatas");
+	//CHelpers::GetAsset(&CropDataTable, "/Game/Datas/DT_CropDatas");
 
 	// Property
-	NowGrowLevel = 0;
-	NowGrowValue = 0.0f;
+	CurrentGrowLevel = 0;
+	CurrentGrowValue = 0.0f;
 	UpdateTime = 1.0f;
 
 	// Set Components
@@ -38,9 +38,6 @@ ACBase_Crop::ACBase_Crop()
 		SetAutoGrowTimer(UpdateTime, true, UpdateTime);
 	}*/
 
-	// Load Data
-	LoadCropData();
-
 	SetType(EInteractObjectType::Crop);
 }
 
@@ -49,6 +46,21 @@ void ACBase_Crop::BeginPlay()
 	Super::BeginPlay();
 
 	SetInteractable();
+	GrowUp();
+	SetAutoGrowTimer(UpdateTime, true, UpdateTime);
+
+	// Component Setting
+	MoistureComp->AddMoisture(MoistureComp->GetSafeRange().Y);
+	NutritionComp->SetAutoReduceTimer(UpdateTime, true, UpdateTime);
+	NutritionComp->AddNutrition(NutritionComp->GetSafeRange().Y);
+
+	if (const TOptional<FCropGrowthData>& GrowthDataOpt_Start = GetCropGrowthData(CropName, CurrentGrowLevel))
+	{
+		if (GrowthDataOpt_Start.IsSet())
+		{
+			HealthComp->SetMaxHealth(GrowthDataOpt_Start.GetValue().Max_Health, true);
+		}
+	}
 }
 
 void ACBase_Crop::SetInteractable()
@@ -96,6 +108,88 @@ bool ACBase_Crop::OnUnhovered()
 	return false;
 }
 
+const TOptional<FCropData>& ACBase_Crop::GetCropDefaultData(FName InCropName)
+{
+	static TMap<FName, FCropData> CropDefaultDataMap;
+
+	// Exception handling
+	if (!CropDefaultTable)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Data Table is missing. Crop: %s"), InCropName.ToString());
+		return TOptional<FCropData>();
+	}
+
+	if (CropDefaultDataMap.Contains(InCropName))
+	{
+		return CropDefaultDataMap[InCropName];
+	}
+
+	FCropData* NewData=CropDefaultTable->FindRow<FCropData>(InCropName, "Lookup CropDefaultData");
+	if (NewData)
+	{
+		CropDefaultDataMap.Add(InCropName, *NewData);
+		return CropDefaultDataMap[InCropName];
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Can't Find Data about %s"), InCropName.ToString());
+		return TOptional<FCropData>();
+	}
+}
+
+const TOptional<FCropGrowthData>& ACBase_Crop::GetCropGrowthData(FName InCropName, int32 InLevel)
+{
+	static TMap<FName, TArray<FCropGrowthData>> CropGrowthDataMap;
+
+	// Exception handling
+	if (!CropGrowthTable || !CropDefaultTable)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Data Table is missing. Crop: %s"), *InCropName.ToString());
+		return TOptional<FCropGrowthData>();
+	}
+
+	TOptional<FCropData> CropDataOpt = GetCropDefaultData(InCropName);
+	if (!CropDataOpt.IsSet())
+	{
+		return TOptional<FCropGrowthData>();
+	}
+	const FCropData& CropData = CropDataOpt.GetValue();
+	if (InLevel<1 || InLevel > CropData.MaxLevel)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Invalid Growth Level (%d) for Crop: %s"), InLevel, *InCropName.ToString());
+		return TOptional<FCropGrowthData>();
+	}
+
+	TArray<FCropGrowthData>* FoundArray = CropGrowthDataMap.Find(InCropName);
+	if(CropGrowthDataMap.Contains(InCropName))
+	{
+		return CropGrowthDataMap[InCropName][InLevel - 1];
+	}
+
+	TArray<FCropGrowthData*> Rows;
+	CropGrowthTable->GetAllRows(TEXT("Fetching all rows"), Rows);
+
+	TArray<FCropGrowthData> NewRows;
+	for (const auto& Data : Rows)
+	{
+		if (Data->CropName == CropName)
+		{
+			NewRows.Add(*Data);
+		}
+	}
+
+	if (NewRows.Num() > 0)
+	{
+		CropGrowthDataMap.Add(InCropName, NewRows);
+		return CropGrowthDataMap[InCropName][InLevel - 1];
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Can't Find Data about %s"), InCropName.ToString());
+		return TOptional<FCropGrowthData>();
+	}
+}
+
 void ACBase_Crop::SetAutoGrowTimer(float InFirstDelay, bool InbLoop, float InLoopDelay)
 {
 	GetWorld()->GetTimerManager().ClearTimer(AutoGrowTimer);
@@ -104,27 +198,34 @@ void ACBase_Crop::SetAutoGrowTimer(float InFirstDelay, bool InbLoop, float InLoo
 
 void ACBase_Crop::GrowUp()
 {
-	CheckTrue(NowGrowLevel == MaxGrowLevel);
-
-	++NowGrowLevel;
-	if (CropData->GrowthStages.IsValidIndex(NowGrowLevel))
+	if (const TOptional<FCropData>& CropDataOpt = GetCropDefaultData(CropName))
 	{
-		UStaticMesh* MeshAsset;
-		CHelpers::GetAsset(&MeshAsset, CropData->GrowthStages[NowGrowLevel].MeshRef);
-		MeshComp->SetStaticMesh(MeshAsset);
+		if (!CropDataOpt.IsSet())
+		{
+			return;
+		}
+		else
+		{
+			const FCropData& CropData = CropDataOpt.GetValue();
+			CheckTrue(CurrentGrowLevel == CropData.MaxLevel);
+		}
 	}
-	MeshComp->SetStaticMesh(CropMeshes[NowGrowLevel]);
-	NutritionComp->SetSafeRange(GetCurrentGrowthData().SafeRange_Nutrition);
-	MoistureComp->SetSafeRange(GetCurrentGrowthData().SafeRange_Moisture);
-	HealthComp->SetMaxHealth(GetCurrentGrowthData().Max_Health, true);
+	
+
+	++CurrentGrowLevel;
+	
+	SetCropDatas();
 }
 
 void ACBase_Crop::AutoGrow()
 {
-	CheckNull(CropData);
+	//CheckNull(CropData);
 	CheckNull(OwnerField);
 
-	const FCropGrowthData& GrowthData = GetCurrentGrowthData();
+	const TOptional<FCropGrowthData>& GrowthDataOpt = GetCropGrowthData(CropName,CurrentGrowLevel);
+	if (!GrowthDataOpt.IsSet()) return;
+
+	const FCropGrowthData& GrowthData = GrowthDataOpt.GetValue();
 	// 양분 및 수분 소비
 	float AvailableNutrition = FMath::Min(GrowthData.ConsumeNutrition, OwnerField->GetNutritionComp()->GetCurrentNutrition());
 	NutritionComp->AddNutrition(AvailableNutrition);
@@ -134,65 +235,53 @@ void ACBase_Crop::AutoGrow()
 	MoistureComp->AddMoisture(AvailableMoisture);
 	OwnerField->GetMoistureComp()->ReduceMoisture(AvailableMoisture);
 
-	// 성장 값 증가
-	NowGrowValue += GrowthData.DefaultGrowUpValue;
-	if (NowGrowValue >= GrowthData.TargetGrowthValue)
-	{
-		GrowUp();
-	}
-
 	// Drain Nutrition From Field
-	float LeftNutritionapacity = GetCurrentGrowthData().Max_Nutrition - NutritionComp->GetCurrentNutrition();
-	float NowConsumeNutrition = LeftNutritionapacity > GetCurrentGrowthData().ConsumeNutrition ? GetCurrentGrowthData().ConsumeMoisture : LeftNutritionapacity;
+	float LeftNutritionapacity = GrowthData.Max_Nutrition - NutritionComp->GetCurrentNutrition();
+	float CurrentConsumeNutrition = LeftNutritionapacity > GrowthData.ConsumeNutrition ? GrowthData.ConsumeMoisture : LeftNutritionapacity;
 
 	float FieldNutrtion = OwnerField->GetNutritionComp()->GetCurrentNutrition();
-	NowConsumeNutrition = FieldNutrtion < NowConsumeNutrition ? FieldNutrtion : NowConsumeNutrition;
+	CurrentConsumeNutrition = FieldNutrtion < CurrentConsumeNutrition ? FieldNutrtion : CurrentConsumeNutrition;
 	
-	NutritionComp->AddNutrition(NowConsumeNutrition);
-	OwnerField->GetNutritionComp()->ReduceNutrition(NowConsumeNutrition);
+	NutritionComp->AddNutrition(CurrentConsumeNutrition);
+	OwnerField->GetNutritionComp()->ReduceNutrition(CurrentConsumeNutrition);
 
 	// Drain Moisture From Field
-	float LeftMoistureCapacity = GetCurrentGrowthData().Max_Moisture - MoistureComp->GetCurrentMoisture();
-	float NowConsumeMoisture = LeftMoistureCapacity > GetCurrentGrowthData().ConsumeMoisture ? GetCurrentGrowthData().ConsumeMoisture : LeftMoistureCapacity;
+	float LeftMoistureCapacity = GrowthData.Max_Moisture - MoistureComp->GetCurrentMoisture();
+	float CurrentConsumeMoisture = LeftMoistureCapacity > GrowthData.ConsumeMoisture ? GrowthData.ConsumeMoisture : LeftMoistureCapacity;
 
 	float FieldMoisture = OwnerField->GetMoistureComp()->GetCurrentMoisture();
-	NowConsumeMoisture = FieldMoisture < NowConsumeMoisture ? FieldMoisture : NowConsumeMoisture;
+	CurrentConsumeMoisture = FieldMoisture < CurrentConsumeMoisture ? FieldMoisture : CurrentConsumeMoisture;
 
-	MoistureComp->AddMoisture(NowConsumeMoisture);
-	OwnerField->GetMoistureComp()->ReduceMoisture(NowConsumeMoisture);
+	MoistureComp->AddMoisture(CurrentConsumeMoisture);
+	OwnerField->GetMoistureComp()->ReduceMoisture(CurrentConsumeMoisture);
 
 	// Grow
-	float GrowUpValue = GetCurrentGrowthData().DefaultGrowUpValue;
+	float GrowUpValue = GrowthData.DefaultGrowUpValue;
 
 	// Calc Weather, Moisture, Nutrition Effect
 
-	NowGrowValue += GrowUpValue;
-	if (NowGrowValue > GetCurrentGrowthData().TargetGrowthValue)
+	// 성장 값 증가
+	CurrentGrowValue += GrowUpValue;
+	if (CurrentGrowValue > GrowthData.TargetGrowthValue)
 	{
 		GrowUp();
 	}
 }
 
-void ACBase_Crop::LoadCropData()
+void ACBase_Crop::SetCropDatas()
 {
-	// Find Crop's Data form DataTable
-	//if (CropDataTable)
-	//{
-	//	CropData = CropDataTable->FindRow<FCropData>(CropName, TEXT("Lookup Crop Data"));
+	const TOptional<FCropGrowthData>& GrowthDataOpt = GetCropGrowthData(CropName, CurrentGrowLevel);
+	if (!GrowthDataOpt.IsSet()) return;
 
-	//	if (CropData)
-	//	{
-	//		MaxGrowLevel = CropData->MaxLevel;
-	//		NowGrowLevel = 0;
-
-	//		// 초기 성장 단계 Mesh 설정
-	//		if (CropData->GrowthStages.IsValidIndex(NowGrowLevel))
-	//		{
-	//			UStaticMesh* MeshAsset;
-	//			CHelpers::GetAsset(&MeshAsset, CropData->GrowthStages[NowGrowLevel].MeshRef);
-	//			MeshComp->SetStaticMesh(MeshAsset);
-	//		}
-	//	}
-	//}
+	const FCropGrowthData& CurrentGrowthData = GrowthDataOpt.GetValue();
+	
+	UStaticMesh* MeshAsset;
+	
+	CHelpers::GetAsset(&MeshAsset, CurrentGrowthData.MeshRef);
+	MeshComp->SetStaticMesh(MeshAsset);
+	//MeshComp->SetStaticMesh(CropMeshes[CurrentGrowLevel]);
+	NutritionComp->SetSafeRange(CurrentGrowthData.SafeRange_Nutrition);
+	MoistureComp->SetSafeRange(CurrentGrowthData.SafeRange_Moisture);
+	HealthComp->SetMaxHealth(CurrentGrowthData.Max_Health, true);
 }
 
