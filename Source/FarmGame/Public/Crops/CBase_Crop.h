@@ -183,10 +183,10 @@ protected:
 	float CurrentGrowValue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|DataTable")
-	UDataTable* CropDefaultTable;
+	TSoftObjectPtr<UDataTable> CropDefaultTable;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|DataTable")
-	UDataTable* CropGrowthTable;
+	TSoftObjectPtr<UDataTable> CropGrowthTable;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|Time")
 	float UpdateTime;

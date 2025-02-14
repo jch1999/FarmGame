@@ -3,6 +3,7 @@
 #include "Components/CMoistureComponent.h"
 #include "Components/CNutritionComponent.h"
 #include "Components/CCultivationComponent.h"
+#include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Crops/CBase_Crop.h"
 #include "CGameModeBase.h"
@@ -16,8 +17,10 @@ ACFarmField::ACFarmField()
 	CHelpers::CreateActorComponent(this,&MoistureComp, "MoistureComp");
 	CHelpers::CreateActorComponent(this, &NutritionComp, "NutritionComp");
 	CHelpers::CreateActorComponent(this, &CultivationComp, "CultivationComp");
+	CHelpers::CreateSceneComponent(this, &BoxComp, "BoxComp",RootComponent);
 	CHelpers::CreateSceneComponent(this, &InfoWidgetComp, "InfoWidgetComp", MeshComp);
 
+	// Set Widget Component
 	if (InfoWidgetComp)
 	{
 		InfoWidgetComp->SetRelativeLocation(FVector(0, 0, 130.0f));
@@ -31,12 +34,18 @@ ACFarmField::ACFarmField()
 		}
 	}
 
+	// Set Mesh Component
 	UStaticMesh* MeshAsset;
 	CHelpers::GetAsset(&MeshAsset, "/Game/Farm/Mesh/SM_FarmField");
 	if (MeshAsset)
 	{
 		MeshComp->SetStaticMesh(MeshAsset);
 	}
+
+	// Set Box Component
+	BoxComp->SetBoxExtent(FVector(64.0f, 64.0f, 96.0f));
+	BoxComp->SetRelativeLocation(FVector(0.0f, 0.0f, 96.0f));
+	BoxComp->SetCollisionProfileName(TEXT("ActionInteractObject"));
 
 	SetInteractable();
 	SetType(EInteractObjectType::FarmField);
@@ -135,11 +144,17 @@ bool ACFarmField::PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, const FTransfo
 bool ACFarmField::OnHovered()
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s is Hovered!"), *GetInteractName().ToString());
+	MeshComp->SetRenderCustomDepth(true);
+	MeshComp->SetCustomDepthStencilValue(1);
+
 	return false;
 }
 
 bool ACFarmField::OnUnhovered()
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s is Unhovered!"), *GetInteractName().ToString());
+	MeshComp->SetRenderCustomDepth(false);
+	MeshComp->SetCustomDepthStencilValue(0);
+
 	return false;
 }

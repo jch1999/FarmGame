@@ -18,25 +18,13 @@ ACBase_Crop::ACBase_Crop()
 	CHelpers::CreateActorComponent(this, &NutritionComp, "NutritionComp");
 	CHelpers::CreateActorComponent(this, &HealthComp, "HealthComp");
 
-	// DataAsset
-	//CHelpers::GetAsset(&CropDataTable, "/Game/Datas/DT_CropDatas");
-
 	// Property
 	CurrentGrowLevel = 0;
 	CurrentGrowValue = 0.0f;
 	UpdateTime = 1.0f;
 
-	// Set Components
-	/*if (Datas.Num() > 0)
-	{
-		MeshComp->SetStaticMesh(CropMeshes[0]);
-		MoistureComp->SetAutoReduceTimer(UpdateTime, true, UpdateTime);
-		MoistureComp->AddMoisture(MoistureComp->GetSafeRange().Y);
-		NutritionComp->SetAutoReduceTimer(UpdateTime, true, UpdateTime);
-		NutritionComp->AddNutrition(NutritionComp->GetSafeRange().Y);
-		HealthComp->SetMaxHealth(GetCurrentCropData().Max_Health, true);
-		SetAutoGrowTimer(UpdateTime, true, UpdateTime);
-	}*/
+	GetCropDefaultData(CropName);
+	GetCropGrowthData(CropName, 1);
 
 	SetType(EInteractObjectType::Crop);
 }
@@ -99,12 +87,18 @@ void ACBase_Crop::Interact(AActor* OtherActor)
 bool ACBase_Crop::OnHovered()
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s is Hovered!"), *GetInteractName().ToString());
+	MeshComp->SetRenderCustomDepth(true);
+	MeshComp->SetCustomDepthStencilValue(1);
+
 	return false;
 }
 
 bool ACBase_Crop::OnUnhovered()
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s is Unhovered!"), *GetInteractName().ToString());
+	MeshComp->SetRenderCustomDepth(false);
+	MeshComp->SetCustomDepthStencilValue(0);
+
 	return false;
 }
 
@@ -113,9 +107,9 @@ const TOptional<FCropData> ACBase_Crop::GetCropDefaultData(FName InCropName)
 	static TMap<FName, FCropData> CropDefaultDataMap;
 
 	// Exception handling
-	if (!CropDefaultTable)
+	if (!CropDefaultTable.IsValid())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Data Table is missing. Crop: %s"), *InCropName.ToString());
+		UE_LOG(LogTemp, Error, TEXT("Crop Default Data Table is missing. Crop: %s"), *InCropName.ToString());
 		return {};
 	}
 
@@ -142,9 +136,20 @@ const TOptional<FCropGrowthData> ACBase_Crop::GetCropGrowthData(FName InCropName
 	static TMap<FName, TArray<FCropGrowthData>> CropGrowthDataMap;
 
 	// Exception handling
-	if (!CropGrowthTable || !CropDefaultTable)
+	if (!CropGrowthTable.IsValid() || !CropDefaultTable.IsValid())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Data Table is missing. Crop: %s"), *InCropName.ToString());
+		if (!CropGrowthTable.IsValid() && !CropDefaultTable.IsValid())
+		{
+			UE_LOG(LogTemp, Error, TEXT("Data Table are both missing. Crop: %s"), *InCropName.ToString());
+		}
+		else if (!CropGrowthTable.IsValid())
+		{
+			UE_LOG(LogTemp, Error, TEXT("Crop Growth Data Table are both missing. Crop: %s"), *InCropName.ToString());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Crop Default Data Table is missing. Crop: %s"), *InCropName.ToString());
+		}
 		return {};
 	}
 
@@ -160,7 +165,6 @@ const TOptional<FCropGrowthData> ACBase_Crop::GetCropGrowthData(FName InCropName
 		return {};
 	}
 
-	TArray<FCropGrowthData>* FoundArray = CropGrowthDataMap.Find(InCropName);
 	if(CropGrowthDataMap.Contains(InCropName))
 	{
 		return CropGrowthDataMap[InCropName][InLevel - 1];
@@ -230,9 +234,6 @@ bool ACBase_Crop::IsHarvestable()
 
 void ACBase_Crop::AutoGrow()
 {
-	//CheckNull(CropData);
-	CheckNull(OwnerField);
-
 	const TOptional<FCropGrowthData>& GrowthDataOpt = GetCropGrowthData(CropName,CurrentGrowLevel);
 	if (!GrowthDataOpt.IsSet()) return;
 
@@ -246,25 +247,28 @@ void ACBase_Crop::AutoGrow()
 	MoistureComp->AddMoisture(AvailableMoisture);
 	OwnerField->GetMoistureComp()->ReduceMoisture(AvailableMoisture);
 
-	// Drain Nutrition From Field
-	float LeftNutritionapacity = GrowthData.Max_Nutrition - NutritionComp->GetCurrentNutrition();
-	float CurrentConsumeNutrition = LeftNutritionapacity > GrowthData.ConsumeNutrition ? GrowthData.ConsumeMoisture : LeftNutritionapacity;
+	if (OwnerField)
+	{
+		// Drain Nutrition From Field
+		float LeftNutritionapacity = GrowthData.Max_Nutrition - NutritionComp->GetCurrentNutrition();
+		float CurrentConsumeNutrition = LeftNutritionapacity > GrowthData.ConsumeNutrition ? GrowthData.ConsumeMoisture : LeftNutritionapacity;
 
-	float FieldNutrtion = OwnerField->GetNutritionComp()->GetCurrentNutrition();
-	CurrentConsumeNutrition = FieldNutrtion < CurrentConsumeNutrition ? FieldNutrtion : CurrentConsumeNutrition;
-	
-	NutritionComp->AddNutrition(CurrentConsumeNutrition);
-	OwnerField->GetNutritionComp()->ReduceNutrition(CurrentConsumeNutrition);
+		float FieldNutrtion = OwnerField->GetNutritionComp()->GetCurrentNutrition();
+		CurrentConsumeNutrition = FieldNutrtion < CurrentConsumeNutrition ? FieldNutrtion : CurrentConsumeNutrition;
 
-	// Drain Moisture From Field
-	float LeftMoistureCapacity = GrowthData.Max_Moisture - MoistureComp->GetCurrentMoisture();
-	float CurrentConsumeMoisture = LeftMoistureCapacity > GrowthData.ConsumeMoisture ? GrowthData.ConsumeMoisture : LeftMoistureCapacity;
+		NutritionComp->AddNutrition(CurrentConsumeNutrition);
+		OwnerField->GetNutritionComp()->ReduceNutrition(CurrentConsumeNutrition);
 
-	float FieldMoisture = OwnerField->GetMoistureComp()->GetCurrentMoisture();
-	CurrentConsumeMoisture = FieldMoisture < CurrentConsumeMoisture ? FieldMoisture : CurrentConsumeMoisture;
+		// Drain Moisture From Field
+		float LeftMoistureCapacity = GrowthData.Max_Moisture - MoistureComp->GetCurrentMoisture();
+		float CurrentConsumeMoisture = LeftMoistureCapacity > GrowthData.ConsumeMoisture ? GrowthData.ConsumeMoisture : LeftMoistureCapacity;
 
-	MoistureComp->AddMoisture(CurrentConsumeMoisture);
-	OwnerField->GetMoistureComp()->ReduceMoisture(CurrentConsumeMoisture);
+		float FieldMoisture = OwnerField->GetMoistureComp()->GetCurrentMoisture();
+		CurrentConsumeMoisture = FieldMoisture < CurrentConsumeMoisture ? FieldMoisture : CurrentConsumeMoisture;
+
+		MoistureComp->AddMoisture(CurrentConsumeMoisture);
+		OwnerField->GetMoistureComp()->ReduceMoisture(CurrentConsumeMoisture);
+	}
 
 	// Grow
 	float GrowUpValue = GrowthData.DefaultGrowUpValue;
@@ -289,7 +293,14 @@ void ACBase_Crop::SetCropDatas()
 	UStaticMesh* MeshAsset;
 	
 	CHelpers::GetAsset(&MeshAsset, CurrentGrowthData.MeshRef);
-	MeshComp->SetStaticMesh(MeshAsset);
+	if (!IsValid(MeshAsset))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Can't find Mesh Asset at %s"), *CurrentGrowthData.MeshRef);
+	}
+	else
+	{
+		MeshComp->SetStaticMesh(MeshAsset);
+	}
 	//MeshComp->SetStaticMesh(CropMeshes[CurrentGrowLevel]);
 	NutritionComp->SetSafeRange(CurrentGrowthData.SafeRange_Nutrition);
 	MoistureComp->SetSafeRange(CurrentGrowthData.SafeRange_Moisture);

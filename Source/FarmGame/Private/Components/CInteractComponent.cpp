@@ -203,7 +203,7 @@ void UCInteractComponent::DetectInteractableObjects()
 	FHitResult Hit;
 	if (CameraTrace(ECollisionChannel::ECC_GameTraceChannel2, Hit))
 	{
-		if (ActionInteractTarget)
+		if (IsValid(ActionInteractTarget))
 		{
 			if (OwnerCharacter->GetDistanceTo(ActionInteractTarget) > OwnerCharacter->GetDistanceTo(Hit.GetActor()))
 			{
@@ -221,6 +221,10 @@ void UCInteractComponent::DetectInteractableObjects()
 		ICInterface_Interactable* InteractObject = Cast<ICInterface_Interactable>(ActionInteractTarget);
 		InteractObject->OnHovered();
 		UE_LOG(LogTemp, Warning, TEXT("%s is detected!"), *(InteractObject->GetInteractName().ToString()));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Nothing Detected."));
 	}
 }
 
@@ -333,10 +337,11 @@ bool UCInteractComponent::RangeTrace(ECollisionChannel TraceChannel, TArray<FHit
 
 bool UCInteractComponent::CameraTrace(ECollisionChannel TraceChannel, FHitResult& Hit)
 {
-	FVector Start = OwnerCharacter->GetActorLocation() + OwnerCharacter->GetCameraComponent()->GetRelativeLocation();
+	UE_LOG(LogTemp, Warning, TEXT("CameraTrace Start!"));
+	FVector Start = OwnerCharacter->GetCameraComponent()->GetComponentLocation();
 	FVector End = Start + OwnerCharacter->GetCameraComponent()->GetForwardVector() * DetectDistance;
 
-	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 1.0f, 0, 2.0f);
+	//DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 1.0f, 0, 2.0f);
 	/*TArray<AActor*> Ignores;
 	Ignores.Add(OwnerCharacter);
 

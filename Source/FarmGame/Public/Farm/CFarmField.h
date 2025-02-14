@@ -10,6 +10,7 @@ class UCNutritionComponent;
 class UCCultivationComponent;
 class UWidgetComponent;
 class UStaticMeshComponent;
+class UBoxComponent;
 class UCFarmFieldWidget;
 class ACBase_Crop;
 
@@ -79,6 +80,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	UCCultivationComponent* CultivationComp;
+
+	UPROPERTY(VisibleAnywhere, Category = "Component")
+	UBoxComponent* BoxComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component")
 	UWidgetComponent* InfoWidgetComp;

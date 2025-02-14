@@ -40,7 +40,7 @@ bool UCHUDWidget::AddInteractRow(AActor* InActor)
 
 	if (InteractRows.Num() == 1)
 	{
-		InteractRows[0]->EnableTextOutline();
+		InteractRows[0]->OnSelected();
 		MouseWheelIcon->SetVisibility(ESlateVisibility::Visible);
 	}
 	EnsureVisibleInteractRow();
@@ -76,7 +76,7 @@ bool UCHUDWidget::RemoveInteractRow(AActor* InActor)
 	}
 	else
 	{
-		InteractRows[InteractIdx]->EnableTextOutline();
+		InteractRows[InteractIdx]->OnSelected();
 	}
 	EnsureVisibleInteractRow();
 
@@ -96,11 +96,11 @@ void UCHUDWidget::SetInteractIndex(int32 InIdx)
 
 	if (InteractIdx < InteractRows.Num())
 	{
-		InteractRows[InteractIdx]->DisableTextOutline();
+		InteractRows[InteractIdx]->OnUnSelected();
 	}
 
 	int32 PreviousIndex = InteractIdx;
-	InteractRows[InIdx]->EnableTextOutline();
+	InteractRows[InIdx]->OnSelected();
 	InteractIdx = InIdx;
 
 	UE_LOG(LogTemp, Warning, TEXT("SetInteractIndex PrevIndex: %d -> NewIndex: %d, NowSize: %d"), PreviousIndex, InteractIdx, InteractRows.Num());
@@ -113,12 +113,12 @@ void UCHUDWidget::UpInteractIndex()
 
 	if (InteractIdx < InteractRows.Num())
 	{
-		InteractRows[InteractIdx]->DisableTextOutline();
+		InteractRows[InteractIdx]->OnUnSelected();
 	}
 
 	int32 PreviousIndex = InteractIdx;
 	++InteractIdx %= InteractRows.Num();
-	InteractRows[InteractIdx]->EnableTextOutline();
+	InteractRows[InteractIdx]->OnSelected();
 
 	UE_LOG(LogTemp, Warning, TEXT("SetInteractIndex PrevIndex: %d -> NewIndex: %d, NowSize: %d"), PreviousIndex, InteractIdx, InteractRows.Num());
 	EnsureVisibleInteractRow();
@@ -130,7 +130,7 @@ void UCHUDWidget::DownInteractIndex()
 
 	if (InteractIdx < InteractRows.Num())
 	{
-		InteractRows[InteractIdx]->DisableTextOutline();
+		InteractRows[InteractIdx]->OnUnSelected();
 	}
 
 	int32 PreviousIndex = InteractIdx;
@@ -140,7 +140,7 @@ void UCHUDWidget::DownInteractIndex()
 		InteractIdx = InteractRows.Num() - 1;
 	}
 
-	InteractRows[InteractIdx]->EnableTextOutline();
+	InteractRows[InteractIdx]->OnSelected();
 
 	UE_LOG(LogTemp, Warning, TEXT("SetInteractIndex PrevIndex: %d -> NewIndex: %d, NowSize: %d"), PreviousIndex, InteractIdx, InteractRows.Num());
 	EnsureVisibleInteractRow();

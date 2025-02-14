@@ -1,6 +1,7 @@
 #include "UI/CInteractRow.h"
 #include "Utilities/CHelpers.h"
 #include "Components/TextBlock.h"
+#include "Components/Overlay.h"
 #include "Interfaces/CInterface_Interactable.h"
 void UCInteractRow::SetTarget(AActor* InActor)
 {
@@ -15,6 +16,18 @@ void UCInteractRow::SetTarget(AActor* InActor)
 AActor* UCInteractRow::GetTarget()
 {
 	return TargetActor.Get();
+}
+
+void UCInteractRow::OnSelected()
+{
+	EnableTextOutline();
+	InteractKeyOverlay->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UCInteractRow::OnUnSelected()
+{
+	DisableTextOutline();
+	InteractKeyOverlay->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UCInteractRow::EnableTextOutline()
