@@ -131,10 +131,10 @@ public:
 
 	// CropData
 	UFUNCTION(BlueprintCallable)
-	const TOptional<FCropData>& GetCropDefaultData(FName InCropName);
+	const TOptional<FCropData> GetCropDefaultData(FName InCropName);
 
 	UFUNCTION(BlueprintCallable)
-	const TOptional<FCropGrowthData>& GetCropGrowthData(FName InCropName, int32 InLevel);
+	const TOptional<FCropGrowthData> GetCropGrowthData(FName InCropName, int32 InLevel);
 
 	// Grow
 	UFUNCTION(BlueprintCallable)
@@ -144,7 +144,7 @@ public:
 	void GrowUp();
 
 	UFUNCTION(BlueprintPure)
-	FORCEINLINE bool IsHarvestable() { return CurrentGrowLevel == GetCropDefaultData(CropName).MaxLevel; }
+	FORCEINLINE bool IsHarvestable();
 
 	// Get Components
 	UFUNCTION(BlueprintPure)
@@ -182,10 +182,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crop|Defualt")
 	float CurrentGrowValue;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crop|DataTable")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|DataTable")
 	UDataTable* CropDefaultTable;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crop|DataTable")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|DataTable")
 	UDataTable* CropGrowthTable;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|Time")

@@ -1,3 +1,3 @@
-CropName,MaxLevel,PriceForQuality
-Tomato,3,"(10, 20, 30)"
-Berry,4,"(5, 10, 15)"
+ID,CropName,MaxLevel,PriceForQuality
+1,Tomato,3,"(10, 20, 30)"
+2,Berry,4,"(5, 10, 15)"

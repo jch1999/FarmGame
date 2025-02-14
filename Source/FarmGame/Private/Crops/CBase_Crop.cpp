@@ -108,15 +108,15 @@ bool ACBase_Crop::OnUnhovered()
 	return false;
 }
 
-const TOptional<FCropData>& ACBase_Crop::GetCropDefaultData(FName InCropName)
+const TOptional<FCropData> ACBase_Crop::GetCropDefaultData(FName InCropName)
 {
 	static TMap<FName, FCropData> CropDefaultDataMap;
 
 	// Exception handling
 	if (!CropDefaultTable)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Data Table is missing. Crop: %s"), InCropName.ToString());
-		return TOptional<FCropData>();
+		UE_LOG(LogTemp, Error, TEXT("Data Table is missing. Crop: %s"), *InCropName.ToString());
+		return {};
 	}
 
 	if (CropDefaultDataMap.Contains(InCropName))
@@ -132,12 +132,12 @@ const TOptional<FCropData>& ACBase_Crop::GetCropDefaultData(FName InCropName)
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Can't Find Data about %s"), InCropName.ToString());
-		return TOptional<FCropData>();
+		UE_LOG(LogTemp, Error, TEXT("Can't Find Data about %s"), *InCropName.ToString());
+		return {};
 	}
 }
 
-const TOptional<FCropGrowthData>& ACBase_Crop::GetCropGrowthData(FName InCropName, int32 InLevel)
+const TOptional<FCropGrowthData> ACBase_Crop::GetCropGrowthData(FName InCropName, int32 InLevel)
 {
 	static TMap<FName, TArray<FCropGrowthData>> CropGrowthDataMap;
 
@@ -145,19 +145,19 @@ const TOptional<FCropGrowthData>& ACBase_Crop::GetCropGrowthData(FName InCropNam
 	if (!CropGrowthTable || !CropDefaultTable)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Data Table is missing. Crop: %s"), *InCropName.ToString());
-		return TOptional<FCropGrowthData>();
+		return {};
 	}
 
 	TOptional<FCropData> CropDataOpt = GetCropDefaultData(InCropName);
 	if (!CropDataOpt.IsSet())
 	{
-		return TOptional<FCropGrowthData>();
+		return {};
 	}
 	const FCropData& CropData = CropDataOpt.GetValue();
 	if (InLevel<1 || InLevel > CropData.MaxLevel)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Invalid Growth Level (%d) for Crop: %s"), InLevel, *InCropName.ToString());
-		return TOptional<FCropGrowthData>();
+		return {};
 	}
 
 	TArray<FCropGrowthData>* FoundArray = CropGrowthDataMap.Find(InCropName);
@@ -185,8 +185,8 @@ const TOptional<FCropGrowthData>& ACBase_Crop::GetCropGrowthData(FName InCropNam
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Can't Find Data about %s"), InCropName.ToString());
-		return TOptional<FCropGrowthData>();
+		UE_LOG(LogTemp, Error, TEXT("Can't Find Data about %s"), *InCropName.ToString());
+		return {};
 	}
 }
 
@@ -215,6 +215,17 @@ void ACBase_Crop::GrowUp()
 	++CurrentGrowLevel;
 	
 	SetCropDatas();
+}
+
+bool ACBase_Crop::IsHarvestable()
+{
+	const TOptional<FCropData>& CropDataOpt = GetCropDefaultData(CropName);
+	if (CropDataOpt.IsSet())
+	{
+		const FCropData& CropData = CropDataOpt.GetValue();
+		return CurrentGrowLevel == CropData.MaxLevel;
+	}
+	return false;
 }
 
 void ACBase_Crop::AutoGrow()
