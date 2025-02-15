@@ -33,6 +33,23 @@ void ACBase_Crop::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// 데이터 테이블 강제 로드
+	if (!CropDefaultTable.IsValid())
+	{
+		CropDefaultTable = CropDefaultTable.LoadSynchronous();
+	}
+
+	if (!CropGrowthTable.IsValid())
+	{
+		CropGrowthTable = CropGrowthTable.LoadSynchronous();
+	}
+
+	if (!CropDefaultTable || !CropGrowthTable)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load DataTables!"));
+		return;
+	}
+
 	SetInteractable();
 	GrowUp();
 	SetAutoGrowTimer(UpdateTime, true, UpdateTime);
@@ -238,17 +255,17 @@ void ACBase_Crop::AutoGrow()
 	if (!GrowthDataOpt.IsSet()) return;
 
 	const FCropGrowthData& GrowthData = GrowthDataOpt.GetValue();
-	// 양분 및 수분 소비
-	float AvailableNutrition = FMath::Min(GrowthData.ConsumeNutrition, OwnerField->GetNutritionComp()->GetCurrentNutrition());
-	NutritionComp->AddNutrition(AvailableNutrition);
-	OwnerField->GetNutritionComp()->ReduceNutrition(AvailableNutrition);
-
-	float AvailableMoisture = FMath::Min(GrowthData.ConsumeMoisture, OwnerField->GetMoistureComp()->GetCurrentMoisture());
-	MoistureComp->AddMoisture(AvailableMoisture);
-	OwnerField->GetMoistureComp()->ReduceMoisture(AvailableMoisture);
-
 	if (OwnerField)
 	{
+		// 양분 및 수분 소비
+		float AvailableNutrition = FMath::Min(GrowthData.ConsumeNutrition, OwnerField->GetNutritionComp()->GetCurrentNutrition());
+		NutritionComp->AddNutrition(AvailableNutrition);
+		OwnerField->GetNutritionComp()->ReduceNutrition(AvailableNutrition);
+
+		float AvailableMoisture = FMath::Min(GrowthData.ConsumeMoisture, OwnerField->GetMoistureComp()->GetCurrentMoisture());
+		MoistureComp->AddMoisture(AvailableMoisture);
+		OwnerField->GetMoistureComp()->ReduceMoisture(AvailableMoisture);
+
 		// Drain Nutrition From Field
 		float LeftNutritionapacity = GrowthData.Max_Nutrition - NutritionComp->GetCurrentNutrition();
 		float CurrentConsumeNutrition = LeftNutritionapacity > GrowthData.ConsumeNutrition ? GrowthData.ConsumeMoisture : LeftNutritionapacity;
@@ -292,7 +309,7 @@ void ACBase_Crop::SetCropDatas()
 	
 	UStaticMesh* MeshAsset;
 	
-	CHelpers::GetAsset(&MeshAsset, CurrentGrowthData.MeshRef);
+	CHelpers::GetAssetDynamic(&MeshAsset, CurrentGrowthData.MeshRef);
 	if (!IsValid(MeshAsset))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Can't find Mesh Asset at %s"), *CurrentGrowthData.MeshRef);
