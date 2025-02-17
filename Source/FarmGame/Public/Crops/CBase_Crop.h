@@ -18,15 +18,6 @@ enum class ECropGrowStage :uint8
 	VegetativeGrowth, ReproductiveGrowth, Maturity, Senescence, MAX
 };
 
-UENUM(BlueprintType)
-enum class EQualityType : uint8
-{
-	Low,
-	Normal,
-	High,
-	MAX
-};
-
 USTRUCT(BlueprintType)
 struct FCropGrowthData: public FTableRowBase
 {

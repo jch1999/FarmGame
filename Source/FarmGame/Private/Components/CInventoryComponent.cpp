@@ -1,5 +1,5 @@
 #include "Components/CInventoryComponent.h"
-
+#include "Blueprint/UserWidget.h"
 UCInventoryComponent::UCInventoryComponent()
 {
 }
