@@ -97,6 +97,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Crop")
 	ACBase_Crop* Crop;
 
+	// Interact Interface
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
+	bool bInteractable;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
+	EInteractObjectType InteractType;
+
 private:
 	UMaterialInstanceDynamic* FieldMaterial;
 };

@@ -31,8 +31,4 @@ public:
 	virtual void Interact(AActor* OtherActor) = 0;
 	virtual bool OnHovered() = 0;
 	virtual bool OnUnhovered() = 0;
-
-protected:
-	bool bInteractable;
-	EInteractObjectType InteractType;
 };

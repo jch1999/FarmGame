@@ -1,27 +1,41 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Item/CItemBase.h"
+#include "Components/BoxComponent.h"
 
-// Sets default values
 ACItemBase::ACItemBase()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
+	// Box Component
+	BoxComp->SetBoxExtent(FVector(64.0f, 64.0f, 64.0f));
+	BoxComp->SetRelativeLocation(FVector(0.0f, 0.0f, 64.0f));
+	BoxComp->SetCollisionProfileName(TEXT("InteractObject"));
 }
 
-// Called when the game starts or when spawned
-void ACItemBase::BeginPlay()
+void ACItemBase::SetUsable()
 {
-	Super::BeginPlay();
-	
+	bUsable = true;
 }
 
-// Called every frame
-void ACItemBase::Tick(float DeltaTime)
+void ACItemBase::SetUnusable()
 {
-	Super::Tick(DeltaTime);
-
+	bUsable = false;
 }
 
+
+void AddAvailableCount(int32 InAmount)
+{
+	AvailableCount += InAmount;
+}
+
+void SetInteractable()
+{
+	bInteractable = true;
+}
+
+void SetUnInteractable()
+{
+	bInteractable = false;
+}
+
+void SetType(EInteractObjectType InNewType)
+{
+	InteractType = InNewType;
+}

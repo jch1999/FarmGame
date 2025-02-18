@@ -13,5 +13,9 @@ UCLASS()
 class FARMGAME_API AMyCItem_Tool : public ACItemBase
 {
 	GENERATED_BODY()
-	
+
+	// From Interface
+	virtual bool UseItem() override;;
+
+	virtual FName GetInteractName() override;
 };

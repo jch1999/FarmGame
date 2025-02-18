@@ -184,6 +184,12 @@ protected:
 
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly,Category="Crop|Mesh")
 	//TArray<UStaticMesh*> CropMeshes;
+	
+	// Interact Interface
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
+	bool bInteractable;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
+	EInteractObjectType InteractType;
 
 private:
 	FTimerHandle AutoGrowTimer;

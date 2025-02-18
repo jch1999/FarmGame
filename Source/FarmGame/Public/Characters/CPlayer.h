@@ -105,7 +105,13 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UCInteractComponent* InteractComp;
 
-	// Item
+	// Interact Interface
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
+	bool bInteractable;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
+	EInteractObjectType InteractType;
+
+	// Temp Inventory
 	UPROPERTY(VisibleAnywhere, Category="Item")
 	TArray<TScriptInterface<ICItemInterface>> ItemContainer;
 
