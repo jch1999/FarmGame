@@ -15,13 +15,11 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable,Category="Crop")
-	bool SetCropData(TOptional<FCropData> InDataOpt);
+	bool SetCropData(FCropData& InData);
 
 	// From Interface
 	virtual bool UseItem() override;;
-
-	virtual FName GetInteractName() override;
-
+	virtual void Interact(AActor* OtherActor) override;
 
 public:
 	UPROPERTY(EditAnywhere, Category="Crop|Data")

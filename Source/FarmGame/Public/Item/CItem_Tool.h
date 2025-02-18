@@ -4,18 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "Item/CItemBase.h"
-#include "MyCItem_Tool.generated.h"
+#include "CItem_Tool.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FARMGAME_API AMyCItem_Tool : public ACItemBase
+class FARMGAME_API ACItem_Tool : public ACItemBase
 {
 	GENERATED_BODY()
 
+public:
+	ACItem_Tool();
+
 	// From Interface
 	virtual bool UseItem() override;;
-
-	virtual FName GetInteractName() override;
 };

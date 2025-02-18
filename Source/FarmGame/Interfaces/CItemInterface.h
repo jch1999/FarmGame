@@ -21,6 +21,7 @@ enum class EQualityType : uint8
 	High,
 	MAX
 };
+
 USTRUCT(BlueprintType)
 struct FItemData : public FTableRowBase
 {
@@ -48,7 +49,10 @@ struct FItemData : public FTableRowBase
 	float ItemWeight;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EQualityType ItemQuality;
+	EQualityType ItemQuality; // 품질 추가
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Price; // 품질별 가격
 };
 
 UINTERFACE(MinimalAPI)

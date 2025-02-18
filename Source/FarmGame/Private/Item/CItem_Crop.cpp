@@ -1,18 +1,15 @@
 #include "Item/CItem_Crop.h"
-
+#include "Components/CInventoryComponent.h"
 ACItem_Crop::ACItem_Crop()
 {
-	SetType(EInteractObjectType::Crop);
+	SetUnusable();
 }
 
-bool ACItem_Crop::SetCropData(TOptional<FCropData> InDataOpt)
+bool ACItem_Crop::SetCropData(FCropData& InData)
 {
-	if (InDataOpt.IsSet())
-	{
-		CropData  = InDataOpt.GetValue();
-		return true;
-	}
-	return false;
+	CropData = InData;
+
+	return true;
 }
 
 bool ACItem_Crop::UseItem()
@@ -20,7 +17,20 @@ bool ACItem_Crop::UseItem()
 	return false;
 }
 
-FName ACItem_Crop::GetInteractName()
+void ACItem_Crop::Interact(AActor* OtherActor)
 {
-	return FName();
+	UCInventoryComponent* InventoryComp = OtherActor->GetComponentByClass<UCInventoryComponent>();
+	if (InventoryComp)
+	{
+		TOptional<FItemData> ItemDataOpt = GetItemtData(ItemName);
+		if (ItemDataOpt.IsSet())
+		{
+			InventoryComp->AddItem(ItemDataOpt.GetValue(), AvailableCount);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Add Item failed on %s"), *ItemName.ToString());
+		}
+	}
+	Destroy();
 }

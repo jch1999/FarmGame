@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Interfaces\/CItemInterface.h"
 #include "CInventoryComponent.generated.h"
 
 class UUserWidget;
@@ -16,6 +17,9 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+public:
+	bool AddItem(FItemData& InItemData, int32& InCount);
 
 public:
 	// Widget

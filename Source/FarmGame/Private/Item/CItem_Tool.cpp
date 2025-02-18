@@ -1,15 +1,12 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+#include "Item/CItem_Tool.h"
 
-
-#include "Item/MyCItem_Tool.h"
-#include "CItem_Tool.h"
-
-bool AMyCItem_Tool::UseItem()
+ACItem_Tool::ACItem_Tool()
 {
-    return false;
+    SetInteractable();
+    SetUsable();
 }
 
-FName AMyCItem_Tool::GetInteractName()
+bool ACItem_Tool::UseItem()
 {
-    return FName();
+    return false;
 }

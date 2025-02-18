@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -8,7 +6,7 @@
 #include "Interfaces/CInterface_Interactable.h"
 #include "CItemBase.generated.h"
 
-class UBoxComponent;
+class USphereComponent;
 
 UCLASS(Abstract) // 직접 인스턴스화 불가능하게 설정
 class FARMGAME_API ACItemBase : public AActor, public ICItemInterface,public ICInterface_Interactable
@@ -34,7 +32,7 @@ public:
 	virtual void SetInteractable() override;
 	virtual void SetUnInteractable() override;
 	virtual EInteractObjectType GetType() override { return InteractType; }
-	virtual FName GetInteractName() override PURE_VIRTUAL(ACItemBase::GetInteractName, return TEXT(""););
+	virtual FName GetInteractName() override;
 	virtual void SetType(EInteractObjectType InNewType) override;
 	virtual void Interact(AActor* OtherActor) PURE_VIRTUAL(ACItemBase::Interact, return;);
 	virtual bool OnHovered() PURE_VIRTUAL(ACItemBase::OnHovered, return false;);
@@ -44,12 +42,13 @@ protected:
 	// Components
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	UStaticMeshComponent* MeshComp;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
-	UBoxComponent* BoxComp;
+	USphereComponent* SphereComp;
 
 	// 아이템 정보
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	FItemData ItemData;
+	FName ItemName;
 
 	// 사용 가능 여부
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemInterface")
@@ -57,8 +56,13 @@ protected:
 	// 현재 보유 개수
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemInterface")
 	int32 AvailableCount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemInterface")
+	EQualityType ItemQuality;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
 	bool bInteractable;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
 	EInteractObjectType InteractType;
 };

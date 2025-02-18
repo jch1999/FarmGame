@@ -11,6 +11,7 @@ class UCNutritionComponent;
 class UCHealthComponent;
 class ACFarmField;
 class UStaticMesh;
+class ACItem_Crop;
 
 UENUM(BlueprintType)
 enum class ECropGrowStage :uint8
@@ -76,7 +77,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<float> PriceForQuality;
+
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	//TArray<FString> HarvetIDForQuality;
 };
+
+class UBoxComponent;
 
 UCLASS()
 class FARMGAME_API ACBase_Crop : public AActor, public ICInterface_Interactable
@@ -120,13 +126,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	bool OnUnhovered() override;
 
-	// CropData
-	UFUNCTION(BlueprintCallable)
-	const TOptional<FCropData> GetCropDefaultData(FName InCropName);
-
-	UFUNCTION(BlueprintCallable)
-	const TOptional<FCropGrowthData> GetCropGrowthData(FName InCropName, int32 InLevel);
-
 	// Grow
 	UFUNCTION(BlueprintCallable)
 	void SetAutoGrowTimer(float InFirstDelay, bool InbLoop = false, float InLoopDelay = 0.0f);
@@ -134,8 +133,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void GrowUp();
 
+	// Harvest
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE bool IsHarvestable();
+
+	void DoHarvest();
 
 	// Get Components
 	UFUNCTION(BlueprintPure)
@@ -164,6 +166,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	UCHealthComponent* HealthComp;
 
+	UPROPERTY(VisibleAnywhere, Category = "Component")
+	UBoxComponent* BoxComp;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crop|Defualt")
 	FName CropName;
@@ -173,17 +178,14 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crop|Defualt")
 	float CurrentGrowValue;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|DataTable")
-	TSoftObjectPtr<UDataTable> CropDefaultTable;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|DataTable")
-	TSoftObjectPtr<UDataTable> CropGrowthTable;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|Time")
 	float UpdateTime;
 
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly,Category="Crop|Mesh")
-	//TArray<UStaticMesh*> CropMeshes;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|Harvest")
+	TSubclassOf<ACItem_Crop> CropItemClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|Harvest")
+	TArray<FTransform> SpawnPoints;
 	
 	// Interact Interface
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
