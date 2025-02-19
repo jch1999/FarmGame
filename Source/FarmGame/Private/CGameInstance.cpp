@@ -1,5 +1,7 @@
 #include "CGameInstance.h"
 #include "Crops\/CBase_Crop.h"
+#include "Blueprint/UserWidget.h"
+#include "Components/TextBlock.h"
 
 UCGameInstance::UCGameInstance()
 {
@@ -184,4 +186,19 @@ const TOptional<FItemAssetData> UCGameInstance::GetItemtAssetData(EItemID InItem
 	UE_LOG(LogTemp, Error, TEXT("Can't Find Data about %s"), *(UEnum::GetValueAsString(InItemID)));
 	return {};
 
+}
+
+void UCGameInstance::ShowWarningWidget(FString Message)
+{
+	if (UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), WarningWidgetClass))
+	{
+		// 위젯에 경고 메시지 설정 - 나중에 WarningWidget으로 이동 에정
+		UTextBlock* TextBlock = Cast<UTextBlock>(Widget->GetWidgetFromName(TEXT("WarningText")));
+		if (TextBlock)
+		{
+			TextBlock->SetText(FText::FromString(Message));
+		}
+
+		Widget->AddToViewport();
+	}
 }

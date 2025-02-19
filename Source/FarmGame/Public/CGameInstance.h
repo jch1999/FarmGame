@@ -19,6 +19,9 @@ protected:
 	virtual void Init() override;
 
 public:
+	void ShowWarningWidget(FString Message);
+
+public:
 	// Get Crop Data
 	const TOptional<FCropData> GetCropDefaultData(FName InCropName);
 
@@ -43,4 +46,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable|Item")
 	TSoftObjectPtr<UDataTable> ItemAssetDataTable;
+
+	// Widget
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|Warning")
+	TSubclassOf<UUserWidget> WarningWidgetClass;
+
 };

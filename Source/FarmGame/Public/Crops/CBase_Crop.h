@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interfaces/CInterface_Interactable.h"
+#include "Interfaces/CItemInterface.h"
 #include "Engine/DataTable.h"
 #include "CBase_Crop.generated.h"
 
@@ -76,8 +77,14 @@ public:
 	int32 MaxLevel;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<float> PriceForQuality;
+	TArray<EItemID> IDForQuality;
 
+	// Effect
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString GrowUpPraticleEffectRef;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString GrowUpSoundEffectRef;
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	//TArray<FString> HarvetIDForQuality;
 };
@@ -133,11 +140,23 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void GrowUp();
 
+	UFUNCTION(BlueprintCallable)
+	void PlayGrowthEffects();
+
+	UFUNCTION(BlueprintPure)
+	bool IsDead() { return GetHealthComp()->GetCurrentHealth() < 0.0f; }
+
 	// Harvest
 	UFUNCTION(BlueprintPure)
-	FORCEINLINE bool IsHarvestable();
+	bool IsHarvestable();
 
 	void DoHarvest();
+	
+	EQualityType GetCropQuality() { return CropQuality; }
+	void SetCropQuality(EQualityType InType);
+
+	UFUNCTION()
+	void ChangeQualityByHealth(float CureentHealth, float PrevHealth, float MaxHealth);
 
 	// Get Components
 	UFUNCTION(BlueprintPure)
@@ -169,6 +188,14 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	UBoxComponent* BoxComp;
 
+	// Effect
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	UParticleSystem* GrowthParticleEffect;  // 성장 파티클 효과
+
+	// 사운드 효과 변수
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	USoundBase* GrowthSoundEffect;  // 성장 사운드 효과
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crop|Defualt")
 	FName CropName;
@@ -182,10 +209,10 @@ protected:
 	float UpdateTime;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|Harvest")
-	TSubclassOf<ACItem_Crop> CropItemClass;
+	TArray<FTransform> SpawnPoints;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|Harvest")
-	TArray<FTransform> SpawnPoints;
+	EQualityType CropQuality;
 	
 	// Interact Interface
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")

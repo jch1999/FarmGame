@@ -20,8 +20,16 @@ protected:
 
 public:
 	bool AddItem(FItemData& InItemData, int32& InCount);
+	void ShowWarningWidget(FString Message);
 
 public:
+	UPROPERTY(VisibleAnywhere, Category = "Inventory")
+	TMap<EItemID, int32> InventoryItems;
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	float NowCapacity;
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	float MaxCapacity;
+
 	// Widget
 	UPROPERTY(VisibleAnywhere, Category = "Widget")
 	TSubclassOf<UUserWidget> InventoryWidgetClass;

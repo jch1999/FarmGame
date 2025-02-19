@@ -33,7 +33,10 @@ void ACItem_Crop::Interact(AActor* OtherActor)
 				TOptional<FItemData> ItemDataOpt = MyInstance->GetItemtData(ItemID);
 				if (ItemDataOpt.IsSet())
 				{
-					InventoryComp->AddItem(ItemDataOpt.GetValue(), AvailableCount);
+					if (InventoryComp->AddItem(ItemDataOpt.GetValue(), AvailableCount))
+					{
+						Destroy();
+					}
 				}
 				else
 				{
@@ -42,5 +45,4 @@ void ACItem_Crop::Interact(AActor* OtherActor)
 			}
 		}
 	}
-	Destroy();
 }

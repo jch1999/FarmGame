@@ -35,6 +35,7 @@ enum class EItemID :uint8
 UENUM(BlueprintType)
 enum class EQualityType : uint8
 {
+	None,
 	Low,
 	Normal,
 	High,
@@ -54,6 +55,12 @@ struct FItemAssetData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString ItemIconTextureRef;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString ParticleEffectRef;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString SoundEffectRef;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString Description;
@@ -78,9 +85,6 @@ struct FItemData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ItemWeight;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EQualityType ItemQuality; // 품질 추가
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Price; // 품질별 가격

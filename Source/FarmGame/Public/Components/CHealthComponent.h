@@ -4,7 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "CHealthComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FHealthChanged);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FHealthChanged, float, CurrentHealth, float, PrevHealth, float, MaxHealth);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FARMGAME_API UCHealthComponent : public UActorComponent

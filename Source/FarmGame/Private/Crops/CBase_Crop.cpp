@@ -9,6 +9,8 @@
 #include "UI/CCropWidget.h"
 #include "Item/CItem_Crop.h"
 #include "CGameInstance.h"
+#include "Item/CItem_Crop.h"
+#include "Particles/ParticleEmitter.h"
 
 ACBase_Crop::ACBase_Crop()
 	: OwnerField(nullptr)
@@ -41,6 +43,7 @@ void ACBase_Crop::BeginPlay()
 {
 	Super::BeginPlay();
 
+	HealthComp->OnHealthChanged.AddDynamic(this, &ACBase_Crop::ChangeQualityByHealth);
 	SetInteractable();
 	GrowUp();
 	SetAutoGrowTimer(UpdateTime, true, UpdateTime);
@@ -125,12 +128,19 @@ void ACBase_Crop::GrowUp()
 				else
 				{
 					const FCropData& CropData = CropDataOpt.GetValue();
+					if (CurrentGrowLevel == 0)
+					{
+						CHelpers::GetAssetDynamic(&GrowthParticleEffect, CropData.GrowUpPraticleEffectRef);
+						CHelpers::GetAssetDynamic(&GrowthSoundEffect, CropData.GrowUpSoundEffectRef);
+					}
 					CheckTrue(CurrentGrowLevel == CropData.MaxLevel);
+
+					PlayGrowthEffects();
 				}
 			}
 			++CurrentGrowLevel;
-
 			SetCropDatas();
+
 			return;
 		}
 	}
@@ -140,8 +150,37 @@ void ACBase_Crop::GrowUp()
 	}
 }
 
+void ACBase_Crop::PlayGrowthEffects()
+{
+	// 파티클 효과 재생
+	if (GrowthParticleEffect)  // 파티클이 설정되어 있으면
+	{
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			// 현재 위치에 파티클을 재생
+			UGameplayStatics::SpawnEmitterAtLocation(World, GrowthParticleEffect, GetActorLocation());
+		}
+	}
+
+	// 사운드 효과 재생
+	if (GrowthSoundEffect)  // 사운드가 설정되어 있으면
+	{
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			// 현재 위치에서 사운드를 재생
+			UGameplayStatics::PlaySoundAtLocation(World, GrowthSoundEffect, GetActorLocation());
+		}
+	}
+}
+
 bool ACBase_Crop::IsHarvestable()
 {
+	if (IsDead())
+	{
+		return false;
+	}
 	UGameInstance* Instance = GetGameInstance();
 	if (Instance)
 	{
@@ -161,20 +200,92 @@ bool ACBase_Crop::IsHarvestable()
 
 void ACBase_Crop::DoHarvest()
 {
-	for (auto& SpawnPoint : SpawnPoints)
+	if (IsDead())
 	{
-		UWorld* World = GetWorld();
-		if (World)
+		UE_LOG(LogTemp, Error, TEXT("Crop is dead!. CropName : %s"), *CropName.ToString());
+		return;
+	}
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		UGameInstance* GI = GetGameInstance();
+		if (UCGameInstance* GameInstance = Cast<UCGameInstance>(GI))
 		{
-			/*ACItem_Crop* CropItem=World->SpawnActorDeferred(CropItemClass, SpawnPoint);
-			TOptional<FCropData> CropDataOpt = GetCropDefaultData(CropName);
-			if (CropDataOpt.IsSet())
+			if (TOptional<FCropData> CropDataOpt = GameInstance->GetCropDefaultData(CropName))
 			{
-				CropItem->SetCropData(CropDataOpt.GetValue());
+				FCropData Data = CropDataOpt.GetValue();
+				TOptional<FItemAssetData> ItemAssetDataOpt;
+				switch (GetCropQuality())
+				{
+				case EQualityType::Low:
+				{
+					ItemAssetDataOpt = GameInstance->GetItemtAssetData(Data.IDForQuality[0]);
+				}
+				break;
+				case EQualityType::Normal:
+				{
+					ItemAssetDataOpt = GameInstance->GetItemtAssetData(Data.IDForQuality[1]);
+				}
+				break;
+				case EQualityType::High:
+				{
+					ItemAssetDataOpt = GameInstance->GetItemtAssetData(Data.IDForQuality[2]);
+				}
+				break;
+				default:
+				{
+					UE_LOG(LogTemp, Error, TEXT("Creation of crop item failed. Invalid Quality. %s"), *(UEnum::GetValueAsString(GetCropQuality())));
+					return;
+				}
+				break;
+				}
+				if (ItemAssetDataOpt.IsSet())
+				{
+					FItemAssetData ItemAssetData = ItemAssetDataOpt.GetValue();
+					TSubclassOf<ACItem_Crop> CropItemClass;
+					CHelpers::GetClass(&CropItemClass, ItemAssetData.ItemClassRef);
+					if (CropItemClass)
+					{
+						for (auto& SpawnPoint : SpawnPoints)
+						{
+							ACItem_Crop* CropItem = World->SpawnActorDeferred<ACItem_Crop>(CropItemClass, SpawnPoint);
+							if (!CropItem)
+							{
+								UE_LOG(LogTemp, Error, TEXT("Failed to spawn crop item actor."));
+								return;
+							}
+							CropItem->FinishSpawning(SpawnPoint);
+						}
+					}
+					else
+					{
+						UE_LOG(LogTemp, Error, TEXT("Creation of crop item failed. Invalid Clas Ref. %s"), *(UEnum::GetValueAsString(ItemAssetData.ItemID)));
+						return;
+					}
+				}
 			}
-
-			CropItem->FinishSpawning(SpawnPoint);*/
 		}
+	}
+}
+
+void ACBase_Crop::SetCropQuality(EQualityType InType)
+{
+	CropQuality = InType;
+}
+
+void ACBase_Crop::ChangeQualityByHealth(float CureentHealth, float PrevHealth, float MaxHealth)
+{
+	if (HealthComp->GetCurrentHealth() / HealthComp->GetMaxHealth() < 0.3f)
+	{
+		SetCropQuality(EQualityType::Low);
+	}
+	else if (HealthComp->GetCurrentHealth() / HealthComp->GetMaxHealth() < 0.8f)
+	{
+		SetCropQuality(EQualityType::Normal);
+	}
+	else
+	{
+		SetCropQuality(EQualityType::High);
 	}
 }
 
