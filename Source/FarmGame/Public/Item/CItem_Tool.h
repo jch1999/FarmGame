@@ -17,6 +17,7 @@ class FARMGAME_API ACItem_Tool : public ACItemBase
 public:
 	ACItem_Tool();
 
+public:
 	// From Interface
 	virtual bool UseItem() override;;
 };

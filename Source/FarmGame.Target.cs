@@ -12,5 +12,6 @@ public class FarmGameTarget : TargetRules
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_4;
 		ExtraModuleNames.Add("FarmGame");
         bUseUnityBuild = true;
+        bUseAdaptiveUnityBuild = false;
     }
 }

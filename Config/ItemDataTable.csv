@@ -1,0 +1,7 @@
+RowName,ItemID,ItemName,ItemType,MaxStackSize,ItemWeight,ItemQuality,Price
+Tomato_Low,Tomato_Low,Tomato,Crop,255,2.5,Low,10
+Tomato_Normal,Tomato_Normal,Tomato,Crop,255,2.5,Normal,20
+Tomato_High,Tomato_High,Tomato,Crop,255,2.5,High,30
+Berry_Low,Berry_Low,Berry,Crop,255,1,Low,5
+Berry_Normal,Berry_Normal,Berry,Crop,255,1,Normal,10
+Berry_High,Berry_High,Berry,Crop,255,1,High,15

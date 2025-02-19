@@ -14,6 +14,25 @@ enum class EItemType : uint8
 };
 
 UENUM(BlueprintType)
+enum class EItemID :uint8
+{
+	// Crop
+	Tomato_Low,
+	Tomato_Normal,
+	Tomato_High,
+	Berry_Low,
+	Berry_Normal,
+	Berry_High,
+	// Seed
+	Seed_Tomato,
+	Seed_Berry,
+	// Tool
+	WaterCan,
+	// End
+	MAX
+};
+
+UENUM(BlueprintType)
 enum class EQualityType : uint8
 {
 	Low,
@@ -23,24 +42,36 @@ enum class EQualityType : uint8
 };
 
 USTRUCT(BlueprintType)
+struct FItemAssetData : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EItemID ItemID;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString ItemClassRef;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString ItemIconTextureRef;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString Description;
+};
+
+USTRUCT(BlueprintType)
 struct FItemData : public FTableRowBase
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EItemID ItemID;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName ItemName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 ItemID;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EItemType ItemType;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UTexture2D* ItemIcon;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString Description;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	uint8 MaxStackSize;
@@ -61,9 +92,6 @@ class UCItemInterface : public UInterface
 	GENERATED_BODY()
 };
 
-/**
- * 
- */
 class FARMGAME_API ICItemInterface
 {
 	GENERATED_BODY()

@@ -1,5 +1,7 @@
 #include "Item/CItem_Crop.h"
 #include "Components/CInventoryComponent.h"
+#include "CGameInstance.h"
+
 ACItem_Crop::ACItem_Crop()
 {
 	SetUnusable();
@@ -22,14 +24,22 @@ void ACItem_Crop::Interact(AActor* OtherActor)
 	UCInventoryComponent* InventoryComp = OtherActor->GetComponentByClass<UCInventoryComponent>();
 	if (InventoryComp)
 	{
-		TOptional<FItemData> ItemDataOpt = GetItemtData(ItemName);
-		if (ItemDataOpt.IsSet())
+		UGameInstance* Instance = GetGameInstance();
+		if (Instance)
 		{
-			InventoryComp->AddItem(ItemDataOpt.GetValue(), AvailableCount);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Add Item failed on %s"), *ItemName.ToString());
+			UCGameInstance* MyInstance = Cast<UCGameInstance>(Instance);
+			if (MyInstance)
+			{
+				TOptional<FItemData> ItemDataOpt = MyInstance->GetItemtData(ItemID);
+				if (ItemDataOpt.IsSet())
+				{
+					InventoryComp->AddItem(ItemDataOpt.GetValue(), AvailableCount);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Error, TEXT("Add Item failed on %s"), *(UEnum::GetValueAsString(ItemID)));
+				}
+			}
 		}
 	}
 	Destroy();

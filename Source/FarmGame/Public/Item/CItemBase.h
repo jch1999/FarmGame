@@ -48,7 +48,7 @@ protected:
 
 	// 아이템 정보
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	FName ItemName;
+	EItemID ItemID;
 
 	// 사용 가능 여부
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemInterface")

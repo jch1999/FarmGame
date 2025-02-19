@@ -20,6 +20,11 @@ UCGameInstance::UCGameInstance()
 	{
 		ItemDataTable = ItemDataTable.LoadSynchronous();
 	}
+
+	if (!ItemAssetDataTable.IsValid())
+	{
+		ItemAssetDataTable = ItemAssetDataTable.LoadSynchronous();
+	}
 }
 
 void UCGameInstance::Init()
@@ -119,31 +124,64 @@ const TOptional<FCropGrowthData> UCGameInstance::GetCropGrowthData(FName InCropN
 	}
 }
 
-const TOptional<FItemData> UCGameInstance::GetItemtData(FName InItemName)
+const TOptional<FItemData> UCGameInstance::GetItemtData(EItemID InItemID)
 {
-	static TMap<FName, FItemData> ItemDataMap;
+	static TMap<EItemID, FItemData> ItemDataMap;
 
 	// Exception handling
 	if (!ItemDataTable.IsValid())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Itemt Data Table is missing. Item: %s"), *InItemName.ToString());
+		UE_LOG(LogTemp, Error, TEXT("Itemt Data Table is missing. Item: %s"),*(UEnum::GetValueAsString(InItemID)));
 		return {};
 	}
 
-	if (ItemDataMap.Contains(InItemName))
+	if (ItemDataMap.IsEmpty())
 	{
-		return ItemDataMap[InItemName];
+		TArray<FItemData*> ItemRows;
+		ItemAssetDataTable->GetAllRows(TEXT("Loading Item Data"), ItemRows);
+
+		for (FItemData* Row : ItemRows)
+		{
+			ItemDataMap.Add(Row->ItemID, *Row);
+		}
 	}
 
-	FItemData* NewData = ItemDataTable->FindRow<FItemData>(InItemName, "Lookup CropDefaultData");
-	if (NewData)
+	if (ItemDataMap.Contains(InItemID))
 	{
-		ItemDataMap.Add(InItemName, *NewData);
-		return ItemDataMap[InItemName];
+		return ItemDataMap[InItemID];
 	}
-	else
+
+	UE_LOG(LogTemp, Error, TEXT("Can't Find Data about %s"), *(UEnum::GetValueAsString(InItemID)));
+	return {};
+}
+
+const TOptional<FItemAssetData> UCGameInstance::GetItemtAssetData(EItemID InItemID)
+{
+	static TMap<EItemID, FItemAssetData> ItemAssetMap;
+
+	// Exception handling
+	if (!ItemAssetDataTable.IsValid())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Can't Find Data about %s"), *InItemName.ToString());
+		UE_LOG(LogTemp, Error, TEXT("Itemt Asset Data Table is missing. Item: %s"), *(UEnum::GetValueAsString(InItemID)));
 		return {};
 	}
+
+	if (ItemAssetMap.IsEmpty())
+	{
+		TArray<FItemAssetData*> ItemRows;
+		ItemAssetDataTable->GetAllRows(TEXT("Loading Item Data"), ItemRows);
+
+		for (FItemAssetData* Row : ItemRows)
+		{
+			ItemAssetMap.Add(Row->ItemID, *Row);
+		}
+	}
+	if (ItemAssetMap.Contains(InItemID))
+	{
+		return ItemAssetMap[InItemID];
+	}
+
+	UE_LOG(LogTemp, Error, TEXT("Can't Find Data about %s"), *(UEnum::GetValueAsString(InItemID)));
+	return {};
+
 }

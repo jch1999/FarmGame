@@ -25,8 +25,9 @@ public:
 	const TOptional<FCropGrowthData> GetCropGrowthData(FName InCropName, int32 InLevel);
 
 	// Get Item Data
-	UFUNCTION(BlueprintCallable)
-	const TOptional<FItemData> GetItemtData(FName InItemName);
+	const TOptional<FItemData> GetItemtData(EItemID InItemID);
+	const TOptional<FItemAssetData> GetItemtAssetData(EItemID InItemID);
+
 
 public:
 	// Crop Data Table
@@ -39,4 +40,7 @@ public:
 	// Item Data Table
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable|Item")
 	TSoftObjectPtr<UDataTable> ItemDataTable;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable|Item")
+	TSoftObjectPtr<UDataTable> ItemAssetDataTable;
 };

@@ -1,6 +1,7 @@
 #include "Item/CItemBase.h"
 #include "Components/SphereComponent.h"
 #include "Global.h"
+#include "CGameInstance.h"
 
 ACItemBase::ACItemBase()
 {
@@ -43,13 +44,21 @@ void ACItemBase::SetUnInteractable()
 
 FName ACItemBase::GetInteractName()
 {
-	TOptional<FItemData> ItemDataOpt = GetItemtData(ItemName);
-	if (ItemDataOpt.IsSet())
+	UGameInstance* Instance = GetGameInstance();
+	if (Instance)
 	{
-		FItemData& ItemData = ItemDataOpt.GetValue();
-		return ItemData.ItemName;
-	}
+		UCGameInstance* MyInstance = Cast<UCGameInstance>(Instance);
+		if (MyInstance)
+		{
 
+			TOptional<FItemData> ItemDataOpt = MyInstance->GetItemtData(ItemID);
+			if (ItemDataOpt.IsSet())
+			{
+				FItemData& ItemData = ItemDataOpt.GetValue();
+				return ItemData.ItemName;
+			}
+		}
+	}
 	return TEXT("Error! Can't find ItemName!");
 }
 
