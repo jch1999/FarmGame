@@ -1,12 +1,15 @@
 #include "Components/CInventoryComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "CGameInstance.h"
+#include "Global.h"
 
 UCInventoryComponent::UCInventoryComponent()
 {
-	NowCapacity = 0.0f;
+	CurrentCapacity = 0.0f;
 	MaxCapacity = 100.0f;
-	MaxSlotCnt = 20;
+	CurrentSlotCnt = 20;
+	MaxSlotCnt = 50;
+	InventorySlots.SetNum(CurrentSlotCnt);
 }
 
 
@@ -16,24 +19,31 @@ void UCInventoryComponent::BeginPlay()
 
 }
 
-bool UCInventoryComponent::AddItem(FItemData& InItemData, uint8& InCount)
+bool UCInventoryComponent::AddItem(FItemData& InItemData, int32& InCount)
 {
 	float TotalWeight = InItemData.ItemWeight * InCount;
-	uint8 MaxPossibleCount = FMath::FloorToInt((MaxCapacity - NowCapacity)) / InItemData.ItemWeight);
-	InCount -= MaxPossibleCount;
+	int32 MaxPossibleCount = FMath::FloorToInt((MaxCapacity - CurrentCapacity) / InItemData.ItemWeight);
+	
 	if (MaxPossibleCount <= 0)
 	{
 		// 경고 위젯 출력 ("Inventory capacity is full!")
 		ShowWarningWidget("Inventory capacity is full!");
 		return false;
 	}
-
-	if (!AddToExistingSlot(InItemData, MaxPossibleCount))
+	uint8 AmountToAdd = FMath::Min(InCount, MaxPossibleCount);
+	InCount -= AmountToAdd;
+	if (!AddToExistingSlot(InItemData, AmountToAdd))
 	{
-		AddToNewSlot(InItemData, MaxPossibleCount);
+		AddToNewSlot(InItemData, AmountToAdd);
 	}
-	InCount += MaxPossibleCount;
-	return true;
+	InCount += AmountToAdd;
+	
+	if (InCount == 0)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 bool UCInventoryComponent::AddToExistingSlot(FItemData& InItemData, uint8& InCount)
@@ -56,19 +66,48 @@ bool UCInventoryComponent::AddToExistingSlot(FItemData& InItemData, uint8& InCou
 
 bool UCInventoryComponent::AddToNewSlot(FItemData& InItemData, uint8& InCount)
 {
-	while (InCount > 0)
+	if (CurrentSlotCnt >= MaxSlotCnt)
 	{
-		if (InventorySlots.Num() >= MaxSlotCnt)
+		ShowWarningWidget("No empty slot available!");
+		return false;
+	}
+	for (auto& Slot : InventorySlots)
+	{
+		if (Slot.ItemID == EItemID::None)
 		{
-			ShowWarningWidget("No empty slot available!");
-			return false;
+			int32 AmountToAdd = FMath::Min(InCount, InItemData.MaxStackSize);
+			Slot.ItemID = InItemData.ItemID;
+			Slot.CurrentStack = AmountToAdd;
+			Slot.MaxStackSize = InItemData.MaxStackSize;
+			
+			if (UGameInstance* GameInstance = GetWorld()->GetGameInstance())
+			{
+				if (UCGameInstance* MyGameInstance = Cast<UCGameInstance>(GameInstance))
+				{
+					TOptional<FItemAssetData> ItemAssetDataOpt = MyGameInstance->GetItemtAssetData(InItemData.ItemID);
+					if (ItemAssetDataOpt.IsSet())
+					{
+						FItemAssetData& AssetData= ItemAssetDataOpt.GetValue();
+						if ((AssetData.ItemIconTextureRef).IsEmpty())
+						{
+							UE_LOG(LogItem, Error, TEXT("ItemIconTexture Reference is missing. ItemID : "),*(UEnum::GetValueAsString(Slot.ItemID)));
+						}
+						else
+						{
+							CHelpers::GetAssetDynamic(&Slot.ItemIcon, AssetData.ItemIconTextureRef);
+						}
+					}
+				}
+			}
 		}
 
-		uint8 AmountToAdd = FMath::Min((uint8)InCount, InItemData.MaxStackSize);
-		InventorySlots.Add(FInventorySlot{ InItemData.ItemID, AmountToAdd, InItemData.MaxStackSize });
-		InCount -= AmountToAdd;
+		if (InCount <= 0)
+		{
+			return true;
+		}
 	}
-	return true;
+	
+	return false;
 }
 
 void UCInventoryComponent::ShowWarningWidget(FString Message)

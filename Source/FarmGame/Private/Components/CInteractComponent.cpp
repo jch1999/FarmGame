@@ -196,6 +196,9 @@ void UCInteractComponent::DetectInteractableObjects()
 	{
 		if (OwnerCharacter->GetDistanceTo(ActionInteractTarget) > RemoveDistance)
 		{
+			ICInterface_Interactable* InteractObject = Cast<ICInterface_Interactable>(ActionInteractTarget);
+			InteractObject->OnUnhovered();
+
 			ActionInteractTarget = nullptr;
 		}
 	}

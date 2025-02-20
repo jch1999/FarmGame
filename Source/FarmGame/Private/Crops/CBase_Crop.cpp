@@ -10,7 +10,9 @@
 #include "Item/CItem_Crop.h"
 #include "CGameInstance.h"
 #include "Item/CItem_Crop.h"
-#include "Particles/ParticleEmitter.h"
+#include "Particles/ParticleSystem.h"
+
+DEFINE_LOG_CATEGORY(LogCrop);
 
 ACBase_Crop::ACBase_Crop()
 	: OwnerField(nullptr)
@@ -83,13 +85,18 @@ void ACBase_Crop::Interact(AActor* OtherActor)
 		DoHarvest();
 		Destroy();
 	}
+	// ForTest
+	else
+	{
+		GrowUp();
+	}
 
 	SetUnInteractable();
 }
 
 bool ACBase_Crop::OnHovered()
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s is Hovered!"), *GetInteractName().ToString());
+	UE_LOG(LogCrop, Warning, TEXT("%s is Hovered!"), *GetInteractName().ToString());
 	MeshComp->SetRenderCustomDepth(true);
 	MeshComp->SetCustomDepthStencilValue(1);
 
@@ -98,7 +105,7 @@ bool ACBase_Crop::OnHovered()
 
 bool ACBase_Crop::OnUnhovered()
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s is Unhovered!"), *GetInteractName().ToString());
+	UE_LOG(LogCrop, Warning, TEXT("%s is Unhovered!"), *GetInteractName().ToString());
 	MeshComp->SetRenderCustomDepth(false);
 	MeshComp->SetCustomDepthStencilValue(0);
 
@@ -146,7 +153,7 @@ void ACBase_Crop::GrowUp()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Can't get GameInstance. %s : "), *CropName.ToString());
+		UE_LOG(LogCrop, Error, TEXT("Can't get GameInstance. %s : "), *CropName.ToString());
 	}
 }
 
@@ -207,7 +214,7 @@ void ACBase_Crop::DoHarvest()
 {
 	if (IsDead())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Crop is dead!. CropName : %s"), *CropName.ToString());
+		UE_LOG(LogCrop, Error, TEXT("Crop is dead!. CropName : %s"), *CropName.ToString());
 		return;
 	}
 	UWorld* World = GetWorld();
@@ -239,7 +246,7 @@ void ACBase_Crop::DoHarvest()
 				break;
 				default:
 				{
-					UE_LOG(LogTemp, Error, TEXT("Creation of crop item failed. Invalid Quality. %s"), *(UEnum::GetValueAsString(GetCropQuality())));
+					UE_LOG(LogCrop, Error, TEXT("Creation of crop item failed. Invalid Quality. %s"), *(UEnum::GetValueAsString(GetCropQuality())));
 					return;
 				}
 				break;
@@ -256,7 +263,7 @@ void ACBase_Crop::DoHarvest()
 							ACItem_Crop* CropItem = World->SpawnActorDeferred<ACItem_Crop>(CropItemClass, SpawnPoint);
 							if (!CropItem)
 							{
-								UE_LOG(LogTemp, Error, TEXT("Failed to spawn crop item actor."));
+								UE_LOG(LogCrop, Error, TEXT("Failed to spawn crop item actor."));
 								return;
 							}
 							CropItem->FinishSpawning(SpawnPoint);
@@ -264,7 +271,7 @@ void ACBase_Crop::DoHarvest()
 					}
 					else
 					{
-						UE_LOG(LogTemp, Error, TEXT("Creation of crop item failed. Invalid Clas Ref. %s"), *(UEnum::GetValueAsString(ItemAssetData.ItemID)));
+						UE_LOG(LogCrop, Error, TEXT("Creation of crop item failed. Invalid Clas Ref. %s"), *(UEnum::GetValueAsString(ItemAssetData.ItemID)));
 						return;
 					}
 				}
@@ -352,13 +359,13 @@ void ACBase_Crop::AutoGrow()
 			}
 			else
 			{
-				UE_LOG(LogTemp, Error, TEXT("GowthData doesn't set. %s : "), *CropName.ToString());
+				UE_LOG(LogCrop, Error, TEXT("GowthData doesn't set. %s : "), *CropName.ToString());
 			}
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Can't get GameInstance. %s : "), *CropName.ToString());
+		UE_LOG(LogCrop, Error, TEXT("Can't get GameInstance. %s : "), *CropName.ToString());
 	}
 }
 
@@ -380,7 +387,7 @@ void ACBase_Crop::SetCropDatas()
 				CHelpers::GetAssetDynamic(&MeshAsset, CurrentGrowthData.MeshRef);
 				if (!IsValid(MeshAsset))
 				{
-					UE_LOG(LogTemp, Error, TEXT("Can't find Mesh Asset at %s"), *CurrentGrowthData.MeshRef);
+					UE_LOG(LogCrop, Error, TEXT("Can't find Mesh Asset at %s"), *CurrentGrowthData.MeshRef);
 				}
 				else
 				{
@@ -393,13 +400,13 @@ void ACBase_Crop::SetCropDatas()
 			}
 			else
 			{
-				UE_LOG(LogTemp, Error, TEXT("GowthData doesn't set. %s : "), *CropName.ToString());
+				UE_LOG(LogCrop, Error, TEXT("GowthData doesn't set. %s : "), *CropName.ToString());
 			}
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Can't get GameInstance. %s : "), *CropName.ToString());
+		UE_LOG(LogCrop, Error, TEXT("Can't get GameInstance. %s : "), *CropName.ToString());
 	}
 }
 

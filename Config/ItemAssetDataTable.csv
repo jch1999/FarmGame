@@ -1,7 +1,10 @@
-RowName,ItemID,ItemIconTextureRef,ItemClassRef
-Tomato_Low,Tomato_Low,,
-Tomato_Normal,Tomato_Normal,,
-Tomato_High,Tomato_High,,
-Berry_Low,Berry_Low,,
-Berry_Normal,Berry_Normal,,
-Berry_High,Berry_High,,
+RowName,ItemID,ItemClassRef,ItemIconTextureRef,ParticleEffectRef,SoundEffectRef,Description
+Tomato_Low,Tomato_Low,/Game/Item/Crops/BP_CItem_Tomato_Low,/Game/Item/Icons/CropIcon_Tomato,,,Tomatoes are less than ideal. They are unevenly grown.
+Tomato_Normal,Tomato_Normal,/Game/Item/Crops/BP_CItem_Tomato_Normal,/Game/Item/Icons/CropIcon_Tomato,,,Tomatoes are in good condition. They appear to be well-grown.
+Tomato_High,Tomato_High,/Game/Item/Crops/BP_CItem_Tomato_High,/Game/Item/Icons/CropIcon_Tomato,,,Tomatoes are in peak  condition. They look incredibly appetizingy.
+Berry_Low,Berry_Low,/Game/Item/Crops/BP_CItem_Berry_Low,/Game/Item/Icons/CropIcon_Berry,,,Berry's condition is not good. I think it's better to use it to make jam.
+Berry_Normal,Berry_Normal,/Game/Item/Crops/BP_CItem_Berry_Normal,/Game/Item/Icons/CropIcon_Berry,,,The berries are in exellent condition. I think they'll be suitable for a snack.
+Berry_High,Berry_High,/Game/Item/Crops/BP_CItem_Berry_High,/Game/Item/Icons/CropIcon_Berry,,,The berries are at their peak. They are bursting with flavor and sweetness
+Carrot_Low,Carrot_Low,,/Game/Item/Icons/CropIcon_Carrot,,,The carrots are not in good condition. They are small and underdeveloped. I think it's best to use them for juicing or making carrot puree.
+Carrot_Normal,Carrot_Normal,,/Game/Item/Icons/CropIcon_Carrot,,,"The carrots are in good condition. They are well-formed and have a vibrant color. I think they'll be delicious roasted, stir-fried, or added to soups and stews."
+Carrot_High,Carrot_High,,/Game/Item/Icons/CropIcon_Carrot,,,"The carrots are in excellent condition. They are large, firm, and have a deep orange color. They look incredibly appetizing and are perfect for eating raw, adding to salads, or showcasing in a beautiful dish"

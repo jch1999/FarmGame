@@ -4,6 +4,8 @@
 #include "UObject/Interface.h"
 #include "CItemInterface.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogItem, Log, All);
+
 UENUM(BlueprintType)
 enum class EItemType : uint8
 {
@@ -16,6 +18,7 @@ enum class EItemType : uint8
 UENUM(BlueprintType)
 enum class EItemID :uint8
 {
+	None,
 	// Crop
 	Tomato_Low,
 	Tomato_Normal,

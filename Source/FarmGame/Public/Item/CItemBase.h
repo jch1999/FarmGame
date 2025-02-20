@@ -57,6 +57,7 @@ protected:
 	// 사용 가능 여부
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemInterface")
 	bool bUsable;
+
 	// 현재 보유 개수
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemInterface")
 	int32 AvailableCount;

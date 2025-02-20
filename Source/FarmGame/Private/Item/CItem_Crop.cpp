@@ -40,7 +40,7 @@ void ACItem_Crop::Interact(AActor* OtherActor)
 				}
 				else
 				{
-					UE_LOG(LogTemp, Error, TEXT("Add Item failed on %s"), *(UEnum::GetValueAsString(ItemID)));
+					UE_LOG(LogItem, Error, TEXT("Add Item failed on %s"), *(UEnum::GetValueAsString(ItemID)));
 				}
 			}
 		}

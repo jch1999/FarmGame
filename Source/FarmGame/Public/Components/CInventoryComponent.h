@@ -21,8 +21,11 @@ struct FInventorySlot
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	uint8 MaxStackSize;  // FItemData에서 가져올 예정
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* ItemIcon;
+
 	FInventorySlot()
-		: ItemID(EItemID::MAX), CurrentStack(0), MaxStackSize(1) {
+		: ItemID(EItemID::None), CurrentStack(0), MaxStackSize(1), ItemIcon(nullptr) {
 	}
 };
 
@@ -38,7 +41,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	bool AddItem(FItemData& InItemData, uint8& InCount);
+	bool AddItem(FItemData& InItemData, int32& InCount);
 	void ShowWarningWidget(FString Message);
 private:
 	bool AddToExistingSlot(FItemData& InItemData, uint8& InCount);
@@ -48,11 +51,16 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Inventory")
 	TArray<FInventorySlot> InventorySlots;
 
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	float NowCapacity;
-	UPROPERTY(EditAnywhere, Category = "Inventory")
+	UPROPERTY(EditAnywhere, Category = "Inventory|Limits")
+	float CurrentCapacity;
+	
+	UPROPERTY(EditAnywhere, Category = "Inventory|Limits")
 	float MaxCapacity;
-	UPROPERTY(EditAnywhere, Category = "Inventory")
+	
+	UPROPERTY(EditAnywhere, Category = "Inventory|Limits")
+	int32 CurrentSlotCnt;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory|Limits")
 	int32 MaxSlotCnt;
 
 	// Widget

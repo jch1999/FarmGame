@@ -1,7 +1,13 @@
 RowName,ItemID,ItemName,ItemType,MaxStackSize,ItemWeight,Price
-Tomato_Low,Tomato_Low,Tomato,Crop,255,2.5,10
-Tomato_Normal,Tomato_Normal,Tomato,Crop,255,2.5,20
-Tomato_High,Tomato_High,Tomato,Crop,255,2.5,30
-Berry_Low,Berry_Low,Berry,Crop,255,1,5
-Berry_Normal,Berry_Normal,Berry,Crop,255,1,10
-Berry_High,Berry_High,Berry,Crop,255,1,15
+Tomato_Low,Tomato_Low,Tomato,Crop,50,5,10
+Tomato_Normal,Tomato_Normal,Tomato,Crop,50,5,20
+Tomato_High,Tomato_High,Tomato,Crop,50,5,30
+Berry_Low,Berry_Low,Berry,Crop,80,2,5
+Berry_Normal,Berry_Normal,Berry,Crop,80,2,10
+Berry_High,Berry_High,Berry,Crop,80,2,15
+Carrot_Low,Carrot_Low,Carrot,Crop,30,6,12
+Carrot_Normal,Carrot_Normal,Carrot,Crop,30,6,20
+Carrot_High,Carrot_High,Carrot,Crop,30,6,33
+Seed_Tomato,Seed_Tomato,Tomato Seed,Consumable,50,1,5
+Seed_Berry,Seed_Berry,Berry Seed,Consumable,50,1,3
+Seed_Carrot,Seed_Carrot,Carrot)Seed,Consumable,50,1,7

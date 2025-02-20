@@ -59,6 +59,7 @@ FName ACItemBase::GetInteractName()
 			}
 		}
 	}
+	UE_LOG(LogItem, Error, TEXT("Error! Can't find ItemName! ItemID : %s"), *(UEnum::GetValueAsString(ItemID)));
 	return TEXT("Error! Can't find ItemName!");
 }
 

@@ -7,6 +7,8 @@
 #include "Engine/DataTable.h"
 #include "CBase_Crop.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogCrop, Log, All);
+
 class UCMoistureComponent;
 class UCNutritionComponent;
 class UCHealthComponent;
