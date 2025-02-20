@@ -175,6 +175,11 @@ void ACBase_Crop::PlayGrowthEffects()
 	}
 }
 
+bool ACBase_Crop::IsDead()
+{
+	return HealthComp->GetCurrentHealth() < 0.0f;
+}
+
 bool ACBase_Crop::IsHarvestable()
 {
 	if (IsDead())

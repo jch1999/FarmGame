@@ -87,7 +87,7 @@ struct FItemData : public FTableRowBase
 	float ItemWeight;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Price; // 품질별 가격
+	float Price;
 };
 
 UINTERFACE(MinimalAPI)

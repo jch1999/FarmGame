@@ -38,6 +38,10 @@ public:
 	virtual bool OnHovered() PURE_VIRTUAL(ACItemBase::OnHovered, return false;);
 	virtual bool OnUnhovered() PURE_VIRTUAL(ACItemBase::OnUnhovered, return false;);
 
+
+	// ItemData
+	void SetAvailableCnt(int32 cnt);
+	int32 GetAvailableCount() { return AvailableCount; }
 protected:
 	// Components
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")

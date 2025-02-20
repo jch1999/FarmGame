@@ -66,3 +66,8 @@ void ACItemBase::SetType(EInteractObjectType InNewType)
 {
 	InteractType = InNewType;
 }
+
+void ACItemBase::SetAvailableCnt(int32 InCnt)
+{
+	AvailableCount = InCnt;
+}

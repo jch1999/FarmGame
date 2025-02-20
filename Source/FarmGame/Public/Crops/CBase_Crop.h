@@ -144,7 +144,7 @@ public:
 	void PlayGrowthEffects();
 
 	UFUNCTION(BlueprintPure)
-	bool IsDead() { return GetHealthComp()->GetCurrentHealth() < 0.0f; }
+	bool IsDead();
 
 	// Harvest
 	UFUNCTION(BlueprintPure)
