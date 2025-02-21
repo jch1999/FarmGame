@@ -1,0 +1,1 @@
+#include "UI/CInventoryWidget.h"
