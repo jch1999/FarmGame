@@ -44,23 +44,21 @@ void ACItemBase::SetUnInteractable()
 
 FName ACItemBase::GetInteractName()
 {
-	UGameInstance* Instance = GetGameInstance();
-	if (Instance)
+	FString ItemFullName = UEnum::GetValueAsString(ItemID);
+	ItemFullName.RemoveFromStart("EItemID::");
+	FString ItemName, ItemExtra;
+	if (ItemFullName.Split("_", &ItemName, &ItemExtra))
 	{
-		UCGameInstance* MyInstance = Cast<UCGameInstance>(Instance);
-		if (MyInstance)
-		{
-
-			TOptional<FItemData> ItemDataOpt = MyInstance->GetItemtData(ItemID);
-			if (ItemDataOpt.IsSet())
-			{
-				FItemData& ItemData = ItemDataOpt.GetValue();
-				return ItemData.ItemName;
-			}
-		}
+		FString NameStr = ItemName + " (" + ItemExtra + ")";
+		return FName(*NameStr);
 	}
-	UE_LOG(LogItem, Error, TEXT("Error! Can't find ItemName! ItemID : %s"), *(UEnum::GetValueAsString(ItemID)));
-	return TEXT("Error! Can't find ItemName!");
+	else
+	{
+		return FName(*ItemFullName);
+	}
+	
+	/*UE_LOG(LogItem, Error, TEXT("Error! Can't find ItemName! ItemID : %s"), *(UEnum::GetValueAsString(ItemID)));
+	return TEXT("Error! Can't find ItemName!");*/
 }
 
 void ACItemBase::SetType(EInteractObjectType InNewType)

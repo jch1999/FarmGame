@@ -96,6 +96,7 @@ bool UCInventoryComponent::AddToNewSlot(FItemData& InItemData, uint8& InCount)
 						{
 							CHelpers::GetAssetDynamic(&Slot.ItemIcon, AssetData.ItemIconTextureRef);
 						}
+						Slot.Description = AssetData.Description;
 					}
 				}
 			}
@@ -120,4 +121,32 @@ void UCInventoryComponent::ShowWarningWidget(FString Message)
 			MyGameInstance->ShowWarningWidget("Inventory is full!");
 		}
 	}
+}
+
+void UCInventoryComponent::SwapSlot(int32& SlotIndex1, int32& SlotIndex2)
+{
+	bool bCheck1 = (SlotIndex1 < 0 || SlotIndex1 >= InventorySlots.Num());
+	bool bCheck2 = (SlotIndex2 < 0 || SlotIndex2 >= InventorySlots.Num());
+	if (bCheck1 || bCheck2)
+	{
+		UE_LOG(LogItem, Error, TEXT("Invalid Index! InventoryComponent::SwapSlot(%d, %d)"), SlotIndex1, SlotIndex2);
+		return;
+	}
+	if (SlotIndex1 == SlotIndex2)
+	{
+		UE_LOG(LogItem, Error, TEXT("Same Slot! No swap needed."));
+		return;
+	}
+
+	FInventorySlot& Slot1 = InventorySlots[SlotIndex1];
+	FInventorySlot& Slot2 = InventorySlots[SlotIndex2];
+	FInventorySlot TempSlot = Slot1;
+	Slot1 = Slot2;
+	Slot2 = TempSlot;
+
+	OnInventoryUpdated.Broadcast();
+}
+
+void UCInventoryComponent::UseItem(int32& SlotIndex)
+{
 }

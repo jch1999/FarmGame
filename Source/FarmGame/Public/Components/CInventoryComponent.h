@@ -7,6 +7,8 @@
 
 class UUserWidget;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInventoryUpdated);
+
 USTRUCT(BlueprintType)
 struct FInventorySlot
 {
@@ -24,8 +26,11 @@ struct FInventorySlot
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* ItemIcon;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString Description;
+
 	FInventorySlot()
-		: ItemID(EItemID::None), CurrentStack(0), MaxStackSize(1), ItemIcon(nullptr) {
+		: ItemID(EItemID::None), CurrentStack(0), MaxStackSize(1), ItemIcon(nullptr),Description() {
 	}
 };
 
@@ -43,6 +48,9 @@ protected:
 public:
 	bool AddItem(FItemData& InItemData, int32& InCount);
 	void ShowWarningWidget(FString Message);
+	void SwapSlot(int32& SlotIndex1, int32& SlotIndex2);
+	void UseItem(int32& SlotIndex);
+
 private:
 	bool AddToExistingSlot(FItemData& InItemData, uint8& InCount);
 	bool AddToNewSlot(FItemData& InItemData, uint8& InCount);
@@ -69,5 +77,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Widget")
 	TSubclassOf<UUserWidget> QuickSlotWidgetClass;
-		
+	
+	UPROPERTY(BlueprintAssignable)
+	FInventoryUpdated OnInventoryUpdated;
 };

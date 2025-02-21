@@ -1,0 +1,2 @@
+#include "UI/CQuickSlotWidget.h"
+

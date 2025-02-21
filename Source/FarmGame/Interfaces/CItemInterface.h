@@ -78,9 +78,6 @@ struct FItemData : public FTableRowBase
 	EItemID ItemID;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FName ItemName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EItemType ItemType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
