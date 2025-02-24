@@ -55,6 +55,16 @@ void UCInteractComponent::DoInteract(AActor* OtherActor)
 	}
 }
 
+void UCInteractComponent::DoActionInteract()
+{
+	if (ActionInteractTarget == nullptr) return;
+	ICInterface_Interactable* InteractActor = Cast<ICInterface_Interactable>(ActionInteractTarget);
+	InteractActor->OnUnhovered();
+	InteractActor->Interact(OwnerCharacter);
+
+	ActionInteractTarget = nullptr;
+}
+
 
 void UCInteractComponent::AddInteractableObject(AActor* InActor)
 {

@@ -53,6 +53,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	bool OnUnhovered() override;
 
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface|Custom")
+	void ActionInteract();
+
 public:
 	FORCEINLINE UCameraComponent* GetCameraComponent() { return CameraComp; }
 	
@@ -66,6 +69,7 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void OnInteract(const FInputActionInstance& InInstance);
+	void OnActionInteract(const FInputActionInstance& InInstance);
 	void Scroll(const FInputActionValue& Value);
 
 
@@ -82,6 +86,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Input")
 	UInputAction* InteractAction;
+
+	UPROPERTY(VisibleAnywhere, Category = "Input")
+	UInputAction* ActionInteractAction;
 
 	UPROPERTY(VisibleAnywhere, Category = "Input")
 	UInputAction* ScrollAction;

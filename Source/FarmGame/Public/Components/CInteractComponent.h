@@ -31,6 +31,7 @@ public:
 	// Scroll & Select
 	void Scroll(float InputValue);
 	void DoInteract(AActor* OtherActor);
+	void DoActionInteract();
 
 	// DoTrace
 	void DetectInteractableObjects();

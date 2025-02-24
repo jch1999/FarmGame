@@ -7,8 +7,6 @@
 
 class UUserWidget;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInventoryUpdated);
-
 USTRUCT(BlueprintType)
 struct FInventorySlot
 {
@@ -34,6 +32,8 @@ struct FInventorySlot
 	}
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryUpdated, const TArray<int32>&, ChangedIndexs);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FARMGAME_API UCInventoryComponent : public UActorComponent
 {
@@ -50,6 +50,8 @@ public:
 	void ShowWarningWidget(FString Message);
 	void SwapSlot(int32& SlotIndex1, int32& SlotIndex2);
 	void UseItem(int32& SlotIndex);
+	FORCEINLINE const TArray<FInventorySlot>& GetSlotDatas() { return InventorySlots; }
+	TWeakPtr<FInventorySlot> GetSlotWeak(int32 Index);
 
 private:
 	bool AddToExistingSlot(FItemData& InItemData, uint8& InCount);

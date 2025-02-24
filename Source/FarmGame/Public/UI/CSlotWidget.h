@@ -2,12 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/CInventoryComponent.h"
 #include "CSlotWidget.generated.h"
 
 class ICItemInterface;
 class UImage;
 class UTextBlock;
-class UCInventoryComponent;
 class UCInventoryWidget;
 class UCExplainWidget;
 class UCSlotDropDownWidget;
@@ -22,7 +22,7 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void SetItem(const FInventorySlot& SlotData);
+	void SetItem(const FInventorySlot& InSlotData);
 
 	// Drag Begin & Finish
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
@@ -47,8 +47,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EItemID CurrentItemID;
 
-	UPROPERTY()
-	FInventorySlot CurrentSlotData;
+	TWeakPtr<FInventorySlot> CurrentSlotData;
 
 	UPROPERTY()
 	int32 SlotIndex;

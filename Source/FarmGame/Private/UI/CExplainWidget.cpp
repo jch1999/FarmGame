@@ -6,11 +6,13 @@
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 
-void UCExplainWidget::SetItem(const FInventorySlot& InSlotData)
+void UCExplainWidget::SetItem(TWeakPtr<FInventorySlot> InSlotData)
 {
-    ItemIconImage->SetBrushFromTexture(InSlotData.ItemIcon);
+    if (!InSlotData.IsValid()) return; 
+    auto SlotData = InSlotData.Pin();
+    ItemIconImage->SetBrushFromTexture(SlotData->ItemIcon);
 
-    FString ItemFullName = UEnum::GetValueAsString(InSlotData.ItemID);
+    FString ItemFullName = UEnum::GetValueAsString(SlotData->ItemID);
     ItemFullName.RemoveFromStart("EItemID::");
     FString ItemName, ItemQuality;
     if (ItemFullName.Split("_", &ItemName, &ItemQuality))
@@ -23,5 +25,5 @@ void UCExplainWidget::SetItem(const FInventorySlot& InSlotData)
         ItemNameText->SetText(FText::FromString(ItemFullName));
         ItemExtraText->SetText(FText::FromString(""));
     }
-    ItemDescriptionText->SetText(FText::FromString(InSlotData.Description));
+    ItemDescriptionText->SetText(FText::FromString(SlotData->Description));
 }

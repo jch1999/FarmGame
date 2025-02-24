@@ -1,12 +1,21 @@
 #include "UI/CInventoryWidget.h"
 #include "Components/CInventoryComponent.h"
 #include "UI/CExplainWidget.h"
+#include "UI/CSlotWidget.h"
+#include "Components/UniformGridPanel.h"
+#include "Components/UniformGridSlot.h"
+#include "UI/CInventoryDragDropOperation.h"
 
-void UCInventoryWidget::ShowExplainWidget(FInventorySlot SlotData, FVector2D ScreenPosition)
+void UCInventoryWidget::NativeOnInitialized()
+{
+    InventoryGridPanel->SetSlotPadding(FMargin(5.0f));
+}
+
+void UCInventoryWidget::ShowExplainWidget(TWeakPtr<FInventorySlot> InSlotData, FVector2D ScreenPosition)
 {
     if (!ExplainWidget) return;
-
-    ExplainWidget->SetItem(SlotData);
+    if (!InSlotData.IsValid()) return;
+    ExplainWidget->SetItem(InSlotData);
     ExplainWidget->SetPositionInViewport(ScreenPosition);
     ExplainWidget->SetVisibility(ESlateVisibility::Visible);
 }
@@ -17,4 +26,72 @@ void UCInventoryWidget::HideExplainWidget()
     {
         ExplainWidget->SetVisibility(ESlateVisibility::Hidden);
     }
+}
+
+void UCInventoryWidget::UpdateInventory(const TArray<int32>& ChangedIndexs)
+{
+    if (InventoryComp)
+    {
+        const TArray<FInventorySlot>& SlotDatas = InventoryComp->GetSlotDatas();
+        if (SlotDatas.Num() > Slots.Num())
+        {
+            int32 NewSlotCnt = SlotDatas.Num() - Slots.Num();
+            int32 CurrentIndex = Slots.Num();
+            for (int32 i = 0; i < NewSlotCnt; i++)
+            {
+                FString SlotName = "Slot_" + FString::FromInt(Slots.Num() + 1);
+                UCSlotWidget* SlotWidget = CreateWidget<UCSlotWidget>(this, SlotWidgetClass, FName(*SlotName));
+                SlotWidget->SetItem(SlotDatas[CurrentIndex++]); 
+                Slots.Add(SlotWidget);
+                
+                InventoryGridPanel->AddChildToUniformGrid(SlotWidget, GridPanelRow, GridPanelCol);
+                GridPanelCol++;
+                if (GridPanelCol >= MaxColumn)
+                {
+                    GridPanelCol = 0;
+                    GridPanelRow++;
+                }
+            }
+        }
+        for (int32 i = 0; i < ChangedIndexs.Num(); i++)
+        {
+            int32 TargetIndex = ChangedIndexs[i];
+            if (TargetIndex < Slots.Num() && TargetIndex >= 0)
+            {
+                Slots[TargetIndex]->SetItem(SlotDatas[TargetIndex]);
+            }
+        }
+    }
+}
+
+FReply UCInventoryWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+    if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
+    {
+        bIsDragging = true;
+        DragOffset = InMouseEvent.GetScreenSpacePosition() - GetCachedGeometry().GetAbsolutePosition();
+        return FReply::Handled();
+    }
+    return FReply::Unhandled();
+}
+
+FReply UCInventoryWidget::NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+    if (bIsDragging)
+    {
+        FVector2D NewPosition = InMouseEvent.GetScreenSpacePosition() - DragOffset;
+        SetPositionInViewport(NewPosition, false);
+        return FReply::Handled();
+    }
+    return FReply::Unhandled();
+}
+
+FReply UCInventoryWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+    if (bIsDragging && InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
+    {
+        bIsDragging = false;
+        return FReply::Handled();
+    }
+    return FReply::Unhandled();
 }

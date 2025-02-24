@@ -3,7 +3,6 @@
 #include "UI/CInventorySlotDragDropOperation.h"
 #include "UI/CSlotDropDownWidget.h"
 #include "Global.h"
-#include "Components/CInventoryComponent.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "CGameInstance.h"
@@ -15,9 +14,10 @@ void UCSlotWidget::NativeOnInitialized()
 
 void UCSlotWidget::SetItem(const FInventorySlot& SlotData)
 {
-	CurrentSlotData = SlotData;
+	CurrentSlotData = TWeakPtr<FInventorySlot>(MakeShared<FInventorySlot>(SlotData));
+	CurrentItemID = SlotData.ItemID;
 
-	if (CurrentSlotData.ItemID == EItemID::None)
+	if (CurrentItemID == EItemID::None)
 	{
 		ItemIconImage->SetVisibility(ESlateVisibility::Hidden);
 		ItemCountText->SetVisibility(ESlateVisibility::Hidden);
@@ -26,15 +26,15 @@ void UCSlotWidget::SetItem(const FInventorySlot& SlotData)
 	{
 		ItemIconImage->SetVisibility(ESlateVisibility::Visible);
 		ItemCountText->SetVisibility(ESlateVisibility::Visible);
-		if (CurrentSlotData.ItemIcon)
+		if (SlotData.ItemIcon)
 		{
-			ItemIconImage->SetBrushFromTexture(CurrentSlotData.ItemIcon);
+			ItemIconImage->SetBrushFromTexture(SlotData.ItemIcon);
 		}
 		else
 		{
-			UE_LOG(LogItem, Error, TEXT("ItemIconTexture is missing! ItemID : %s"), *(UEnum::GetValueAsString(CurrentSlotData.ItemID)));
+			UE_LOG(LogItem, Error, TEXT("ItemIconTexture is missing! ItemID : %s"), *(UEnum::GetValueAsString(CurrentItemID)));
 		}
-		ItemCountText->SetText(FText::AsNumber(CurrentSlotData.CurrentStack));
+		ItemCountText->SetText(FText::AsNumber(SlotData.CurrentStack));
 	}
 }
 
@@ -50,7 +50,7 @@ FReply UCSlotWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const 
 
 void UCSlotWidget::NativeOnDragDetected(const FGeometry& InGemoetry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {
-	if (CurrentSlotData.ItemID == EItemID::None) return;
+	if (CurrentItemID == EItemID::None) return;
 
 	UCInventorySlotDragDropOperation* DragOperation = NewObject<UCInventorySlotDragDropOperation>();
 	DragOperation->DraggedSlotData = MakeShareable(&InventoryComponent->InventorySlots[SlotIndex]);
@@ -74,7 +74,7 @@ bool UCSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEven
 
 void UCSlotWidget::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-	if (CurrentSlotData.ItemID != EItemID::None)
+	if (CurrentItemID != EItemID::None)
 	{
 		FVector2D MousePoseition = InMouseEvent.GetScreenSpacePosition();
 		ParentInventoryWidget->ShowExplainWidget(CurrentSlotData, MousePoseition);
@@ -100,6 +100,6 @@ void UCSlotWidget::OpenDropDownMenu()
 {
 	if (!SlotDropDownWidget) return;
 
-	SlotDropDownWidget->SetItem(CurrentSlotData.ItemID);
+	SlotDropDownWidget->SetItem(CurrentSlotData);
 	SlotDropDownWidget->SetVisibility(ESlateVisibility::Visible);
 }

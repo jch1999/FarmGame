@@ -22,6 +22,7 @@ ACPlayer::ACPlayer()
 	CHelpers::GetAsset(&MoveAction, "/Game/Input/IA_PlayerMove");
 	CHelpers::GetAsset(&LookAction, "/Game/Input/IA_PlayerRotate");
 	CHelpers::GetAsset(&InteractAction, "/Game/Input/IA_PlayerInteract");
+	CHelpers::GetAsset(&InteractAction, "/Game/Input/IA_PlayerActionInteract");
 	CHelpers::GetAsset(&ScrollAction, "/Game/Input/IA_PlayerScroll");
 
 	// SpringArm Comp
@@ -94,6 +95,7 @@ void ACPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACPlayer::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACPlayer::Look);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ACPlayer::OnInteract);
+		EnhancedInputComponent->BindAction(ActionInteractAction, ETriggerEvent::Started, this, &ACPlayer::OnActionInteract);
 		EnhancedInputComponent->BindAction(ScrollAction, ETriggerEvent::Started, this, &ACPlayer::Scroll);
 	}
 	else
@@ -159,6 +161,22 @@ void ACPlayer::OnInteract(const FInputActionInstance& InInstance)
 	if (bValue)
 	{
 		Interact(nullptr);
+	}
+}
+
+void ACPlayer::ActionInteract()
+{
+	if (!InteractComp) return;
+
+	InteractComp->DoActionInteract();
+}
+void ACPlayer::OnActionInteract(const FInputActionInstance& InInstance)
+{
+	bool bValue = InInstance.GetValue().Get<bool>();
+
+	if (bValue)
+	{
+		ActionInteract();
 	}
 }
 

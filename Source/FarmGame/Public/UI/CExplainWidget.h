@@ -15,7 +15,7 @@ class FARMGAME_API UCExplainWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	void SetItem(const FInventorySlot& InSlotData);
+	void SetItem(TWeakPtr<FInventorySlot> InSlotData);
 
 public:
 	UPROPERTY(meta=(BindWidget))

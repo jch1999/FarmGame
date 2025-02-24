@@ -144,9 +144,22 @@ void UCInventoryComponent::SwapSlot(int32& SlotIndex1, int32& SlotIndex2)
 	Slot1 = Slot2;
 	Slot2 = TempSlot;
 
-	OnInventoryUpdated.Broadcast();
+	TArray<int32> ChangedIndexes;
+	ChangedIndexes.Add(SlotIndex1);
+	ChangedIndexes.Add(SlotIndex2);
+	OnInventoryUpdated.Broadcast(ChangedIndexes);
 }
 
 void UCInventoryComponent::UseItem(int32& SlotIndex)
 {
 }
+
+TWeakPtr<FInventorySlot> UCInventoryComponent::GetSlotWeak(int32 Index)
+{
+	if (InventorySlots.IsValidIndex(Index))
+    {
+        return TWeakPtr<FInventorySlot>(MakeShared<FInventorySlot>(InventorySlots[Index]));
+    }
+    return TWeakPtr<FInventorySlot>();
+}
+

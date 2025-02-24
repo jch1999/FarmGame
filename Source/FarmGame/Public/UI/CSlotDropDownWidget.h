@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/CInventoryComponent.h"
 #include "CSlotDropDownWidget.generated.h"
 
 class ICItemInterface;
@@ -12,8 +13,7 @@ class FARMGAME_API UCSlotDropDownWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	void SetItem(EItemID InItemID);
-
+	void SetItem(TWeakPtr<FInventorySlot> InSlotData);
 public:
 
 };
