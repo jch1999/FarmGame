@@ -6,6 +6,8 @@
 #include "CInventoryComponent.generated.h"
 
 class UUserWidget;
+class UCInventoryWidget;
+class UCQuickSlotsWidget;
 
 USTRUCT(BlueprintType)
 struct FInventorySlot
@@ -47,12 +49,16 @@ protected:
 
 public:
 	bool AddItem(FItemData& InItemData, int32& InCount);
+	void ShowInventory();
+	void HideInventory();
 	void ShowWarningWidget(FString Message);
 	void SwapSlot(int32& SlotIndex1, int32& SlotIndex2);
 	void UseItem(int32& SlotIndex);
+	void ClearSlot(int32 InIndex);
 	FORCEINLINE const TArray<FInventorySlot>& GetSlotDatas() { return InventorySlots; }
 	TWeakPtr<FInventorySlot> GetSlotWeak(int32 Index);
 
+	// void SetQuickSlotIndex(int32 InIndex);
 private:
 	bool AddToExistingSlot(FItemData& InItemData, uint8& InCount);
 	bool AddToNewSlot(FItemData& InItemData, uint8& InCount);
@@ -73,12 +79,19 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory|Limits")
 	int32 MaxSlotCnt;
 
-	// Widget
-	UPROPERTY(VisibleAnywhere, Category = "Widget")
-	TSubclassOf<UUserWidget> InventoryWidgetClass;
+	UPROPERTY(EditAnywhere, Category = "Inventory|QuickSlot")
+	int32 CurrentQuickSlotIndex;
 
-	UPROPERTY(VisibleAnywhere, Category = "Widget")
-	TSubclassOf<UUserWidget> QuickSlotWidgetClass;
+	// Widget
+	UPROPERTY(VisibleAnywhere, Category = "Widget|Inventory")
+	TSubclassOf<UCInventoryWidget> InventoryWidgetClass;
+	UPROPERTY(VisibleAnywhere, Category = "Widget|Inventory")
+	UCInventoryWidget* InventoryWidget;
+
+	UPROPERTY(VisibleAnywhere, Category = "Widget|QuickSlot")
+	TSubclassOf<UCQuickSlotsWidget> QuickSlotWidgetClass;
+	UPROPERTY(VisibleAnywhere, Category = "Widget|QuickSlot")
+	UCQuickSlotsWidget* QuickSlots;
 	
 	UPROPERTY(BlueprintAssignable)
 	FInventoryUpdated OnInventoryUpdated;

@@ -3,7 +3,7 @@
 #include "UI/CExplainWidget.h"
 #include "UI/CSlotWidget.h"
 #include "Components/UniformGridPanel.h"
-#include "Components/UniformGridSlot.h"
+#include "Components/Button.h"
 #include "UI/CInventoryDragDropOperation.h"
 
 void UCInventoryWidget::NativeOnInitialized()
@@ -13,8 +13,13 @@ void UCInventoryWidget::NativeOnInitialized()
 
 void UCInventoryWidget::ShowExplainWidget(TWeakPtr<FInventorySlot> InSlotData, FVector2D ScreenPosition)
 {
-    if (!ExplainWidget) return;
+    if (!ExplainWidgetClass) return;
     if (!InSlotData.IsValid()) return;
+
+    if (!ExplainWidget)
+    {
+        ExplainWidget = CreateWidget<UCExplainWidget>(this, ExplainWidgetClass, "ExplainWidget");
+    }
     ExplainWidget->SetItem(InSlotData);
     ExplainWidget->SetPositionInViewport(ScreenPosition);
     ExplainWidget->SetVisibility(ESlateVisibility::Visible);

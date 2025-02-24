@@ -5,6 +5,7 @@
 #include "InputActionValue.h"
 #include "InputAction.h"
 #include "Interfaces/CInterface_Interactable.h"
+#include "Components/CInventoryComponent.h"
 #include "CPlayer.generated.h"
 
 class UInputMappingContext;
@@ -47,7 +48,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	void SetType(EInteractObjectType InNewType) override;
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
-	void Interact(AActor* OtherActor) override;
+	void Interact(AActor* OtherActor = nullptr) override;
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	bool OnHovered() override;
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
@@ -57,42 +58,13 @@ public:
 	void ActionInteract();
 
 public:
-	FORCEINLINE UCameraComponent* GetCameraComponent() { return CameraComp; }
+	// Get Components
+	FORCEINLINE UCameraComponent* GetCameraComponent() const { return CameraComp; }
+	FORCEINLINE UCOptionComponent* GetOptionComponent() const { return OptionComp; }
+	FORCEINLINE UCInteractComponent* GetInteractComponent() const  { return InteractComp; }
+	FORCEINLINE UCInventoryComponent* GetInventoryComponent() const { return InventoryComp; }
 	
-	UFUNCTION(BlueprintPure)
-	FORCEINLINE TScriptInterface<ICItemInterface> const GetCurrentSlotItem() const { return ItemContainer[ItemIndex]; }
-
-	UFUNCTION(BlueprintPure)
-	FORCEINLINE TArray<TScriptInterface<ICItemInterface>> GetItemContainer() const { return ItemContainer; }
-
 protected:
-	void Move(const FInputActionValue& Value);
-	void Look(const FInputActionValue& Value);
-	void OnInteract(const FInputActionInstance& InInstance);
-	void OnActionInteract(const FInputActionInstance& InInstance);
-	void Scroll(const FInputActionValue& Value);
-
-
-protected:
-	// Input
-	UPROPERTY(VisibleAnywhere, Category="Input")
-	UInputMappingContext* DefaultContext;
-
-	UPROPERTY(VisibleAnywhere, Category = "Input")
-	UInputAction* MoveAction;
-
-	UPROPERTY(VisibleAnywhere, Category = "Input")
-	UInputAction* LookAction;
-
-	UPROPERTY(VisibleAnywhere, Category = "Input")
-	UInputAction* InteractAction;
-
-	UPROPERTY(VisibleAnywhere, Category = "Input")
-	UInputAction* ActionInteractAction;
-
-	UPROPERTY(VisibleAnywhere, Category = "Input")
-	UInputAction* ScrollAction;
-
 	// Components
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	USpringArmComponent* SpringArmComp;
@@ -111,6 +83,8 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UCInteractComponent* InteractComp;
+	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	UCInventoryComponent* InventoryComp;
 
 	// Interact Interface
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")

@@ -5,6 +5,7 @@
 #include "Global.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "Components/ProgressBar.h"
 #include "CGameInstance.h"
 #include "Interfaces/CItemInterface.h"
 
@@ -78,6 +79,10 @@ void UCSlotWidget::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointe
 	{
 		FVector2D MousePoseition = InMouseEvent.GetScreenSpacePosition();
 		ParentInventoryWidget->ShowExplainWidget(CurrentSlotData, MousePoseition);
+	}
+	else
+	{
+		ParentInventoryWidget->HideExplainWidget();
 	}
 }
 

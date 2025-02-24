@@ -11,6 +11,7 @@ class UTextBlock;
 class UCInventoryWidget;
 class UCExplainWidget;
 class UCSlotDropDownWidget;
+class UProgressBar;
 
 UCLASS()
 class FARMGAME_API UCSlotWidget : public UUserWidget
@@ -43,6 +44,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	UImage* ItemIconImage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	UProgressBar* ItemDurabilityBar;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EItemID CurrentItemID;

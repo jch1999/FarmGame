@@ -2,6 +2,8 @@
 #include "Blueprint/UserWidget.h"
 #include "CGameInstance.h"
 #include "Global.h"
+#include "UI/CInventoryWidget.h"
+#include "UI/CQuickSlotsWidget.h"
 
 UCInventoryComponent::UCInventoryComponent()
 {
@@ -44,6 +46,33 @@ bool UCInventoryComponent::AddItem(FItemData& InItemData, int32& InCount)
 	}
 
 	return false;
+}
+
+void UCInventoryComponent::ShowInventory()
+{
+	if (InventoryWidget == nullptr)
+	{
+		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+		if (!PlayerController) return;
+
+		InventoryWidget = CreateWidget<UCInventoryWidget>(PlayerController, InventoryWidgetClass);
+		if (!InventoryWidget)
+		{
+			UE_LOG(LogItem, Error, TEXT("Can't craete InventoryWidget."));
+			return;
+		}
+		
+		OnInventoryUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateInventory);
+	}
+	InventoryWidget->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UCInventoryComponent::HideInventory()
+{
+	if (InventoryWidget)
+	{
+		InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 bool UCInventoryComponent::AddToExistingSlot(FItemData& InItemData, uint8& InCount)
@@ -152,6 +181,17 @@ void UCInventoryComponent::SwapSlot(int32& SlotIndex1, int32& SlotIndex2)
 
 void UCInventoryComponent::UseItem(int32& SlotIndex)
 {
+}
+
+void UCInventoryComponent::ClearSlot(int32 InIndex)
+{
+	if (InventorySlots.IsValidIndex(InIndex))
+	{
+		InventorySlots[InIndex] = FInventorySlot();
+		TArray<int32> ChangedIndexes;
+		ChangedIndexes.Add(InIndex);
+		OnInventoryUpdated.Broadcast(ChangedIndexes);
+	}
 }
 
 TWeakPtr<FInventorySlot> UCInventoryComponent::GetSlotWeak(int32 Index)

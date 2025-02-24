@@ -9,6 +9,7 @@ class UCExplainWidget;
 class UCSlotWidget;
 class UCInventoryComponent;
 class UUniformGridPanel;
+class UButton;
 
 UCLASS()
 class FARMGAME_API UCInventoryWidget : public UUserWidget
@@ -30,6 +31,9 @@ public:
 public:
 	UPROPERTY(meta=(BindWidget))
 	UUniformGridPanel* InventoryGridPanel;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* CloseBtn;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget|GridPanel")
 	int32 GridPanelRow;
