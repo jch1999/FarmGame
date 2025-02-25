@@ -91,7 +91,7 @@ void ACBase_Crop::Interact(AActor* OtherActor)
 		GrowUp();
 	}
 
-	SetUnInteractable();
+	// SetUnInteractable();
 }
 
 bool ACBase_Crop::OnHovered()

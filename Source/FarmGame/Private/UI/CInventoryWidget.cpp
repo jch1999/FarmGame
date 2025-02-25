@@ -4,11 +4,30 @@
 #include "UI/CSlotWidget.h"
 #include "Components/UniformGridPanel.h"
 #include "Components/Button.h"
+#include "Components/Border.h"
 #include "UI/CInventoryDragDropOperation.h"
+#include "UI/CTitleBarWidget.h"
+#include "Framework/Application/SlateApplication.h"
+
+bool UCInventoryWidget::Initialize()
+{
+    bool bSuccess = Super::Initialize();
+    if (!bSuccess) return false;
+
+    if (InventoryGridPanel)
+    {
+        InventoryGridPanel->SetSlotPadding(FMargin(5.0f));
+    }
+    if (TitleBarWidget)
+    {
+        TitleBarWidget->SetParentWidget(this);
+    }
+    return true;
+}
 
 void UCInventoryWidget::NativeOnInitialized()
 {
-    InventoryGridPanel->SetSlotPadding(FMargin(5.0f));
+    Super::NativeOnInitialized();
 }
 
 void UCInventoryWidget::ShowExplainWidget(TWeakPtr<FInventorySlot> InSlotData, FVector2D ScreenPosition)
@@ -69,33 +88,12 @@ void UCInventoryWidget::UpdateInventory(const TArray<int32>& ChangedIndexs)
     }
 }
 
-FReply UCInventoryWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
-{
-    if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
-    {
-        bIsDragging = true;
-        DragOffset = InMouseEvent.GetScreenSpacePosition() - GetCachedGeometry().GetAbsolutePosition();
-        return FReply::Handled();
-    }
-    return FReply::Unhandled();
-}
-
 FReply UCInventoryWidget::NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-    if (bIsDragging)
+    if (TitleBarWidget->bIsDragging)
     {
-        FVector2D NewPosition = InMouseEvent.GetScreenSpacePosition() - DragOffset;
+        FVector2D NewPosition = FSlateApplication::Get().GetCursorPos() - TitleBarWidget->DragOffset; // Global Mouse Pos
         SetPositionInViewport(NewPosition, false);
-        return FReply::Handled();
-    }
-    return FReply::Unhandled();
-}
-
-FReply UCInventoryWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
-{
-    if (bIsDragging && InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
-    {
-        bIsDragging = false;
         return FReply::Handled();
     }
     return FReply::Unhandled();

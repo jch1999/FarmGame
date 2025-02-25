@@ -3,10 +3,12 @@
 #include "CGameInstance.h"
 #include "Global.h"
 #include "UI/CInventoryWidget.h"
-#include "UI/CQuickSlotsWidget.h"
+#include "UI/CQuickSlotBarWidget.h"
 
 UCInventoryComponent::UCInventoryComponent()
 {
+	CHelpers::GetClass(&InventoryWidgetClass, "/Game/UI/WB_CInventoryWidget");
+	CHelpers::GetClass(&QuickSlotBarWidgetClass, "/Game/UI/WB_CQuickSlotBarWidget");
 	CurrentCapacity = 0.0f;
 	MaxCapacity = 100.0f;
 	CurrentSlotCnt = 20;
@@ -61,10 +63,12 @@ void UCInventoryComponent::ShowInventory()
 			UE_LOG(LogItem, Error, TEXT("Can't craete InventoryWidget."));
 			return;
 		}
-		
+
 		OnInventoryUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateInventory);
+		InventoryWidget->AddToViewport();
 	}
 	InventoryWidget->SetVisibility(ESlateVisibility::Visible);
+	UE_LOG(LogItem, Display, TEXT("Open Inventory."));
 }
 
 void UCInventoryComponent::HideInventory()

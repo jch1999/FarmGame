@@ -2,10 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "CQuickSlotsWidget.generated.h"
+#include "CQuickSlotBarWidget.generated.h"
 
 UCLASS()
-class FARMGAME_API UCQuickSlotsWidget : public UUserWidget
+class FARMGAME_API UCQuickSlotBarWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	

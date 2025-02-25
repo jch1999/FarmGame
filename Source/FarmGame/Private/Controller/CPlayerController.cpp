@@ -19,7 +19,7 @@ ACPlayerController::ACPlayerController()
 	CHelpers::GetAsset(&InteractAction, "/Game/Input/IA_PlayerInteract");
 	CHelpers::GetAsset(&InteractAction, "/Game/Input/IA_PlayerActionInteract");
 	CHelpers::GetAsset(&ScrollAction, "/Game/Input/IA_PlayerScroll");
-	CHelpers::GetAsset(&OpenInventoryAction, "/Game/Input/IA_PlayerOpenInventory");
+	CHelpers::GetAsset(&OpenInventoryAction, "/Game/Input/IA_OpenInventory");
 
 	CHelpers::GetAsset(&UIContext, "/Game/Input/IMC_UI");
 	CHelpers::GetAsset(&CloseInventoryAction, "/Game/Input/IA_CloseInventory");
@@ -134,7 +134,7 @@ void ACPlayerController::Look(const FInputActionValue& Value)
 	AddPitchInput(-InputValue.Y);
 }
 
-void ACPlayerController::OnInteract()
+void ACPlayerController::OnInteract(const FInputActionValue& Value)
 {
 	ACPlayer* MyPlayer = Cast<ACPlayer>(GetPawn());
 	if (MyPlayer)
@@ -143,7 +143,7 @@ void ACPlayerController::OnInteract()
 	}
 }
 
-void ACPlayerController::OnActionInteract()
+void ACPlayerController::OnActionInteract(const FInputActionValue& Value)
 {
 	ACPlayer* MyPlayer = Cast<ACPlayer>(GetPawn());
 	if (MyPlayer)
@@ -164,7 +164,7 @@ void ACPlayerController::Scroll(const FInputActionValue& Value)
 	}
 }
 
-void ACPlayerController::OpenInventory()
+void ACPlayerController::OpenInventory(const FInputActionValue& Value)
 {
 	ACPlayer* MyPlayer = Cast<ACPlayer>(GetPawn());
 	if (MyPlayer)
@@ -172,9 +172,10 @@ void ACPlayerController::OpenInventory()
 		SetUIInputMode();
 		MyPlayer->GetInventoryComponent()->ShowInventory();
 	}
+	UE_LOG(LogTemp, Error, TEXT("Can't find Player. Function : ACPlayerController::OpenInventory"));
 }
 
-void ACPlayerController::CloseInventory()
+void ACPlayerController::CloseInventory(const FInputActionValue& Value)
 {
 	ACPlayer* MyPlayer = Cast<ACPlayer>(GetPawn());
 	if (MyPlayer)
@@ -220,6 +221,8 @@ void ACPlayerController::SetUIInputMode()
 			MyHud->GetHUD()->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
+
+	UE_LOG(LogTemp, Display, TEXT("Change to UI Input Mode"));
 }
 
 void ACPlayerController::SetGameInputMode()
@@ -245,4 +248,5 @@ void ACPlayerController::SetGameInputMode()
 			MyHud->GetHUD()->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
+	UE_LOG(LogTemp, Display, TEXT("Change to Game Input Mode"));
 }

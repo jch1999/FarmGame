@@ -10,6 +10,8 @@ class UCSlotWidget;
 class UCInventoryComponent;
 class UUniformGridPanel;
 class UButton;
+class UBorder;
+class UCTitleBarWidget;
 
 UCLASS()
 class FARMGAME_API UCInventoryWidget : public UUserWidget
@@ -17,10 +19,11 @@ class FARMGAME_API UCInventoryWidget : public UUserWidget
 	GENERATED_BODY()
 	
 protected:
+	// Initialize - Initialization function that is first called since the Constructor of UserWidget
+	virtual bool Initialize() override;
+	// After Initialize - Safe to use since all widgets and variables have been initialized
 	virtual void NativeOnInitialized() override;
-	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual FReply NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
-	virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
 public:
 	void ShowExplainWidget(TWeakPtr<FInventorySlot> InSlotData, FVector2D ScreenPosition);
@@ -29,11 +32,16 @@ public:
 	void UpdateInventory(const TArray<int32>& ChangedIndexs);
 	
 public:
+	UPROPERTY(meta = (BindWidget))
+	UCTitleBarWidget* TitleBarWidget;
+
 	UPROPERTY(meta=(BindWidget))
 	UUniformGridPanel* InventoryGridPanel;
 
 	UPROPERTY(meta = (BindWidget))
 	UButton* CloseBtn;
+	UPROPERTY(meta = (BindWidget))
+	UBorder* TitleBorder;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget|GridPanel")
 	int32 GridPanelRow;
@@ -57,9 +65,4 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Owner")
 	UCInventoryComponent* InventoryComp;
-
-private:
-	bool bIsDragging = false;
-	FVector2D DragOffset;
-
 };

@@ -23,12 +23,12 @@ protected:
 public:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
-	void OnInteract();
-	void OnActionInteract();
+	void OnInteract(const FInputActionValue& Value);
+	void OnActionInteract(const FInputActionValue& Value);
 	void Scroll(const FInputActionValue& Value);
-	void OpenInventory();
+	void OpenInventory(const FInputActionValue& Value);
 
-	void CloseInventory();
+	void CloseInventory(const FInputActionValue& Value);
 
 	void SetUIInputMode();
 	void SetGameInputMode();

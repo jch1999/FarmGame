@@ -7,7 +7,7 @@
 
 class UUserWidget;
 class UCInventoryWidget;
-class UCQuickSlotsWidget;
+class UCQuickSlotBarWidget;
 
 USTRUCT(BlueprintType)
 struct FInventorySlot
@@ -83,15 +83,15 @@ public:
 	int32 CurrentQuickSlotIndex;
 
 	// Widget
-	UPROPERTY(VisibleAnywhere, Category = "Widget|Inventory")
+	UPROPERTY(EditAnywhere, Category = "Widget|Inventory")
 	TSubclassOf<UCInventoryWidget> InventoryWidgetClass;
 	UPROPERTY(VisibleAnywhere, Category = "Widget|Inventory")
 	UCInventoryWidget* InventoryWidget;
 
+	UPROPERTY(EditAnywhere, Category = "Widget|QuickSlot")
+	TSubclassOf<UCQuickSlotBarWidget> QuickSlotBarWidgetClass;
 	UPROPERTY(VisibleAnywhere, Category = "Widget|QuickSlot")
-	TSubclassOf<UCQuickSlotsWidget> QuickSlotWidgetClass;
-	UPROPERTY(VisibleAnywhere, Category = "Widget|QuickSlot")
-	UCQuickSlotsWidget* QuickSlots;
+	UCQuickSlotBarWidget* QuickSlots;
 	
 	UPROPERTY(BlueprintAssignable)
 	FInventoryUpdated OnInventoryUpdated;
