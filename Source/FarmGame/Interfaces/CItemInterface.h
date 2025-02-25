@@ -26,9 +26,13 @@ enum class EItemID :uint8
 	Berry_Low,
 	Berry_Normal,
 	Berry_High,
+	Carrot_Low,
+	Carrot_Normal,
+	Carrot_High,
 	// Seed
 	Seed_Tomato,
 	Seed_Berry,
+	Seed_Carrot,
 	// Tool
 	WaterCan,
 	// End

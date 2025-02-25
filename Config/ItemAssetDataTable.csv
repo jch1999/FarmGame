@@ -8,3 +8,7 @@ Berry_High,Berry_High,/Game/Item/Crops/BP_CItem_Berry_High,/Game/Item/Icons/Crop
 Carrot_Low,Carrot_Low,,/Game/Item/Icons/CropIcon_Carrot,,,The carrots are not in good condition. They are small and underdeveloped. I think it's best to use them for juicing or making carrot puree.
 Carrot_Normal,Carrot_Normal,,/Game/Item/Icons/CropIcon_Carrot,,,"The carrots are in good condition. They are well-formed and have a vibrant color. I think they'll be delicious roasted, stir-fried, or added to soups and stews."
 Carrot_High,Carrot_High,,/Game/Item/Icons/CropIcon_Carrot,,,"The carrots are in excellent condition. They are large, firm, and have a deep orange color. They look incredibly appetizing and are perfect for eating raw, adding to salads, or showcasing in a beautiful dish"
+Seed_Tomato,Seed_Tomato,,,,,
+Seed_Berry,Seed_Berry,,,,,
+Seed_Carrot,Seed_Carrot,,,,,
+WaterCan,WaterCan,,,,,
