@@ -8,7 +8,7 @@
 UCInventoryComponent::UCInventoryComponent()
 {
 	CHelpers::GetClass(&InventoryWidgetClass, "/Game/UI/WB_CInventoryWidget");
-	CHelpers::GetClass(&QuickSlotBarWidgetClass, "/Game/UI/WB_CQuickSlotBarWidget");
+	CHelpers::GetClass(&QuickSlotBarWidgetClass, "/Game/UI/WB_CQuickSlotBar");
 	CurrentCapacity = 0.0f;
 	MaxCapacity = 100.0f;
 	CurrentSlotCnt = 20;
@@ -75,7 +75,8 @@ void UCInventoryComponent::HideInventory()
 {
 	if (InventoryWidget)
 	{
-		InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
+		InventoryWidget->SetVisibility(ESlateVisibility::Hidden); 
+		UE_LOG(LogItem, Display, TEXT("Close Inventory."));
 	}
 }
 

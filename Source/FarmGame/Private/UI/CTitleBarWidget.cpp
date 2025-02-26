@@ -1,5 +1,5 @@
 #include "UI/CTitleBarWidget.h"
-
+#include "Components/Button.h"
 
 
 FReply UCTitleBarWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)

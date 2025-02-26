@@ -172,7 +172,10 @@ void ACPlayerController::OpenInventory(const FInputActionValue& Value)
 		SetUIInputMode();
 		MyPlayer->GetInventoryComponent()->ShowInventory();
 	}
-	UE_LOG(LogTemp, Error, TEXT("Can't find Player. Function : ACPlayerController::OpenInventory"));
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Can't find Player. Function : ACPlayerController::OpenInventory"));
+	}
 }
 
 void ACPlayerController::CloseInventory(const FInputActionValue& Value)
@@ -181,6 +184,20 @@ void ACPlayerController::CloseInventory(const FInputActionValue& Value)
 	if (MyPlayer)
 	{
 		MyPlayer->GetInventoryComponent()->HideInventory(); 
+		SetGameInputMode();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Can't find Player. Function : ACPlayerController::OpenInventory"));
+	}
+}
+
+void ACPlayerController::CloseInventoryForCloseBtn()
+{
+	ACPlayer* MyPlayer = Cast<ACPlayer>(GetPawn());
+	if (MyPlayer)
+	{
+		MyPlayer->GetInventoryComponent()->HideInventory();
 		SetGameInputMode();
 	}
 }

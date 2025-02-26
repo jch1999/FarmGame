@@ -38,11 +38,6 @@ public:
 	UPROPERTY(meta=(BindWidget))
 	UUniformGridPanel* InventoryGridPanel;
 
-	UPROPERTY(meta = (BindWidget))
-	UButton* CloseBtn;
-	UPROPERTY(meta = (BindWidget))
-	UBorder* TitleBorder;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget|GridPanel")
 	int32 GridPanelRow;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget|GridPanel")

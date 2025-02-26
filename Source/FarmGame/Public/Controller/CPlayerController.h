@@ -26,9 +26,14 @@ public:
 	void OnInteract(const FInputActionValue& Value);
 	void OnActionInteract(const FInputActionValue& Value);
 	void Scroll(const FInputActionValue& Value);
+	UFUNCTION()
 	void OpenInventory(const FInputActionValue& Value);
 
+	UFUNCTION()
 	void CloseInventory(const FInputActionValue& Value);
+	
+	UFUNCTION()
+	void CloseInventoryForCloseBtn();
 
 	void SetUIInputMode();
 	void SetGameInputMode();

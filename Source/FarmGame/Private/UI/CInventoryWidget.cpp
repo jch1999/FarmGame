@@ -8,6 +8,7 @@
 #include "UI/CInventoryDragDropOperation.h"
 #include "UI/CTitleBarWidget.h"
 #include "Framework/Application/SlateApplication.h"
+#include "Controller/CPlayerController.h"
 
 bool UCInventoryWidget::Initialize()
 {
@@ -21,6 +22,18 @@ bool UCInventoryWidget::Initialize()
     if (TitleBarWidget)
     {
         TitleBarWidget->SetParentWidget(this);
+
+        if (APlayerController* Controller = GetOwningPlayer())
+        {
+            if (ACPlayerController* MyController = Cast<ACPlayerController>(Controller))
+            {
+                TitleBarWidget->CloseButton->OnClicked.AddDynamic(MyController,&ACPlayerController::CloseInventoryForCloseBtn);
+            }
+            else
+            {
+                TitleBarWidget->CloseButton->OnClicked.AddDynamic(InventoryComp, &UCInventoryComponent::HideInventory);
+            }
+        }
     }
     return true;
 }
@@ -28,6 +41,7 @@ bool UCInventoryWidget::Initialize()
 void UCInventoryWidget::NativeOnInitialized()
 {
     Super::NativeOnInitialized();
+    SetDesiredSizeInViewport(FVector2D(400, 300));
 }
 
 void UCInventoryWidget::ShowExplainWidget(TWeakPtr<FInventorySlot> InSlotData, FVector2D ScreenPosition)

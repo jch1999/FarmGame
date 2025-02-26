@@ -4,6 +4,8 @@
 #include "Blueprint/UserWidget.h"
 #include "CTitleBarWidget.generated.h"
 
+class UButton;
+
 UCLASS()
 class FARMGAME_API UCTitleBarWidget : public UUserWidget
 {
@@ -18,6 +20,9 @@ public:
 	void SetParentWidget(UUserWidget* ParentWidget);
 
 public:
+	UPROPERTY(meta=(BindWidget))
+	UButton* CloseButton;
+
 	UPROPERTY(VisibleAnywhere);
 	UUserWidget* ParentWidget;
 
