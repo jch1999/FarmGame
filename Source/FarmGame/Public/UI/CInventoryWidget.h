@@ -24,6 +24,7 @@ protected:
 	// After Initialize - Safe to use since all widgets and variables have been initialized
 	virtual void NativeOnInitialized() override;
 	virtual FReply NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
 public:
 	void ShowExplainWidget(TWeakPtr<FInventorySlot> InSlotData, FVector2D ScreenPosition);

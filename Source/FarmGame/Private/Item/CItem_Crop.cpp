@@ -7,13 +7,6 @@ ACItem_Crop::ACItem_Crop()
 	SetUnusable();
 }
 
-bool ACItem_Crop::SetCropData(FCropData& InData)
-{
-	CropData = InData;
-
-	return true;
-}
-
 bool ACItem_Crop::UseItem()
 {
 	return false;

@@ -14,14 +14,7 @@ public:
 	ACItem_Crop();
 
 public:
-	UFUNCTION(BlueprintCallable,Category="Crop")
-	bool SetCropData(FCropData& InData);
-
 	// From Interface
 	virtual bool UseItem() override;;
 	virtual void Interact(AActor* OtherActor) override;
-
-public:
-	UPROPERTY(EditAnywhere, Category="Crop|Data")
-	FCropData CropData;
 };

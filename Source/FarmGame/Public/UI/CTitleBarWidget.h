@@ -13,7 +13,6 @@ class FARMGAME_API UCTitleBarWidget : public UUserWidget
 	
 protected:
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
-	virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
 public:
 	UFUNCTION(BlueprintCallable)

@@ -2,18 +2,38 @@
 #include "Components/SphereComponent.h"
 #include "Global.h"
 #include "CGameInstance.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
 
 ACItemBase::ACItemBase()
 {
 	// Mesh Component
 	CHelpers::CreateSceneComponent(this, &MeshComp, "MeshComp", RootComponent);
-	
-	// Box Component
-	CHelpers::CreateSceneComponent(this, &SphereComp, "SphereComp", RootComponent);
-	SphereComp->SetSphereRadius(64.0f);
-	SphereComp->SetCollisionProfileName(TEXT("InteractObject"));
+	MeshComp->SetSimulatePhysics(true);
+	MeshComp->SetMassOverrideInKg(NAME_None, 300.0f);
+	MeshComp->SetCollisionProfileName(TEXT("InteractObject"));
+	MeshComp->BodyInstance.bUseCCD = true;
+
+	// Sphere Component
+	/*CHelpers::CreateSceneComponent(this, &SphereComp, "SphereComp", RootComponent);
+	SphereComp->SetSphereRadius(30.0f);
+	SphereComp->SetCollisionProfileName(TEXT("InteractObject"));*/
 
 	SetType(EInteractObjectType::Item);
+}
+
+void ACItemBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// 질량 설정
+	if (MeshComp)
+	{
+		// Reduce Restitution
+		UPhysicalMaterial* PhysMaterial = NewObject<UPhysicalMaterial>();
+		PhysMaterial->Restitution = 0.0f; // 반발력 최소화
+		PhysMaterial->Friction = 0.8f;    // 적절한 마찰력 부여
+		MeshComp->SetPhysMaterialOverride(PhysMaterial);
+	}
 }
 
 void ACItemBase::SetUsable()

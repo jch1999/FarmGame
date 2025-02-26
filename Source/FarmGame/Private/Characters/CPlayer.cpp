@@ -26,7 +26,7 @@ ACPlayer::ACPlayer()
 
 	//MeshComp
 	USkeletalMesh* MeshAsset;
-	CHelpers::GetAsset(&MeshAsset, "/Game/3D_LOW_POLY_FarmerPack/Characters/Mesh/SKM_Farmer_male");
+	CHelpers::GetAsset(&MeshAsset, "/Game/ThirdParty/3D_LOW_POLY_FarmerPack/Characters/Mesh/SKM_Farmer_male");
 	GetMesh()->SetSkeletalMesh(MeshAsset);
 	GetMesh()->SetRelativeLocation(FVector(0, 0, -88));
 	GetMesh()->SetRelativeRotation(FRotator(0, -90, 0));

@@ -29,10 +29,6 @@ bool UCInventoryWidget::Initialize()
             {
                 TitleBarWidget->CloseButton->OnClicked.AddDynamic(MyController,&ACPlayerController::CloseInventoryForCloseBtn);
             }
-            else
-            {
-                TitleBarWidget->CloseButton->OnClicked.AddDynamic(InventoryComp, &UCInventoryComponent::HideInventory);
-            }
         }
     }
     return true;
@@ -109,6 +105,17 @@ FReply UCInventoryWidget::NativeOnMouseMove(const FGeometry& InGeometry, const F
         FVector2D NewPosition = FSlateApplication::Get().GetCursorPos() - TitleBarWidget->DragOffset; // Global Mouse Pos
         SetPositionInViewport(NewPosition, false);
         return FReply::Handled();
+    }
+    return FReply::Unhandled();
+}
+
+FReply UCInventoryWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+    if (TitleBarWidget->bIsDragging && InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
+    {
+        TitleBarWidget->bIsDragging = false;
+        UE_LOG(LogTemp, Display, TEXT("MouseUp"));
+        return FReply::Handled().ReleaseMouseCapture();
     }
     return FReply::Unhandled();
 }

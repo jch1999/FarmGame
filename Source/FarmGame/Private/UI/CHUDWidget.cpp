@@ -229,7 +229,8 @@ float UCHUDWidget::GetChildWidgetOffset(UScrollBox* ScrollBox, UWidget* TargetWi
 		UPanelSlot* PanelSlot = Child->Slot;
 		if (UScrollBoxSlot* ScrollSlot = Cast<UScrollBoxSlot>(PanelSlot))
 		{
-			Offset += ScrollSlot->Padding.Top + ScrollSlot->Padding.Bottom;
+			FMargin SlotPadding = ScrollSlot->GetPadding();
+			Offset += SlotPadding.Top + SlotPadding.Bottom;
 		}
 	}
 

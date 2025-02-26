@@ -2,8 +2,8 @@
 
 UCOptionComponent::UCOptionComponent()
 {
-	MouseXSpeed = 90.0f;
-	MouseYSpeed = 45.0f;
+	MouseXSpeed = 45.0f;
+	MouseYSpeed = 24.5f;
 
 	ZoomSpeed = 1000.0f;
 	ZoomRange = FVector2D(100.0f, 500.0f);

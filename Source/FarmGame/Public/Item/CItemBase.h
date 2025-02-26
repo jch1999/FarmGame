@@ -16,6 +16,9 @@ class FARMGAME_API ACItemBase : public AActor, public ICItemInterface,public ICI
 public:
 	ACItemBase();
 
+protected:
+	virtual void BeginPlay() override;
+
 public:
 	// Inherited from ICItemInterface
 	virtual bool IsUsable() const override { return bUsable; }
@@ -47,8 +50,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	UStaticMeshComponent* MeshComp;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
-	USphereComponent* SphereComp;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	//USphereComponent* SphereComp;
 
 	// 아이템 정보
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
