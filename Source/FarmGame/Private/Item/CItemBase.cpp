@@ -11,7 +11,8 @@ ACItemBase::ACItemBase()
 	MeshComp->SetSimulatePhysics(true);
 	MeshComp->SetMassOverrideInKg(NAME_None, 300.0f);
 	MeshComp->SetCollisionProfileName(TEXT("InteractObject"));
-	MeshComp->BodyInstance.bUseCCD = true;
+	MeshComp->BodyInstance.bUseCCD = true; 
+	MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
 	// Sphere Component
 	/*CHelpers::CreateSceneComponent(this, &SphereComp, "SphereComp", RootComponent);

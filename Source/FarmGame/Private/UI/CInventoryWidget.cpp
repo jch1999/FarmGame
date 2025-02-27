@@ -98,24 +98,24 @@ void UCInventoryWidget::UpdateInventory(const TArray<int32>& ChangedIndexs)
     }
 }
 
-FReply UCInventoryWidget::NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
-{
-    if (TitleBarWidget->bIsDragging)
-    {
-        FVector2D NewPosition = FSlateApplication::Get().GetCursorPos() - TitleBarWidget->DragOffset; // Global Mouse Pos
-        SetPositionInViewport(NewPosition, false);
-        return FReply::Handled();
-    }
-    return FReply::Unhandled();
-}
-
-FReply UCInventoryWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
-{
-    if (TitleBarWidget->bIsDragging && InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
-    {
-        TitleBarWidget->bIsDragging = false;
-        UE_LOG(LogTemp, Display, TEXT("MouseUp"));
-        return FReply::Handled().ReleaseMouseCapture();
-    }
-    return FReply::Unhandled();
-}
+//FReply UCInventoryWidget::NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+//{
+//    if (TitleBarWidget->bIsDragging)
+//    {
+//        FVector2D NewPosition = FSlateApplication::Get().GetCursorPos() - TitleBarWidget->DragOffset; // Global Mouse Pos
+//        SetPositionInViewport(NewPosition, false);
+//        return FReply::Handled();
+//    }
+//    return FReply::Unhandled();
+//}
+//
+//FReply UCInventoryWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+//{
+//    if (TitleBarWidget->bIsDragging && InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
+//    {
+//        TitleBarWidget->bIsDragging = false;
+//        UE_LOG(LogTemp, Display, TEXT("MouseUp"));
+//        return FReply::Handled().ReleaseMouseCapture();
+//    }
+//    return FReply::Unhandled();
+//}
