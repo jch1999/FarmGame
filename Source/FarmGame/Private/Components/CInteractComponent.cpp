@@ -338,12 +338,12 @@ bool UCInteractComponent::RangeTrace(ECollisionChannel TraceChannel, TArray<FHit
 
 	if (Hits.Num() > 0)
 	{
-		for (const FHitResult& Hit : Hits)
+		/*for (const FHitResult& Hit : Hits)
 		{
 			DrawDebugSphere(GetWorld(), Hit.ImpactPoint, 10.0f, 8, FColor::Red, false, 2.0f);
 			UE_LOG(LogTemp, Warning, TEXT("Hit Actor: %s"), *Hit.GetActor()->GetName());
-		}
-		UE_LOG(LogTemp, Warning, TEXT("Trace Result: Hits.Num() = %d"), Hits.Num());
+		}*/
+		//UE_LOG(LogTemp, Warning, TEXT("Trace Result: Hits.Num() = %d"), Hits.Num());
 
 		return true;
 	}

@@ -30,6 +30,7 @@ public:
 	void ShowExplainWidget(TWeakPtr<FInventorySlot> InSlotData, FVector2D ScreenPosition);
 	void HideExplainWidget();
 
+	UFUNCTION()
 	void UpdateInventory(const TArray<int32>& ChangedIndexs);
 	
 public:

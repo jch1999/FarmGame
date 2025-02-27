@@ -140,6 +140,11 @@ void ACPlayerController::OnInteract(const FInputActionValue& Value)
 	if (MyPlayer)
 	{
 		MyPlayer->Interact();
+		UE_LOG(LogTemp, Error, TEXT("InteractInput!"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Player Missing at InteractInput!"));
 	}
 }
 

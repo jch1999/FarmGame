@@ -9,7 +9,7 @@ ACItemBase::ACItemBase()
 	// Mesh Component
 	CHelpers::CreateSceneComponent(this, &MeshComp, "MeshComp", RootComponent);
 	MeshComp->SetSimulatePhysics(true);
-	MeshComp->SetMassOverrideInKg(NAME_None, 300.0f);
+	MeshComp->SetMassOverrideInKg(NAME_None, 100.0f);
 	MeshComp->SetCollisionProfileName(TEXT("InteractObject"));
 	MeshComp->BodyInstance.bUseCCD = true; 
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -20,6 +20,7 @@ ACItemBase::ACItemBase()
 	SphereComp->SetCollisionProfileName(TEXT("InteractObject"));*/
 
 	SetType(EInteractObjectType::Item);
+	SetInteractable();
 }
 
 void ACItemBase::BeginPlay()
