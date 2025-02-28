@@ -18,11 +18,11 @@ FReply UCTitleBarWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, co
         //FVector ParentWidgetScreenVector = FVector(ParentWidgetScreenPosition.X ParentWidgetScreenPosition.Y, 0);
         //FVector2D ParentWidgetViewportPosition;
         //UWidgetLayoutLibrary::ProjectWorldLocationToWidgetPosition(GetWorld()->GetFirstPlayerController(), ParentWidgetScreenVector, ParentWidgetViewportPosition, false);
-        FVector2D ParentWidgetViewportPosition = ScreenSpaceToViewport(ParentWidgetScreenPosition);
+        //FVector2D ParentWidgetViewportPosition = ScreenSpaceToViewport(ParentWidgetScreenPosition);
         DragOffset = MousePosition - ParentWidgetScreenPosition;
 
-        UE_LOG(LogTemp, Warning, TEXT("MousePosition: %s, ParentWidgetScreenPosition: %s, ParentWidgetViewportPosition: %s, DragOffset: %s"),
-            *MousePosition.ToString(), *ParentWidgetScreenPosition.ToString(), *ParentWidgetViewportPosition.ToString(), *DragOffset.ToString());
+        UE_LOG(LogTemp, Warning, TEXT("MousePosition: %s, ParentWidgetScreenPosition: %s, DragOffset: %s"),
+            *MousePosition.ToString(), *ParentWidgetScreenPosition.ToString(), *DragOffset.ToString());
 
         return FReply::Handled().CaptureMouse(TakeWidget());
         // TakeWidget(): Switch to UWidget or UserWidget -> SWidget (Slate-based widget).
