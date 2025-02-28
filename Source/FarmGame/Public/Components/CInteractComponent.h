@@ -10,6 +10,8 @@ class UCHUDWidget;
 class ACPlayerController;
 class ACPlayer;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInteractInfoUpdated, const TArray<AActor*>&, InteractableObjects);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FARMGAME_API UCInteractComponent : public UActorComponent
 {
@@ -65,6 +67,10 @@ public:
 	bool SetRemoveDistance(float InDistance);
 	UFUNCTION(BlueprintCallable, Category = "InteractSystem")
 	float GetRemoveDistance() { return RemoveDistance; }
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FInteractInfoUpdated OnInteractInfoUpdated;
 
 private:
 	// Owner Player (이 컴포넌트가 부착된 액터)

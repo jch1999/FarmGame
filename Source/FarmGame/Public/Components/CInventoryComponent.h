@@ -34,7 +34,9 @@ struct FInventorySlot
 	}
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryUpdated, const TArray<int32>&, ChangedIndexs);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventorySlotDataUpdated, const TArray<int32>&, ChangedIndexs);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventorySlotCountUpdated, int32, IncreasedCount);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FARMGAME_API UCInventoryComponent : public UActorComponent
@@ -62,6 +64,8 @@ public:
 private:
 	bool AddToExistingSlot(FItemData& InItemData, uint8& InCount);
 	bool AddToNewSlot(FItemData& InItemData, uint8& InCount);
+	UFUNCTION()
+	bool IncreaseSlotCount(int32 InSlotCount);
 
 public:
 	UPROPERTY(VisibleAnywhere, Category = "Inventory")
@@ -94,5 +98,8 @@ public:
 	UCQuickSlotBarWidget* QuickSlots;
 	
 	UPROPERTY(BlueprintAssignable)
-	FInventoryUpdated OnInventoryUpdated;
+	FInventorySlotDataUpdated OnInventorySlotDataUpdated;
+
+	UPROPERTY(BlueprintAssignable)
+	FInventorySlotCountUpdated OnInventorySlotCountUpdated;
 };

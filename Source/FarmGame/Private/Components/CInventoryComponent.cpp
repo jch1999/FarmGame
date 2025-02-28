@@ -13,7 +13,6 @@ UCInventoryComponent::UCInventoryComponent()
 	MaxCapacity = 100.0f;
 	CurrentSlotCnt = 20;
 	MaxSlotCnt = 50;
-	InventorySlots.SetNum(CurrentSlotCnt);
 }
 
 
@@ -64,7 +63,10 @@ void UCInventoryComponent::ShowInventory()
 			return;
 		}
 
-		OnInventoryUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateInventory);
+		OnInventorySlotDataUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateInventorySlotWidget);
+		OnInventorySlotCountUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateInventorySlotCount);
+
+		IncreaseSlotCount(CurrentSlotCnt);
 		InventoryWidget->AddToViewport();
 	}
 	InventoryWidget->SetVisibility(ESlateVisibility::Visible);
@@ -145,6 +147,15 @@ bool UCInventoryComponent::AddToNewSlot(FItemData& InItemData, uint8& InCount)
 	return false;
 }
 
+bool UCInventoryComponent::IncreaseSlotCount(int32 InSlotCount)
+{
+	if (CurrentSlotCnt >= MaxSlotCnt) return false;
+	CurrentSlotCnt = FMath::Min(CurrentSlotCnt + InSlotCount, MaxSlotCnt);
+	InventorySlots.SetNum(CurrentSlotCnt);
+	OnInventorySlotCountUpdated.Broadcast(InSlotCount);
+	return true;
+}
+
 void UCInventoryComponent::ShowWarningWidget(FString Message)
 {
 	UGameInstance* GameInstance = GetWorld()->GetGameInstance();
@@ -181,7 +192,7 @@ void UCInventoryComponent::SwapSlot(int32& SlotIndex1, int32& SlotIndex2)
 	TArray<int32> ChangedIndexes;
 	ChangedIndexes.Add(SlotIndex1);
 	ChangedIndexes.Add(SlotIndex2);
-	OnInventoryUpdated.Broadcast(ChangedIndexes);
+	OnInventorySlotDataUpdated.Broadcast(ChangedIndexes);
 }
 
 void UCInventoryComponent::UseItem(int32& SlotIndex)
@@ -195,7 +206,7 @@ void UCInventoryComponent::ClearSlot(int32 InIndex)
 		InventorySlots[InIndex] = FInventorySlot();
 		TArray<int32> ChangedIndexes;
 		ChangedIndexes.Add(InIndex);
-		OnInventoryUpdated.Broadcast(ChangedIndexes);
+		OnInventorySlotDataUpdated.Broadcast(ChangedIndexes);
 	}
 }
 

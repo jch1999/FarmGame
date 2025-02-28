@@ -31,7 +31,10 @@ public:
 	void HideExplainWidget();
 
 	UFUNCTION()
-	void UpdateInventory(const TArray<int32>& ChangedIndexs);
+	void UpdateInventorySlotWidget(const TArray<int32>& ChangedIndexs);
+
+	UFUNCTION()
+	void UpdateInventorySlotCount(int32 SlotIndex);
 	
 public:
 	UPROPERTY(meta = (BindWidget))

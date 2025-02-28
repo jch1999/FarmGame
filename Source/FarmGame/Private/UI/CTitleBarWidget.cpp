@@ -1,20 +1,28 @@
 #include "UI/CTitleBarWidget.h"
 #include "Components/Button.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
+#include "Blueprint/SlateBlueprintLibrary.h"
 
 
 FReply UCTitleBarWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-    if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
+    if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton) && ParentWidget)
     {
         bIsDragging = true;
         //FVector2D MousePosition = InMouseEvent.GetScreenSpacePosition(); 
         
         FVector2D MousePosition = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
-        FVector2D WidgetPosition= ParentWidget->GetCachedGeometry().GetAbsolutePosition();
-        DragOffset = MousePosition - WidgetPosition;
-        UE_LOG(LogTemp, Warning, TEXT("MousePosition: %s, WidgetPosition: %s, DragOffset: %s"),
-            *MousePosition.ToString(), *WidgetPosition.ToString(), *DragOffset.ToString());
+        auto geometry = ParentWidget->GetCachedGeometry();
+        FVector2D ParentWidgetScreenPosition, dummy;
+        USlateBlueprintLibrary::AbsoluteToViewport(GetWorld(), geometry.GetAbsolutePosition(), dummy, ParentWidgetScreenPosition);
+        //FVector ParentWidgetScreenVector = FVector(ParentWidgetScreenPosition.X ParentWidgetScreenPosition.Y, 0);
+        //FVector2D ParentWidgetViewportPosition;
+        //UWidgetLayoutLibrary::ProjectWorldLocationToWidgetPosition(GetWorld()->GetFirstPlayerController(), ParentWidgetScreenVector, ParentWidgetViewportPosition, false);
+        FVector2D ParentWidgetViewportPosition = ScreenSpaceToViewport(ParentWidgetScreenPosition);
+        DragOffset = MousePosition - ParentWidgetScreenPosition;
+
+        UE_LOG(LogTemp, Warning, TEXT("MousePosition: %s, ParentWidgetScreenPosition: %s, ParentWidgetViewportPosition: %s, DragOffset: %s"),
+            *MousePosition.ToString(), *ParentWidgetScreenPosition.ToString(), *ParentWidgetViewportPosition.ToString(), *DragOffset.ToString());
 
         return FReply::Handled().CaptureMouse(TakeWidget());
         // TakeWidget(): Switch to UWidget or UserWidget -> SWidget (Slate-based widget).
@@ -36,8 +44,8 @@ FReply UCTitleBarWidget::NativeOnMouseMove(const FGeometry& InGeometry, const FP
         FVector2D MousePosition = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
         FVector2D WidgetSize = ParentWidget->GetCachedGeometry().GetLocalSize();
         FVector2D NewPosition = MousePosition - DragOffset; // Global Mouse Pos
-        NewPosition.X = FMath::Clamp(NewPosition.X, 0.0f, ViewportSize.X - WidgetSize.X);
-        NewPosition.Y = FMath::Clamp(NewPosition.Y, 0.0f, ViewportSize.Y -  WidgetSize.Y);
+        //NewPosition.X = FMath::Clamp(NewPosition.X, 0.0f, ViewportSize.X - WidgetSize.X);
+        //NewPosition.Y = FMath::Clamp(NewPosition.Y, 0.0f, ViewportSize.Y -  WidgetSize.Y);
         ParentWidget->SetPositionInViewport(NewPosition, false);
       //  ParentWidget->SetPositionInViewport(MousePosition, false);
         UE_LOG(LogTemp, Warning, TEXT("Drag Start - MousePosition: %s, DragOffset: %s"),

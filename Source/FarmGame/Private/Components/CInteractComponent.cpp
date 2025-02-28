@@ -239,6 +239,8 @@ void UCInteractComponent::DetectInteractableObjects()
 	{
 		//UE_LOG(LogTemp, Error, TEXT("Nothing Detected."));
 	}
+
+	OnInteractInfoUpdated.Broadcast(InteractableObjects);
 }
 
 AActor* UCInteractComponent::GetCurrentInteractTarget()

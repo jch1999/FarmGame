@@ -17,7 +17,7 @@ ACPlayerController::ACPlayerController()
 	CHelpers::GetAsset(&MoveAction, "/Game/Input/IA_PlayerMove");
 	CHelpers::GetAsset(&LookAction, "/Game/Input/IA_PlayerRotate");
 	CHelpers::GetAsset(&InteractAction, "/Game/Input/IA_PlayerInteract");
-	CHelpers::GetAsset(&InteractAction, "/Game/Input/IA_PlayerActionInteract");
+	CHelpers::GetAsset(&ActionInteractAction, "/Game/Input/IA_PlayerActionInteract");
 	CHelpers::GetAsset(&ScrollAction, "/Game/Input/IA_PlayerScroll");
 	CHelpers::GetAsset(&OpenInventoryAction, "/Game/Input/IA_OpenInventory");
 
@@ -42,6 +42,13 @@ void ACPlayerController::OnPossess(APawn* aPawn)
 		if (IsValid(MyHud))
 		{
 			MyHud->CreateHUD();
+			ACPlayer* MyPlayer = Cast<ACPlayer>(aPawn);
+			if (MyPlayer)
+			{
+				// Attach Hud's function to Delegate of Player's components
+				UCInteractComponent* InteractComponent = MyPlayer->GetInteractComponent();
+				// InteractComponent->OnInteractInfoUpdate.AddDynamic();
+			}
 		}
 		else
 		{
@@ -140,7 +147,6 @@ void ACPlayerController::OnInteract(const FInputActionValue& Value)
 	if (MyPlayer)
 	{
 		MyPlayer->Interact();
-		UE_LOG(LogTemp, Error, TEXT("InteractInput!"));
 	}
 	else
 	{
@@ -190,6 +196,7 @@ void ACPlayerController::CloseInventory(const FInputActionValue& Value)
 	{
 		MyPlayer->GetInventoryComponent()->HideInventory(); 
 		SetGameInputMode();
+		UE_LOG(LogTemp, Error, TEXT("Function : ACPlayerController::OpenInventory"))
 	}
 	else
 	{
@@ -222,16 +229,16 @@ void ACPlayerController::SetUIInputMode()
 	}
 
 	// UI Action Binding (Once)
-	static bool bIsUIActionBound = false;
-	if (!bIsUIActionBound)
-	{
+	//static bool bIsUIActionBound = false;
+	//if (!bIsUIActionBound)
+	//{
 		UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
 		if (EnhancedInputComponent)
 		{
-			EnhancedInputComponent->BindAction(CloseInventoryAction, ETriggerEvent::Started, this, &ACPlayerController::SetGameInputMode);
-			bIsUIActionBound = true;
+			EnhancedInputComponent->BindAction(CloseInventoryAction, ETriggerEvent::Started, this, &ACPlayerController::CloseInventory);
+			//bIsUIActionBound = true;
 		}
-	}
+	//}
 
 	// Hide Hud
 	AHUD* Hud = GetHUD();

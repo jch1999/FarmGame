@@ -2,7 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "InputActionValue.h"
+#include "InputAction.h"
 #include "CPlayerController.generated.h"
+
+class UInputMappingContext;
+class UInputAction;
 
 UCLASS()
 class FARMGAME_API ACPlayerController : public APlayerController

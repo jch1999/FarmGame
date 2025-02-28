@@ -2,14 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "InputActionValue.h"
-#include "InputAction.h"
 #include "Interfaces/CInterface_Interactable.h"
 #include "Components/CInventoryComponent.h"
 #include "CPlayer.generated.h"
 
-class UInputMappingContext;
-class UInputAction;
 class USpringArmComponent;
 class UCameraComponent;
 class UCStateComponent;

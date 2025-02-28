@@ -62,7 +62,23 @@ void UCInventoryWidget::HideExplainWidget()
     }
 }
 
-void UCInventoryWidget::UpdateInventory(const TArray<int32>& ChangedIndexs)
+void UCInventoryWidget::UpdateInventorySlotWidget(const TArray<int32>& ChangedIndexs)
+{
+    if (InventoryComp)
+    {
+        const TArray<FInventorySlot>& SlotDatas = InventoryComp->GetSlotDatas();
+        for (int32 i = 0; i < ChangedIndexs.Num(); i++)
+        {
+            int32 TargetIndex = ChangedIndexs[i];
+            if (TargetIndex < Slots.Num() && TargetIndex >= 0)
+            {
+                Slots[TargetIndex]->SetItem(SlotDatas[TargetIndex]);
+            }
+        }
+    }
+}
+
+void UCInventoryWidget::UpdateInventorySlotCount(int32 SlotIndex)
 {
     if (InventoryComp)
     {
@@ -75,9 +91,9 @@ void UCInventoryWidget::UpdateInventory(const TArray<int32>& ChangedIndexs)
             {
                 FString SlotName = "Slot_" + FString::FromInt(Slots.Num() + 1);
                 UCSlotWidget* SlotWidget = CreateWidget<UCSlotWidget>(this, SlotWidgetClass, FName(*SlotName));
-                SlotWidget->SetItem(SlotDatas[CurrentIndex++]); 
+                SlotWidget->SetItem(SlotDatas[CurrentIndex + i]);
                 Slots.Add(SlotWidget);
-                
+
                 InventoryGridPanel->AddChildToUniformGrid(SlotWidget, GridPanelRow, GridPanelCol);
                 GridPanelCol++;
                 if (GridPanelCol >= MaxColumn)
@@ -85,14 +101,6 @@ void UCInventoryWidget::UpdateInventory(const TArray<int32>& ChangedIndexs)
                     GridPanelCol = 0;
                     GridPanelRow++;
                 }
-            }
-        }
-        for (int32 i = 0; i < ChangedIndexs.Num(); i++)
-        {
-            int32 TargetIndex = ChangedIndexs[i];
-            if (TargetIndex < Slots.Num() && TargetIndex >= 0)
-            {
-                Slots[TargetIndex]->SetItem(SlotDatas[TargetIndex]);
             }
         }
     }

@@ -19,6 +19,7 @@ protected:
 public:
 	UFUNCTION(BlueprintCallable)
 	void SetParentWidget(UUserWidget* ParentWidget);
+	FVector2D ScreenSpaceToViewport(FVector2D ScreenPosition);
 
 public:
 	UPROPERTY(meta=(BindWidget))
