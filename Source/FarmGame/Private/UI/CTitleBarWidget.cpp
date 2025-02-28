@@ -8,9 +8,10 @@ FReply UCTitleBarWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, co
     if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
     {
         bIsDragging = true;
-        FVector2D MousePosition = InMouseEvent.GetScreenSpacePosition(); 
         //FVector2D MousePosition = InMouseEvent.GetScreenSpacePosition(); 
-        FVector2D WidgetPosition= ParentWidget->GetTickSpaceGeometry().GetAbsolutePosition();
+        
+        FVector2D MousePosition = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
+        FVector2D WidgetPosition= ParentWidget->GetCachedGeometry().GetAbsolutePosition();
         DragOffset = MousePosition - WidgetPosition;
         UE_LOG(LogTemp, Warning, TEXT("MousePosition: %s, WidgetPosition: %s, DragOffset: %s"),
             *MousePosition.ToString(), *WidgetPosition.ToString(), *DragOffset.ToString());
@@ -31,11 +32,12 @@ FReply UCTitleBarWidget::NativeOnMouseMove(const FGeometry& InGeometry, const FP
     {
         FVector2D ViewportSize;
         GEngine->GameViewport->GetViewportSize(ViewportSize);
-        FVector2D MousePosition = InMouseEvent.GetScreenSpacePosition();
-        FVector2D WidgetSize = ParentWidget->GetTickSpaceGeometry().GetLocalSize();
+        //FVector2D MousePosition = InMouseEvent.GetScreenSpacePosition();
+        FVector2D MousePosition = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
+        FVector2D WidgetSize = ParentWidget->GetCachedGeometry().GetLocalSize();
         FVector2D NewPosition = MousePosition - DragOffset; // Global Mouse Pos
-        NewPosition.X = FMath::Clamp(NewPosition.X, 0.0f, ViewportSize.X+ WidgetSize.X);
-        NewPosition.Y = FMath::Clamp(NewPosition.Y, 0.0f, ViewportSize.Y + WidgetSize.Y);
+        NewPosition.X = FMath::Clamp(NewPosition.X, 0.0f, ViewportSize.X - WidgetSize.X);
+        NewPosition.Y = FMath::Clamp(NewPosition.Y, 0.0f, ViewportSize.Y -  WidgetSize.Y);
         ParentWidget->SetPositionInViewport(NewPosition, false);
       //  ParentWidget->SetPositionInViewport(MousePosition, false);
         UE_LOG(LogTemp, Warning, TEXT("Drag Start - MousePosition: %s, DragOffset: %s"),
