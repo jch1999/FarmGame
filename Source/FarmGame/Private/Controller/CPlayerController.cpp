@@ -45,9 +45,7 @@ void ACPlayerController::OnPossess(APawn* aPawn)
 			ACPlayer* MyPlayer = Cast<ACPlayer>(aPawn);
 			if (MyPlayer)
 			{
-				// Attach Hud's function to Delegate of Player's components
-				UCInteractComponent* InteractComponent = MyPlayer->GetInteractComponent();
-				// InteractComponent->OnInteractInfoUpdate.AddDynamic();
+				MyHud->GetHUD()->OnInitPlayer(MyPlayer);
 			}
 		}
 		else
@@ -74,6 +72,11 @@ void ACPlayerController::OnRep_PlayerState()
 		if (IsValid(MyHud))
 		{
 			MyHud->CreateHUD();
+			ACPlayer* MyPlayer = Cast<ACPlayer>(GetPawn());
+			if (MyPlayer)
+			{
+				MyHud->GetHUD()->OnInitPlayer(MyPlayer);
+			}
 		}
 		else
 		{
@@ -196,11 +199,11 @@ void ACPlayerController::CloseInventory(const FInputActionValue& Value)
 	{
 		MyPlayer->GetInventoryComponent()->HideInventory(); 
 		SetGameInputMode();
-		UE_LOG(LogTemp, Error, TEXT("Function : ACPlayerController::OpenInventory"))
+		UE_LOG(LogTemp, Error, TEXT("Function : ACPlayerController::CloseInventory"))
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Can't find Player. Function : ACPlayerController::OpenInventory"));
+		UE_LOG(LogTemp, Error, TEXT("Can't find Player. Function : ACPlayerController::CloseInventory"));
 	}
 }
 
@@ -226,19 +229,16 @@ void ACPlayerController::SetUIInputMode()
 	{
 		SubSystem->RemoveMappingContext(DefaultContext);
 		SubSystem->AddMappingContext(UIContext, 1);
-	}
 
-	// UI Action Binding (Once)
-	//static bool bIsUIActionBound = false;
-	//if (!bIsUIActionBound)
-	//{
 		UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
 		if (EnhancedInputComponent)
 		{
 			EnhancedInputComponent->BindAction(CloseInventoryAction, ETriggerEvent::Started, this, &ACPlayerController::CloseInventory);
-			//bIsUIActionBound = true;
 		}
-	//}
+	}
+
+	
+	
 
 	// Hide Hud
 	AHUD* Hud = GetHUD();

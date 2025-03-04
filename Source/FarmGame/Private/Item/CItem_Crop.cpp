@@ -13,9 +13,8 @@ bool ACItem_Crop::UseItem()
 }
 
 void ACItem_Crop::Interact(AActor* OtherActor)
-{
-	UCInventoryComponent* InventoryComp = OtherActor->GetComponentByClass<UCInventoryComponent>();
-	if (InventoryComp)
+{  
+	if (UCInventoryComponent* InventoryComp = OtherActor->GetComponentByClass<UCInventoryComponent>())
 	{
 		UGameInstance* Instance = GetGameInstance();
 		if (Instance)

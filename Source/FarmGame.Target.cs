@@ -11,7 +11,9 @@ public class FarmGameTarget : TargetRules
 		DefaultBuildSettings = BuildSettingsVersion.V5;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_4;
 		ExtraModuleNames.Add("FarmGame");
-        bUseUnityBuild = true;
+        bUseUnityBuild = true; 
         bUseAdaptiveUnityBuild = false;
+        bUseIncrementalLinking = true;
+        bAllowHotReload = true;
     }
 }

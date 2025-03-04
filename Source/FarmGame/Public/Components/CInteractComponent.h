@@ -11,6 +11,8 @@ class ACPlayerController;
 class ACPlayer;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInteractInfoUpdated, const TArray<AActor*>&, InteractableObjects);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FScrolled, bool, IsUp);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInteractStart, ACPlayer*, InteractCauser);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FARMGAME_API UCInteractComponent : public UActorComponent
@@ -24,12 +26,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	// Add / Remove InteractableObject
-	UFUNCTION(BlueprintCallable, Category = "Interaction", meta = (DisplayName = "Add Interactable Object"))
-	void AddInteractableObject(AActor* InActor);
-	UFUNCTION(BlueprintCallable, Category = "Interaction", meta = (DisplayName = "Remove Interactable Object"))
-	void RemoveInteractableObject(AActor* InActor);
-
 	// Scroll & Select
 	void Scroll(float InputValue);
 	void DoInteract(AActor* OtherActor);
@@ -71,6 +67,12 @@ public:
 public:
 	UPROPERTY(BlueprintAssignable)
 	FInteractInfoUpdated OnInteractInfoUpdated;
+
+	UPROPERTY(BlueprintAssignable)
+	FScrolled OnScrolled;
+
+	UPROPERTY(BlueprintAssignable)
+	FInteractStart OnInteractStart;
 
 private:
 	// Owner Player (이 컴포넌트가 부착된 액터)

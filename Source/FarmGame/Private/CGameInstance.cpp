@@ -5,6 +5,11 @@
 
 UCGameInstance::UCGameInstance()
 {
+	
+}
+
+void UCGameInstance::Init()
+{
 	// 데이터 테이블 강제 로드
 	// Crop
 	if (!CropDefaultTable.IsValid())
@@ -27,11 +32,6 @@ UCGameInstance::UCGameInstance()
 	{
 		ItemAssetDataTable = ItemAssetDataTable.LoadSynchronous();
 	}
-}
-
-void UCGameInstance::Init()
-{
-	
 }
 
 const TOptional<FCropData> UCGameInstance::GetCropDefaultData(FName InCropName)

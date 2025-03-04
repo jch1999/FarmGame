@@ -9,6 +9,8 @@ class UVerticalBox;
 class UCInteractRow;
 class UCItemNotification;
 class UImage;
+class UCInteractRowScroll;
+class ACPlayer;
 
 UCLASS()
 class FARMGAME_API UCHUDWidget : public UUserWidget
@@ -19,36 +21,17 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
-	// About Interact Functions
-	bool AddInteractRow(AActor* InActor);
-	bool RemoveInteractRow(AActor* InActor);
-	void SetInteractIndex(int32 InIdx);
-	void UpInteractIndex();
-	void DownInteractIndex();
-	int32 GetInteractIndex();
-	AActor* GetInteractTarget();
-	void EnsureVisibleInteractRow();
-	void ScrollLerp();
 
 	// Abuot Item
 	bool AddItemNotification(FName InItemName, int32 InItemAmount, UTexture2D* InItemIcon);
 
-	// Etc
-	float GetChildWidgetOffset(UScrollBox* ScrollBox, UWidget* TargetWidget);
+	void OnInitPlayer(ACPlayer* InPlayer);
+	UCInteractRowScroll* GetInteractRowScroll() { return InteractRowScroll; }
 
 protected:
 	// About Interact Variables
 	UPROPERTY(BlueprintReadWrite, Category = "Interact", meta=(BindWidget))
-	UScrollBox* InteractRowScroll;
-	UPROPERTY(BlueprintReadWrite, Category = "Interact", meta = (BindWidget))
-	UImage* MouseWheelIcon;
-	UPROPERTY(EditDefaultsOnly,Category="Interact")
-	TSubclassOf<UCInteractRow> InteractRowClass;
-	UPROPERTY(VisibleAnywhere, Category = "Interact")
-	TArray<UCInteractRow*> InteractRows;
-	int32 InteractIdx;
-	UCInteractRow* NowSelectedRow;
-	FTimerHandle InteractScrollLerpTimer;
+	UCInteractRowScroll* InteractRowScroll;
 
 	// About Item
 	UPROPERTY(BlueprintReadWrite, Category = "Item", meta = (BindWidget))

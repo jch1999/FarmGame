@@ -6,6 +6,7 @@
 #include "UI/CHUDWidget.h"
 #include "Characters/CPlayer.h"
 #include "Camera/CameraComponent.h"
+#include "UI/CInteractRowScroll.h"
 
 UCInteractComponent::UCInteractComponent()
 {
@@ -31,27 +32,7 @@ void UCInteractComponent::DoInteract(AActor* OtherActor)
 	if (OtherActor == nullptr)
 	{
 		if (InteractableObjects.Num() == 0) return;
-
-		ACPlayerController* PC = Cast<ACPlayerController>(OwnerCharacter->GetController());
-		if (PC)
-		{
-			ACHUD* MyHud = Cast<ACHUD>(PC->GetHUD());
-
-			if (MyHud)
-			{
-				UCHUDWidget* HUDWidget=MyHud->GetHUD();
-				if (HUDWidget)
-				{
-					AActor* InteractTarget = HUDWidget->GetInteractTarget();
-					CheckNull(InteractTarget);
-
-					// HUDWidget->RemoveInteractRow(InteractTarget);
-					ICInterface_Interactable* InteractActor = Cast<ICInterface_Interactable>(InteractTarget);
-					InteractActor->Interact(OwnerCharacter);
-					RemoveInteractableObject(InteractTarget);
-				}
-			}
-		}
+		OnInteractStart.Broadcast(OwnerCharacter);
 	}
 }
 
@@ -65,67 +46,6 @@ void UCInteractComponent::DoActionInteract()
 	ActionInteractTarget = nullptr;
 }
 
-
-void UCInteractComponent::AddInteractableObject(AActor* InActor)
-{
-	if (InActor && InActor->Implements<UCInterface_Interactable>())
-	{
-		int32 BeforeLen = InteractableObjects.Num();
-		InteractableObjects.AddUnique(InActor);
-
-		if (BeforeLen != InteractableObjects.Num())
-		{
-			ACPlayerController* PC = Cast<ACPlayerController>(OwnerCharacter->GetController());
-			if (PC)
-			{
-				ACHUD* MyHud = Cast<ACHUD>(PC->GetHUD());
-
-				if (MyHud)
-				{
-					UCHUDWidget* HUDWidget = MyHud->GetHUD();
-					if (HUDWidget)
-					{
-						HUDWidget->AddInteractRow(InActor);
-						UE_LOG(LogTemp, Warning, TEXT("Added Interactable Object: %s"), *(InActor->GetActorLabel()));
-					}
-				}
-			}
-		}
-	}
-}
-
-void UCInteractComponent::RemoveInteractableObject(AActor* InActor)
-{
-	//UE_LOG(LogTemp, Warning, TEXT("Before Remove: InteractableObjects.Num() = %d"), InteractableObjects.Num());
-
-	if (InActor && InActor->Implements<UCInterface_Interactable>())
-	{
-		int32 BeforeLen = InteractableObjects.Num();
-		InteractableObjects.RemoveAll([&](AActor* Actor) {return Actor == InActor; });
-		int32 AfterLen = InteractableObjects.Num();;
-
-		if (BeforeLen != AfterLen)
-		{
-			ACPlayerController* PC = Cast<ACPlayerController>(OwnerCharacter->GetController());
-			if (PC)
-			{
-				ACHUD* MyHud = Cast<ACHUD>(PC->GetHUD());
-
-				if (MyHud)
-				{
-					UCHUDWidget* HUDWidget = MyHud->GetHUD();
-					if (HUDWidget)
-					{
-						HUDWidget->RemoveInteractRow(InActor);
-						//UE_LOG(LogTemp, Warning, TEXT("Removed Interactable Object: %s"), *InActor->GetActorLabel());
-						//UE_LOG(LogTemp, Warning, TEXT("After Remove: InteractableObjects.Num() = %d, InteractIndex = %d"), InteractableObjects.Num(), HUDWidget->GetInteractIndex());
-					}
-				}
-			}
-		}
-	}
-}
-
 void UCInteractComponent::Scroll(float InputValue)
 {
 	float CurrentTime = GetWorld()->GetTimeSeconds();
@@ -137,52 +57,20 @@ void UCInteractComponent::Scroll(float InputValue)
 
 	if (InteractableObjects.Num() > 0)
 	{
-		ACPlayerController* PC = Cast<ACPlayerController>(OwnerCharacter->GetController());
-		if (PC)
-		{
-			ACHUD* MyHud = Cast<ACHUD>(PC->GetHUD());
-
-			if (MyHud)
-			{
-				UCHUDWidget* HUDWidget = MyHud->GetHUD();
-				if (HUDWidget)
-				{
-					if (InputValue > 0)
-					{
-						HUDWidget->UpInteractIndex();
-					}
-					else if (InputValue < 0)
-					{
-						HUDWidget->DownInteractIndex();
-					}
-				}
-				//UE_LOG(LogTemp, Warning, TEXT("Scroll After: InteractIndex = %d"), HUDWidget->GetInteractIndex());
-			}
-		}
+		OnScrolled.Broadcast(InputValue > 0.0f);
 	}
 }
 
 void UCInteractComponent::DetectInteractableObjects()
 {
-	if (!OwnerCharacter) return;
-	if (!OwnerCharacter->IsInteractable()) return;
+	if (!OwnerCharacter || !OwnerCharacter->IsInteractable()) return;
 
 	// Range Detect
-	// Find Objects away from detect range
-	TArray<AActor*> ToRemoveActors;
-	for (auto Obj : InteractableObjects)
-	{
-		if (OwnerCharacter->GetDistanceTo(Obj) > RemoveRange)
-		{
-			ToRemoveActors.Add(Obj);
-		}
-	}
-
 	// Delete Objects
-	for (auto RemoveActor : ToRemoveActors)
+	InteractableObjects.RemoveAll([&](AActor* Obj)
 	{
-		RemoveInteractableObject(RemoveActor);
-	}
+			return !IsValid(Obj) || OwnerCharacter->GetDistanceTo(Obj) > RemoveRange;
+	});
 
 	TArray<FHitResult> Hits;
 	if (RangeTrace(ECollisionChannel::ECC_GameTraceChannel1, Hits))
@@ -194,23 +82,19 @@ void UCInteractComponent::DetectInteractableObjects()
 				ICInterface_Interactable* OtherActor = Cast<ICInterface_Interactable>(Hit.GetActor());
 				if (OtherActor && OtherActor->IsInteractable())
 				{
-					AddInteractableObject(Hit.GetActor());
+					InteractableObjects.AddUnique(Hit.GetActor());
 				}
 			}
 		}
 	}
 
 	// Camera Detect
-
-	if (ActionInteractTarget != nullptr)
+	if (IsValid(ActionInteractTarget) || OwnerCharacter->GetDistanceTo(ActionInteractTarget) > RemoveDistance)
 	{
-		if (OwnerCharacter->GetDistanceTo(ActionInteractTarget) > RemoveDistance)
-		{
-			ICInterface_Interactable* InteractObject = Cast<ICInterface_Interactable>(ActionInteractTarget);
-			InteractObject->OnUnhovered();
+		ICInterface_Interactable* InteractObject = Cast<ICInterface_Interactable>(ActionInteractTarget);
+		InteractObject->OnUnhovered();
 
-			ActionInteractTarget = nullptr;
-		}
+		ActionInteractTarget = nullptr;
 	}
 
 	FHitResult Hit;
@@ -220,8 +104,11 @@ void UCInteractComponent::DetectInteractableObjects()
 		{
 			if (OwnerCharacter->GetDistanceTo(ActionInteractTarget) > OwnerCharacter->GetDistanceTo(Hit.GetActor()))
 			{
-				ICInterface_Interactable* InteractObject = Cast<ICInterface_Interactable>(ActionInteractTarget);
-				InteractObject->OnUnhovered();
+				if (ICInterface_Interactable* InteractObject = Cast<ICInterface_Interactable>(ActionInteractTarget))
+				{
+					InteractObject->OnUnhovered();
+					ActionInteractTarget = nullptr;
+				}
 				//UE_LOG(LogTemp, Warning, TEXT("%s is undetected!"), *(InteractObject->GetInteractName().ToString()));
 			}
 			else
@@ -231,8 +118,10 @@ void UCInteractComponent::DetectInteractableObjects()
 		}
 
 		ActionInteractTarget = Hit.GetActor();
-		ICInterface_Interactable* InteractObject = Cast<ICInterface_Interactable>(ActionInteractTarget);
-		InteractObject->OnHovered();
+		if (ICInterface_Interactable* InteractObject = Cast<ICInterface_Interactable>(ActionInteractTarget))
+		{
+			InteractObject->OnHovered();
+		}
 		//UE_LOG(LogTemp, Warning, TEXT("%s is detected!"), *(InteractObject->GetInteractName().ToString()));
 	}
 	else
@@ -255,7 +144,7 @@ AActor* UCInteractComponent::GetCurrentInteractTarget()
 			UCHUDWidget* HUDWidget = MyHud->GetHUD();
 			if (HUDWidget)
 			{
-				return HUDWidget->GetInteractTarget();
+				return HUDWidget->GetInteractRowScroll()->GetInteractTarget();
 			}
 		}
 	}

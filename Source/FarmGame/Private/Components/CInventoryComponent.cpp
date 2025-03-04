@@ -26,11 +26,13 @@ bool UCInventoryComponent::AddItem(FItemData& InItemData, int32& InCount)
 {
 	float TotalWeight = InItemData.ItemWeight * InCount;
 	int32 MaxPossibleCount = FMath::FloorToInt((MaxCapacity - CurrentCapacity) / InItemData.ItemWeight);
-	
+
+	UE_LOG(LogItem, Error, TEXT("Start add item."));
 	if (MaxPossibleCount <= 0)
 	{
 		// 경고 위젯 출력 ("Inventory capacity is full!")
 		ShowWarningWidget("Inventory capacity is full!");
+		UE_LOG(LogItem, Error, TEXT("Inventory capacity is full!"));
 		return false;
 	}
 	uint8 AmountToAdd = FMath::Min(InCount, MaxPossibleCount);
