@@ -24,13 +24,18 @@ struct FInventorySlot
 	uint8 MaxStackSize;  // FItemData에서 가져올 예정
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float CurrentDurability;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxDurability;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* ItemIcon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString Description;
 
 	FInventorySlot()
-		: ItemID(EItemID::None), CurrentStack(0), MaxStackSize(1), ItemIcon(nullptr),Description() {
+		: ItemID(EItemID::None), CurrentStack(0), MaxStackSize(1), MaxDurability(0.0f), CurrentDurability(0.0f), ItemIcon(nullptr),Description() {
 	}
 };
 

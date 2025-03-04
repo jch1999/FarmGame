@@ -24,6 +24,7 @@ protected:
 public:
 	UFUNCTION(BlueprintCallable)
 	void SetItem(const FInventorySlot& InSlotData);
+	FInventorySlot* GetSlotItemData();
 
 	// Drag Begin & Finish
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;

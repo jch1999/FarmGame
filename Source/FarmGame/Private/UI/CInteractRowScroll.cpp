@@ -7,13 +7,14 @@
 #include "Components/ScrollBoxSlot.h"
 #include "Components/Image.h"
 #include "Components/CInteractComponent.h"
+#include "UI/CInteractRow.h"
 #include "Characters/CPlayer.h"
 
 void UCInteractRowScroll::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	CHelpers::GetClassDynamic(&InteractRowClass, "/Game/UI/WB_CInteractRowScroll");
+	CHelpers::GetClassDynamic(&InteractRowClass, "/Game/UI/WB_InteractRow.WB_InteractRow_C");
 	InteractIdx = 0;
 }
 
@@ -201,7 +202,10 @@ void UCInteractRowScroll::UpdateInteractInfo(const TArray<AActor*>& Interactable
 	}
 
 	InteractIdx = FMath::Clamp(InteractIdx, 0, InteractRows.Num() - 1);
-
+	if (IsValid(InteractRows[InteractIdx]))
+	{
+		InteractRows[InteractIdx]->OnSelected();
+	}
 	MouseWheelIcon->SetVisibility(InteractRows.Num() > 0 ? ESlateVisibility::Visible: ESlateVisibility::Hidden);
 
 	EnsureVisibleInteractRow();

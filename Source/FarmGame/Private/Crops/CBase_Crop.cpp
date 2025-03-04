@@ -255,12 +255,13 @@ void ACBase_Crop::DoHarvest()
 				{
 					FItemAssetData ItemAssetData = ItemAssetDataOpt.GetValue();
 					TSubclassOf<ACItem_Crop> CropItemClass;
-					CHelpers::GetClass(&CropItemClass, ItemAssetData.ItemClassRef);
+					CHelpers::GetClassDynamic(&CropItemClass, ItemAssetData.ItemClassRef);
 					if (CropItemClass)
 					{
 						for (auto& SpawnPoint : SpawnPoints)
 						{
 							ACItem_Crop* CropItem = World->SpawnActorDeferred<ACItem_Crop>(CropItemClass, SpawnPoint);
+							CropItem->SetAvailableCnt(1);
 							if (!CropItem)
 							{
 								UE_LOG(LogCrop, Error, TEXT("Failed to spawn crop item actor."));

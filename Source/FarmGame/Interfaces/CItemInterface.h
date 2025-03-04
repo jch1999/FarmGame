@@ -88,6 +88,9 @@ struct FItemData : public FTableRowBase
 	uint8 MaxStackSize;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxDurability;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ItemWeight;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

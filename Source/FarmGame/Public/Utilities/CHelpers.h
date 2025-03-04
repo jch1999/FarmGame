@@ -49,10 +49,11 @@ public:
 	static void GetClassDynamic(TSubclassOf<T>* OutClass, FString InPath)
 	{
 		UClass* AssetClass = StaticLoadClass(T::StaticClass(), nullptr, *InPath);
-		ensureMsgf(AssetClass!=nullptr, TEXT("Class not found"));
+		ensureMsgf(AssetClass, TEXT("Class not found"));
 
 		*OutClass = AssetClass;
 	}
+
 	template<typename T>
 	static void CreateSceneComponent(AActor* InObject, T** OutComp, FName InName, USceneComponent* InParent=nullptr)
 	{

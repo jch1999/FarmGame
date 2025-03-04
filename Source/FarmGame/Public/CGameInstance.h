@@ -31,32 +31,36 @@ public:
 	const TOptional<FItemData> GetItemtData(EItemID InItemID);
 	const TOptional<FItemAssetData> GetItemtAssetData(EItemID InItemID);
 
+private:
+	void LoadCropDefaultTable();
+	void LoadCropGrowthTable();
+	void LoadItemDataTable();
+	void LoadItemAssetDataTable();
+
 
 public:
 	// Crop Data Table
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable|Crop")
 	TSoftObjectPtr<UDataTable> CropDefaultTable;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "DataTable|Crop")
-	TMap<FName, FCropData> CropDefaultDataMap;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable|Crop")
 	TSoftObjectPtr<UDataTable> CropGrowthTable;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "DataTable|Crop")
-	TMap<FName, TArray<FCropGrowthData>&> CropGrowthDataMap;
 
 	// Item Data Table
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable|Item")
 	TSoftObjectPtr<UDataTable> ItemDataTable;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "DataTable|Item")
-	TMap<EItemID, FItemData> ItemDataMap;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable|Item")
 	TSoftObjectPtr<UDataTable> ItemAssetDataTable;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "DataTable|Item")
-	TMap<EItemID, FItemAssetData> ItemAssetDataMap;
 
 	// Widget
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|Warning")
 	TSubclassOf<UUserWidget> WarningWidgetClass;
 
+private:
+	// Data Map
+	TMap<FName, FCropData> CropDefaultDataMap;
+	TMap<FName, TArray<FCropGrowthData>*> CropGrowthDataMap;
+	TMap<EItemID, FItemData> ItemDataMap;
+	TMap<EItemID, FItemAssetData> ItemAssetDataMap;
 };

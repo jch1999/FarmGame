@@ -32,28 +32,98 @@ void UCGameInstance::Init()
 	{
 		ItemAssetDataTable = ItemAssetDataTable.LoadSynchronous();
 	}
+
+	LoadCropDefaultTable();
+	LoadCropGrowthTable();
+	LoadItemDataTable();
+	LoadItemAssetDataTable();
+}
+
+void UCGameInstance::LoadCropDefaultTable()
+{
+	// Exception handling
+	if (!CropDefaultTable.IsValid())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Crop Default Data Table is missing."));
+		return;
+	}
+
+	TArray<FName> RowNames = CropDefaultTable->GetRowNames();
+	for (FName RowName : RowNames)
+	{
+		FCropData* Row = CropDefaultTable->FindRow<FCropData>(RowName, "LoadCropDefaultTable");
+		if (Row)
+		{
+			CropDefaultDataMap.Add(RowName, *Row);
+		}
+	}
+}
+
+void UCGameInstance::LoadCropGrowthTable()
+{// Exception handling
+	if (!CropGrowthTable.IsValid())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Crop Growth Data Table is missing."));
+		return;
+	}
+
+	TArray<FName> RowNames = CropGrowthTable->GetRowNames();
+	for (FName RowName : RowNames)
+	{
+		FCropGrowthData* Row = CropGrowthTable->FindRow<FCropGrowthData>(RowName, "LoadCropGrowthTable");
+		if (Row)
+		{
+			if (!CropGrowthDataMap.Contains(Row->CropName))
+			{
+				CropGrowthDataMap.Add(Row->CropName, new TArray<FCropGrowthData>());
+			}
+			CropGrowthDataMap[Row->CropName]->Add(*Row);
+		}
+	}
+}
+
+void UCGameInstance::LoadItemDataTable()
+{
+	if (!ItemDataTable.IsValid())
+	{
+		UE_LOG(LogTemp, Error, TEXT("ItemDataTable is not valid!"));
+		return;
+	}
+
+	TArray<FName> RowNames = ItemDataTable->GetRowNames();
+	for (FName RowName : RowNames)
+	{
+		FItemData* Row = ItemDataTable->FindRow<FItemData>(RowName, "LoadItemDataTable");
+		if (Row)
+		{
+			ItemDataMap.Add(Row->ItemID, *Row);
+		}
+	}
+}
+
+void UCGameInstance::LoadItemAssetDataTable()
+{
+	if (!ItemAssetDataTable.IsValid())
+	{
+		UE_LOG(LogTemp, Error, TEXT("ItemAssetDataTable is not valid!"));
+		return;
+	}
+
+	TArray<FName> RowNames = ItemAssetDataTable->GetRowNames();
+	for (FName RowName : RowNames)
+	{
+		FItemAssetData* Row = ItemAssetDataTable->FindRow<FItemAssetData>(RowName, "LoadItemAssetDataTable");
+		if (Row)
+		{
+			ItemAssetDataMap.Add(Row->ItemID, *Row);
+		}
+	}
 }
 
 const TOptional<FCropData> UCGameInstance::GetCropDefaultData(FName InCropName)
 {
-	static TMap<FName, FCropData> CropDefaultDataMap;
-
-	// Exception handling
-	if (!CropDefaultTable.IsValid())
-	{
-		UE_LOG(LogTemp, Error, TEXT("Crop Default Data Table is missing. Crop: %s"), *InCropName.ToString());
-		return {};
-	}
-
 	if (CropDefaultDataMap.Contains(InCropName))
 	{
-		return CropDefaultDataMap[InCropName];
-	}
-
-	FCropData* NewData = CropDefaultTable->FindRow<FCropData>(InCropName, "Lookup CropDefaultData");
-	if (NewData)
-	{
-		CropDefaultDataMap.Add(InCropName, *NewData);
 		return CropDefaultDataMap[InCropName];
 	}
 	else
@@ -65,31 +135,13 @@ const TOptional<FCropData> UCGameInstance::GetCropDefaultData(FName InCropName)
 
 const TOptional<FCropGrowthData> UCGameInstance::GetCropGrowthData(FName InCropName, int32 InLevel)
 {
-	static TMap<FName, TArray<FCropGrowthData>> CropGrowthDataMap;
-
-	// Exception handling
-	if (!CropGrowthTable.IsValid() || !CropDefaultTable.IsValid())
-	{
-		if (!CropGrowthTable.IsValid() && !CropDefaultTable.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Data Table are both missing. Crop: %s"), *InCropName.ToString());
-		}
-		else if (!CropGrowthTable.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Crop Growth Data Table are both missing. Crop: %s"), *InCropName.ToString());
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Crop Default Data Table is missing. Crop: %s"), *InCropName.ToString());
-		}
-		return {};
-	}
-
+	
 	TOptional<FCropData> CropDataOpt = GetCropDefaultData(InCropName);
 	if (!CropDataOpt.IsSet())
 	{
 		return {};
 	}
+
 	const FCropData& CropData = CropDataOpt.GetValue();
 	if (InLevel<1 || InLevel > CropData.MaxLevel)
 	{
@@ -99,25 +151,16 @@ const TOptional<FCropGrowthData> UCGameInstance::GetCropGrowthData(FName InCropN
 
 	if (CropGrowthDataMap.Contains(InCropName))
 	{
-		return CropGrowthDataMap[InCropName][InLevel - 1];
-	}
-
-	TArray<FCropGrowthData*> Rows;
-	CropGrowthTable->GetAllRows(TEXT("Fetching all rows"), Rows);
-
-	TArray<FCropGrowthData> NewRows;
-	for (const auto& Data : Rows)
-	{
-		if (Data->CropName == InCropName)
-		{
-			NewRows.Add(*Data);
-		}
-	}
-
-	if (NewRows.Num() > 0)
-	{
-		CropGrowthDataMap.Add(InCropName, NewRows);
-		return CropGrowthDataMap[InCropName][InLevel - 1];
+		 TArray<FCropGrowthData>* GrowthDataArray = CropGrowthDataMap[InCropName];
+		 if (GrowthDataArray->IsValidIndex(InLevel - 1))
+		 {
+			 return (*GrowthDataArray)[InLevel - 1];
+		 }
+		 else
+		 {
+			 UE_LOG(LogTemp, Error, TEXT("Invalid Level (%d) for Crop: %s"), InLevel, *InCropName.ToString());
+			 return {};
+		 }
 	}
 	else
 	{
@@ -128,63 +171,28 @@ const TOptional<FCropGrowthData> UCGameInstance::GetCropGrowthData(FName InCropN
 
 const TOptional<FItemData> UCGameInstance::GetItemtData(EItemID InItemID)
 {
-	static TMap<EItemID, FItemData> ItemDataMap;
-
-	// Exception handling
-	if (!ItemDataTable.IsValid())
-	{
-		UE_LOG(LogTemp, Error, TEXT("Itemt Data Table is missing. Item: %s"),*(UEnum::GetValueAsString(InItemID)));
-		return {};
-	}
-
-	if (ItemDataMap.IsEmpty())
-	{
-		TArray<FItemData*> ItemRows;
-		ItemAssetDataTable->GetAllRows(TEXT("Loading Item Data"), ItemRows);
-
-		for (FItemData* Row : ItemRows)
-		{
-			ItemDataMap.Add(Row->ItemID, *Row);
-		}
-	}
-
 	if (ItemDataMap.Contains(InItemID))
 	{
 		return ItemDataMap[InItemID];
 	}
-
-	UE_LOG(LogTemp, Error, TEXT("Can't Find Data about %s"), *(UEnum::GetValueAsString(InItemID)));
-	return {};
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Can't Find Data about %s"), *(UEnum::GetValueAsString(InItemID)));
+		return {};
+	}
 }
 
 const TOptional<FItemAssetData> UCGameInstance::GetItemtAssetData(EItemID InItemID)
 {
-	static TMap<EItemID, FItemAssetData> ItemAssetMap;
-
-	// Exception handling
-	if (!ItemAssetDataTable.IsValid())
+	if (ItemAssetDataMap.Contains(InItemID))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Itemt Asset Data Table is missing. Item: %s"), *(UEnum::GetValueAsString(InItemID)));
+		return ItemAssetDataMap[InItemID];
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Can't Find Data about %s"), *(UEnum::GetValueAsString(InItemID)));
 		return {};
 	}
-
-	if (ItemAssetMap.IsEmpty())
-	{
-		TArray<FItemAssetData*> ItemRows;
-		ItemAssetDataTable->GetAllRows(TEXT("Loading Item Data"), ItemRows);
-
-		for (FItemAssetData* Row : ItemRows)
-		{
-			ItemAssetMap.Add(Row->ItemID, *Row);
-		}
-	}
-	if (ItemAssetMap.Contains(InItemID))
-	{
-		return ItemAssetMap[InItemID];
-	}
-
-	UE_LOG(LogTemp, Error, TEXT("Can't Find Data about %s"), *(UEnum::GetValueAsString(InItemID)));
-	return {};
 
 }
 

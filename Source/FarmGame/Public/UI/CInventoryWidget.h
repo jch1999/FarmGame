@@ -35,7 +35,10 @@ public:
 
 	UFUNCTION()
 	void UpdateInventorySlotCount(int32 SlotIndex);
-	
+
+	UFUNCTION()
+	void SetInventoryComp(UCInventoryComponent* InComp);
+
 public:
 	UPROPERTY(meta = (BindWidget))
 	UCTitleBarWidget* TitleBarWidget;

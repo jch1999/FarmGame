@@ -22,6 +22,7 @@ void UCSlotWidget::SetItem(const FInventorySlot& SlotData)
 	{
 		ItemIconImage->SetVisibility(ESlateVisibility::Hidden);
 		ItemCountText->SetVisibility(ESlateVisibility::Hidden);
+		ItemDurabilityBar->SetVisibility(ESlateVisibility::Hidden);
 	}
 	else
 	{
@@ -36,7 +37,17 @@ void UCSlotWidget::SetItem(const FInventorySlot& SlotData)
 			UE_LOG(LogItem, Error, TEXT("ItemIconTexture is missing! ItemID : %s"), *(UEnum::GetValueAsString(CurrentItemID)));
 		}
 		ItemCountText->SetText(FText::AsNumber(SlotData.CurrentStack));
+		if (GetSlotItemData()->CurrentDurability>0.0f)
+		{
+			ItemDurabilityBar->SetVisibility(ESlateVisibility::Visible);
+			ItemDurabilityBar->SetPercent(GetSlotItemData()->CurrentDurability / GetSlotItemData()->MaxDurability);
+		}
 	}
+}
+
+FInventorySlot* UCSlotWidget::GetSlotItemData()
+{
+	return CurrentSlotData.Pin().Get();
 }
 
 FReply UCSlotWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -75,20 +86,19 @@ bool UCSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEven
 
 void UCSlotWidget::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-	if (CurrentItemID != EItemID::None)
+	if (CurrentItemID != EItemID::None && ParentInventoryWidget)
 	{
 		FVector2D MousePoseition = InMouseEvent.GetScreenSpacePosition();
 		ParentInventoryWidget->ShowExplainWidget(CurrentSlotData, MousePoseition);
-	}
-	else
-	{
-		ParentInventoryWidget->HideExplainWidget();
 	}
 }
 
 void UCSlotWidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 {
-	ParentInventoryWidget->HideExplainWidget();
+	if (ParentInventoryWidget)
+	{
+		ParentInventoryWidget->HideExplainWidget();
+	}
 }
 
 FReply UCSlotWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)

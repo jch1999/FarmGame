@@ -64,7 +64,7 @@ void UCInventoryComponent::ShowInventory()
 			UE_LOG(LogItem, Error, TEXT("Can't craete InventoryWidget."));
 			return;
 		}
-
+		InventoryWidget->SetInventoryComp(this);
 		OnInventorySlotDataUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateInventorySlotWidget);
 		OnInventorySlotCountUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateInventorySlotCount);
 
@@ -117,7 +117,7 @@ bool UCInventoryComponent::AddToNewSlot(FItemData& InItemData, uint8& InCount)
 			Slot.ItemID = InItemData.ItemID;
 			Slot.CurrentStack = AmountToAdd;
 			Slot.MaxStackSize = InItemData.MaxStackSize;
-			
+			Slot.MaxDurability = InItemData.MaxDurability;
 			if (UGameInstance* GameInstance = GetWorld()->GetGameInstance())
 			{
 				if (UCGameInstance* MyGameInstance = Cast<UCGameInstance>(GameInstance))
