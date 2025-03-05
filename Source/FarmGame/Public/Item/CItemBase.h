@@ -43,8 +43,12 @@ public:
 
 
 	// ItemData
+	EItemID GetItemID() { return ItemID; }
 	void SetAvailableCnt(int32 cnt);
 	int32 GetAvailableCount() { return AvailableCount; }
+
+	float GetCurrentDruability() { return CurrentDurability; }
+
 protected:
 	// Components
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
@@ -67,6 +71,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemInterface")
 	EQualityType ItemQuality;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemInterface")
+	float CurrentDurability;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
 	bool bInteractable;

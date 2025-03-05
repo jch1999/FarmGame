@@ -4,6 +4,7 @@
 #include "Global.h"
 #include "UI/CInventoryWidget.h"
 #include "UI/CQuickSlotBarWidget.h"
+#include "Item/CItemBase.h"
 
 UCInventoryComponent::UCInventoryComponent()
 {
@@ -22,32 +23,53 @@ void UCInventoryComponent::BeginPlay()
 
 }
 
-bool UCInventoryComponent::AddItem(FItemData& InItemData, int32& InCount)
+bool UCInventoryComponent::AddItem(ACItemBase* InItemActor, int32& InCount)
 {
-	float TotalWeight = InItemData.ItemWeight * InCount;
-	int32 MaxPossibleCount = FMath::FloorToInt((MaxCapacity - CurrentCapacity) / InItemData.ItemWeight);
+	UGameInstance* Instance = GetOwner()->GetGameInstance();
+	if (Instance)
+	{
+		UCGameInstance* MyInstance = Cast<UCGameInstance>(Instance);
+		if (MyInstance)
+		{
+			TOptional<FItemData> ItemDataOpt = MyInstance->GetItemtData(InItemActor->GetItemID());
+			if (ItemDataOpt.IsSet())
+			{
+				FItemData ItemData = ItemDataOpt.GetValue();
+				float TotalWeight = ItemData.ItemWeight * InCount;
+				int32 MaxPossibleCount = FMath::FloorToInt((MaxCapacity - CurrentCapacity) / ItemData.ItemWeight);
 
-	UE_LOG(LogItem, Error, TEXT("Start add item."));
-	if (MaxPossibleCount <= 0)
-	{
-		// 경고 위젯 출력 ("Inventory capacity is full!")
-		ShowWarningWidget("Inventory capacity is full!");
-		UE_LOG(LogItem, Error, TEXT("Inventory capacity is full!"));
-		return false;
-	}
-	uint8 AmountToAdd = FMath::Min(InCount, MaxPossibleCount);
-	InCount -= AmountToAdd;
-	if (!AddToExistingSlot(InItemData, AmountToAdd))
-	{
-		AddToNewSlot(InItemData, AmountToAdd);
-	}
-	InCount += AmountToAdd;
-	
-	if (InCount == 0)
-	{
-		return true;
-	}
+				UE_LOG(LogItem, Error, TEXT("Start add item."));
+				if (MaxPossibleCount <= 0)
+				{
+					// 경고 위젯 출력 ("Inventory capacity is full!")
+					ShowWarningWidget("Inventory capacity is full!");
+					UE_LOG(LogItem, Error, TEXT("Inventory capacity is full!"));
+					return false;
+				}
+				uint8 AmountToAdd = FMath::Min(InCount, MaxPossibleCount);
+				InCount -= AmountToAdd;
+				if (!AddToExistingSlot(ItemData, AmountToAdd))
+				{
+					AddToNewSlot(ItemData, AmountToAdd);
+				}
+				InCount += AmountToAdd;
 
+				TOptional<FItemAssetData> ItemAssetDataOpt = MyInstance->GetItemtAssetData(InItemActor->GetItemID());
+				if (ItemAssetDataOpt.IsSet())
+				{
+					FItemAssetData& ItemAssetData = ItemAssetDataOpt.GetValue();
+					UTexture2D* ItemIcon;
+					CHelpers::GetAssetDynamic(&ItemIcon, ItemAssetData.ItemIconTextureRef);
+					FName ItemName = InItemActor->GetInteractName();
+					OnItemAdded.Broadcast(ItemName,MaxPossibleCount,ItemIcon);
+				}
+				if (InCount == 0)
+				{
+					return true;
+				}
+			}
+		}
+	}
 	return false;
 }
 
@@ -118,6 +140,7 @@ bool UCInventoryComponent::AddToNewSlot(FItemData& InItemData, uint8& InCount)
 			Slot.CurrentStack = AmountToAdd;
 			Slot.MaxStackSize = InItemData.MaxStackSize;
 			Slot.MaxDurability = InItemData.MaxDurability;
+			Slot.CurrentDurability=
 			if (UGameInstance* GameInstance = GetWorld()->GetGameInstance())
 			{
 				if (UCGameInstance* MyGameInstance = Cast<UCGameInstance>(GameInstance))

@@ -9,6 +9,8 @@
 class UInputMappingContext;
 class UInputAction;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuickSlotSelected, int32, QuickSlotIndex);
+
 UCLASS()
 class FARMGAME_API ACPlayerController : public APlayerController
 {
@@ -31,10 +33,8 @@ public:
 	void OnInteract(const FInputActionValue& Value);
 	void OnActionInteract(const FInputActionValue& Value);
 	void Scroll(const FInputActionValue& Value);
-	UFUNCTION()
-	void OpenInventory(const FInputActionValue& Value);
 
-	UFUNCTION()
+	void OpenInventory(const FInputActionValue& Value);
 	void CloseInventory(const FInputActionValue& Value);
 	
 	UFUNCTION()
@@ -43,44 +43,52 @@ public:
 	void SetUIInputMode();
 	void SetGameInputMode();
 
+	void OnQuickSlotSelected(int32 InIndex);
+
 private:
 	void RebindAction();
+	void InputTest(const FInputActionValue& Value);
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnQuickSlotSelected OnQuickSlotSelectedDelegate;
 
 protected:
 	// Input
 	// For IMc Check
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Input|Context")
 	UInputMappingContext* CurrentContext;
 
 	// Player Move Input
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Input|DefaultAction")
 	UInputMappingContext* DefaultContext;
 
-	UPROPERTY(VisibleAnywhere, Category = "Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Input|DefaultAction")
 	UInputAction* MoveAction;
 
-	UPROPERTY(VisibleAnywhere, Category = "Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Input|DefaultAction")
 	UInputAction* LookAction;
 
-	UPROPERTY(VisibleAnywhere, Category = "Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Input|DefaultAction")
 	UInputAction* InteractAction;
 
-	UPROPERTY(VisibleAnywhere, Category = "Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Input|DefaultAction")
 	UInputAction* ActionInteractAction;
 
-	UPROPERTY(VisibleAnywhere, Category = "Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Input|DefaultAction")
 	UInputAction* ScrollAction;
 
-	UPROPERTY(VisibleAnywhere, Category = "Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Input|DefaultAction")
 	UInputAction* OpenInventoryAction;
 
 	// UI Mode Input
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Input|Context")
 	UInputMappingContext* UIContext;
 
-	UPROPERTY(VisibleAnywhere, Category = "Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Input|UIAction")
 	UInputAction* CloseInventoryAction;
-
-	UPROPERTY(VisibleAnywhere, Category = "Input")
-	UInputAction* OpenUIAction;
+	
+	// Common Input Action
+	UPROPERTY(EditDefaultsOnly, Category = "Input|CommonAction")
+	TArray<UInputAction*> QuickSlotActions;
 };

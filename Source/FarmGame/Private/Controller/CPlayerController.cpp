@@ -13,6 +13,7 @@
 ACPlayerController::ACPlayerController()
 {
 	// Input Setting
+	// Default
 	CHelpers::GetAsset(&DefaultContext, "/Game/Input/IMC_Player");
 	CHelpers::GetAsset(&MoveAction, "/Game/Input/IA_PlayerMove");
 	CHelpers::GetAsset(&LookAction, "/Game/Input/IA_PlayerRotate");
@@ -20,9 +21,17 @@ ACPlayerController::ACPlayerController()
 	CHelpers::GetAsset(&ActionInteractAction, "/Game/Input/IA_PlayerActionInteract");
 	CHelpers::GetAsset(&ScrollAction, "/Game/Input/IA_PlayerScroll");
 	CHelpers::GetAsset(&OpenInventoryAction, "/Game/Input/IA_OpenInventory");
-
+	// UI
 	CHelpers::GetAsset(&UIContext, "/Game/Input/IMC_UI");
 	CHelpers::GetAsset(&CloseInventoryAction, "/Game/Input/IA_CloseInventory");
+	// Common
+	QuickSlotActions.SetNum(6);
+
+	for (int32 i = 0; i < 6; i++)
+	{
+		FString AssetPath = FString::Printf(TEXT("/Game/Input/IA_QuickSlot%d"), i + 1);
+		CHelpers::GetAsset(&QuickSlotActions[i], *AssetPath);
+	}
 }
 
 void ACPlayerController::OnPossess(APawn* aPawn)
@@ -93,13 +102,17 @@ void ACPlayerController::BeginPlay()
 	if (SubSystem)
 	{
 		SubSystem->AddMappingContext(DefaultContext, 0);
+		CurrentContext = DefaultContext;
 	}
 }
 
 void ACPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
-	
+	if (!CurrentContext)
+	{
+		CurrentContext = DefaultContext;
+	}
 	RebindAction();
 }
 
@@ -206,7 +219,7 @@ void ACPlayerController::CloseInventoryForCloseBtn()
 
 void ACPlayerController::SetUIInputMode()
 {
-	FInputModeUIOnly InputMode;
+	FInputModeGameAndUI InputMode;
 	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	SetInputMode(InputMode);
 	bShowMouseCursor = true;
@@ -232,7 +245,9 @@ void ACPlayerController::SetUIInputMode()
 		}
 	}
 
-	UE_LOG(LogTemp, Display, TEXT("Change to UI Input Mode"));
+	UE_LOG(LogTemp, Display, TEXT("Change to UI Input Mode")); 
+	UE_LOG(LogTemp, Warning, TEXT("CurrentContext in SetUIInputMode: %s"), *CurrentContext->GetFName().ToString());
+
 }
 
 void ACPlayerController::SetGameInputMode()
@@ -246,6 +261,7 @@ void ACPlayerController::SetGameInputMode()
 	{
 		SubSystem->RemoveMappingContext(UIContext);
 		SubSystem->AddMappingContext(DefaultContext, 0);
+		CurrentContext = DefaultContext;
 		RebindAction();
 	}
 
@@ -262,14 +278,23 @@ void ACPlayerController::SetGameInputMode()
 	UE_LOG(LogTemp, Display, TEXT("Change to Game Input Mode"));
 }
 
+void ACPlayerController::OnQuickSlotSelected(int32 InIndex)
+{
+	UE_LOG(LogTemp, Warning, TEXT("QuickSlot %d Selected"), InIndex);
+
+	OnQuickSlotSelectedDelegate.Broadcast(InIndex);
+}
+
 void ACPlayerController::RebindAction()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Rebinding Actions in Context: %s"), *CurrentContext->GetFName().ToString());
+
 	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
 	if (EnhancedInputComponent)
 	{
 		EnhancedInputComponent->ClearActionBindings();
 
-		if (CurrentContext == DefaultContext)
+		if (CurrentContext && CurrentContext->GetFName() == DefaultContext->GetFName())
 		{
 			// 게임 모드 액션 바인딩
 			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACPlayerController::Move);
@@ -277,12 +302,23 @@ void ACPlayerController::RebindAction()
 			EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ACPlayerController::OnInteract);
 			EnhancedInputComponent->BindAction(ActionInteractAction, ETriggerEvent::Started, this, &ACPlayerController::OnActionInteract);
 			EnhancedInputComponent->BindAction(ScrollAction, ETriggerEvent::Started, this, &ACPlayerController::Scroll);
-			EnhancedInputComponent->BindAction(OpenInventoryAction, ETriggerEvent::Started, this, &ACPlayerController::SetUIInputMode);
+			EnhancedInputComponent->BindAction(OpenInventoryAction, ETriggerEvent::Started, this, &ACPlayerController::OpenInventory);
 		}
-		else if (CurrentContext == UIContext)
+		else if (CurrentContext && CurrentContext->GetFName() == UIContext->GetFName())
 		{
 			// UI 모드 액션 바인딩
-			EnhancedInputComponent->BindAction(CloseInventoryAction, ETriggerEvent::Started, this, &ACPlayerController::SetGameInputMode);
+			EnhancedInputComponent->BindAction(CloseInventoryAction, ETriggerEvent::Started, this, &ACPlayerController::CloseInventory);
+			UE_LOG(LogTemp, Warning, TEXT("Checking CloseInventoryAction Bind: %s"), *CloseInventoryAction->GetFName().ToString());
+		}
+
+		for (int32 i = 0; i < 6; i++)
+		{
+			EnhancedInputComponent->BindAction(QuickSlotActions[i], ETriggerEvent::Started, this, &ACPlayerController::OnQuickSlotSelected, i+1);
 		}
 	}
+}
+
+void ACPlayerController::InputTest(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Error, TEXT("InputText! Input Works!"));
 }

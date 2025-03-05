@@ -8,6 +8,7 @@
 class UUserWidget;
 class UCInventoryWidget;
 class UCQuickSlotBarWidget;
+class ACItemBase;
 
 USTRUCT(BlueprintType)
 struct FInventorySlot
@@ -42,6 +43,7 @@ struct FInventorySlot
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventorySlotDataUpdated, const TArray<int32>&, ChangedIndexs);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventorySlotCountUpdated, int32, IncreasedCount);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FITemAdded, FName, InItemName, int32, InItemAmount, const UTexture2D*, InItemIcon);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FARMGAME_API UCInventoryComponent : public UActorComponent
@@ -55,7 +57,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	bool AddItem(FItemData& InItemData, int32& InCount);
+	bool AddItem(ACItemBase* InItemData, int32& InCount);
 	void ShowInventory();
 	void HideInventory();
 	void ShowWarningWidget(FString Message);
@@ -107,4 +109,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FInventorySlotCountUpdated OnInventorySlotCountUpdated;
+
+	UPROPERTY(BlueprintAssignable)
+	FITemAdded OnItemAdded;
 };

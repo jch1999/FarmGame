@@ -17,6 +17,8 @@ DEFINE_LOG_CATEGORY(LogCrop);
 ACBase_Crop::ACBase_Crop()
 	: OwnerField(nullptr)
 {
+	// RootComp;
+	CHelpers::CreateSceneComponent(this, &RootComp, "RootComp", RootComponent);
 	// Mesh
 	CHelpers::CreateSceneComponent(this, &MeshComp, "MeshComp", RootComponent);
 	
@@ -260,14 +262,15 @@ void ACBase_Crop::DoHarvest()
 					{
 						for (auto& SpawnPoint : SpawnPoints)
 						{
-							ACItem_Crop* CropItem = World->SpawnActorDeferred<ACItem_Crop>(CropItemClass, SpawnPoint);
+							FTransform SpawnTarnsform = SpawnPoint * GetTransform();
+							ACItem_Crop* CropItem = World->SpawnActorDeferred<ACItem_Crop>(CropItemClass, SpawnTarnsform);
 							CropItem->SetAvailableCnt(1);
 							if (!CropItem)
 							{
 								UE_LOG(LogCrop, Error, TEXT("Failed to spawn crop item actor."));
 								return;
 							}
-							CropItem->FinishSpawning(SpawnPoint);
+							CropItem->FinishSpawning(SpawnTarnsform);
 						}
 					}
 					else

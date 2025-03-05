@@ -3,11 +3,17 @@
 #include "Components/VerticalBox.h"
 #include "Components/Image.h"
 #include "UI/CInteractRowScroll.h"
+#include "UI/CQuickSlotBarWidget.h"
 #include "Characters/CPlayer.h"
 
 void UCHUDWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+}
+
+void UCHUDWidget::OnItemAdded(FName InItemName, int32 InItemAmount, UTexture2D* InItemIcon)
+{
+	AddItemNotification()
 }
 
 bool UCHUDWidget::AddItemNotification(FName InItemName, int32 InItemAmount, UTexture2D* InItemIcon)
@@ -32,5 +38,6 @@ void UCHUDWidget::OnInitPlayer(ACPlayer* InPlayer)
 	if (InteractRowScroll)
 	{
 		InteractRowScroll->OnInitPlyer(InPlayer);
+		QuickSlotBar->OnInitPlayer(InPlayer);
 	}
 }

@@ -10,6 +10,7 @@ class UCInteractRow;
 class UCItemNotification;
 class UImage;
 class UCInteractRowScroll;
+class UCQuickSlotBarWidget;
 class ACPlayer;
 
 UCLASS()
@@ -21,17 +22,24 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
+	void OnInitPlayer(ACPlayer* InPlayer);
+
+	// GetWidget
+	UCInteractRowScroll* GetInteractRowScroll() { return InteractRowScroll; }
+	UCQuickSlotBarWidget* GetQuickSlotBar() { return QuickSlotBar; }
 
 	// Abuot Item
+	void OnItemAdded(FName InItemName, int32 InItemAmount, UTexture2D* InItemIcon);
 	bool AddItemNotification(FName InItemName, int32 InItemAmount, UTexture2D* InItemIcon);
 
-	void OnInitPlayer(ACPlayer* InPlayer);
-	UCInteractRowScroll* GetInteractRowScroll() { return InteractRowScroll; }
 
 protected:
 	// About Interact Variables
 	UPROPERTY(BlueprintReadWrite, Category = "Interact", meta=(BindWidget))
 	UCInteractRowScroll* InteractRowScroll;
+
+	UPROPERTY(BlueprintReadWrite, Category = "QuickSlot", meta = (BindWidget))
+	UCQuickSlotBarWidget* QuickSlotBar;
 
 	// About Item
 	UPROPERTY(BlueprintReadWrite, Category = "Item", meta = (BindWidget))
