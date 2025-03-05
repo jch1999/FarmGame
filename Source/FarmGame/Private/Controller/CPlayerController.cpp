@@ -100,20 +100,7 @@ void ACPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 	
-	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
-	if (EnhancedInputComponent)
-	{
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACPlayerController::Move);
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACPlayerController::Look);
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ACPlayerController::OnInteract);
-		EnhancedInputComponent->BindAction(ActionInteractAction, ETriggerEvent::Started, this, &ACPlayerController::OnActionInteract);
-		EnhancedInputComponent->BindAction(ScrollAction, ETriggerEvent::Started, this, &ACPlayerController::Scroll);
-		EnhancedInputComponent->BindAction(OpenInventoryAction, ETriggerEvent::Started, this, &ACPlayerController::OpenInventory);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("'%s' Failed to find an Enhanced Input component!"), *GetNameSafe(this));
-	}
+	RebindAction();
 }
 
 void ACPlayerController::Move(const FInputActionValue& Value)
@@ -230,15 +217,9 @@ void ACPlayerController::SetUIInputMode()
 		SubSystem->RemoveMappingContext(DefaultContext);
 		SubSystem->AddMappingContext(UIContext, 1);
 
-		UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
-		if (EnhancedInputComponent)
-		{
-			EnhancedInputComponent->BindAction(CloseInventoryAction, ETriggerEvent::Started, this, &ACPlayerController::CloseInventory);
-		}
+		CurrentContext = UIContext;
+		RebindAction();
 	}
-
-	
-	
 
 	// Hide Hud
 	AHUD* Hud = GetHUD();
@@ -265,6 +246,7 @@ void ACPlayerController::SetGameInputMode()
 	{
 		SubSystem->RemoveMappingContext(UIContext);
 		SubSystem->AddMappingContext(DefaultContext, 0);
+		RebindAction();
 	}
 
 	// Show Hud
@@ -278,4 +260,29 @@ void ACPlayerController::SetGameInputMode()
 		}
 	}
 	UE_LOG(LogTemp, Display, TEXT("Change to Game Input Mode"));
+}
+
+void ACPlayerController::RebindAction()
+{
+	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
+	if (EnhancedInputComponent)
+	{
+		EnhancedInputComponent->ClearActionBindings();
+
+		if (CurrentContext == DefaultContext)
+		{
+			// 게임 모드 액션 바인딩
+			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACPlayerController::Move);
+			EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACPlayerController::Look);
+			EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ACPlayerController::OnInteract);
+			EnhancedInputComponent->BindAction(ActionInteractAction, ETriggerEvent::Started, this, &ACPlayerController::OnActionInteract);
+			EnhancedInputComponent->BindAction(ScrollAction, ETriggerEvent::Started, this, &ACPlayerController::Scroll);
+			EnhancedInputComponent->BindAction(OpenInventoryAction, ETriggerEvent::Started, this, &ACPlayerController::SetUIInputMode);
+		}
+		else if (CurrentContext == UIContext)
+		{
+			// UI 모드 액션 바인딩
+			EnhancedInputComponent->BindAction(CloseInventoryAction, ETriggerEvent::Started, this, &ACPlayerController::SetGameInputMode);
+		}
+	}
 }

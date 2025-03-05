@@ -202,7 +202,7 @@ void UCInteractRowScroll::UpdateInteractInfo(const TArray<AActor*>& Interactable
 	}
 
 	InteractIdx = FMath::Clamp(InteractIdx, 0, InteractRows.Num() - 1);
-	if (IsValid(InteractRows[InteractIdx]))
+	if (InteractRows.Num() > 0 && IsValid(InteractRows[InteractIdx]))
 	{
 		InteractRows[InteractIdx]->OnSelected();
 	}

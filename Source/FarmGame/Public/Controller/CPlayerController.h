@@ -43,10 +43,17 @@ public:
 	void SetUIInputMode();
 	void SetGameInputMode();
 
+private:
+	void RebindAction();
+
 protected:
 	// Input
+	// For IMc Check
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UInputMappingContext* CurrentContext;
+
 	// Player Move Input
-	UPROPERTY(VisibleAnywhere, Category = "Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UInputMappingContext* DefaultContext;
 
 	UPROPERTY(VisibleAnywhere, Category = "Input")
@@ -68,7 +75,7 @@ protected:
 	UInputAction* OpenInventoryAction;
 
 	// UI Mode Input
-	UPROPERTY(VisibleAnywhere, Category = "Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UInputMappingContext* UIContext;
 
 	UPROPERTY(VisibleAnywhere, Category = "Input")
