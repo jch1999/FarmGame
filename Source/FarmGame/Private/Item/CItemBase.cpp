@@ -54,6 +54,11 @@ void ACItemBase::AddAvailableCount(int32 InAmount)
 	AvailableCount += InAmount;
 }
 
+void ACItemBase::ReduceAvailableCount(int32 InAmount)
+{
+	AvailableCount = FMath::Max(0, (AvailableCount - InAmount));
+}
+
 void ACItemBase::SetInteractable()
 {
 	bInteractable = true;

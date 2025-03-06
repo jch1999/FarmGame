@@ -15,7 +15,7 @@ void UCSlotWidget::NativeOnInitialized()
 
 void UCSlotWidget::SetItem(const FInventorySlot& SlotData)
 {
-	CurrentSlotData = TWeakPtr<FInventorySlot>(MakeShared<FInventorySlot>(SlotData));
+	CurrentSlotData = MakeShared<FInventorySlot>(SlotData);
 	CurrentItemID = SlotData.ItemID;
 
 	if (CurrentItemID == EItemID::None)
@@ -47,7 +47,7 @@ void UCSlotWidget::SetItem(const FInventorySlot& SlotData)
 
 FInventorySlot* UCSlotWidget::GetSlotItemData()
 {
-	return CurrentSlotData.Pin().Get();
+	return CurrentSlotData.Get();
 }
 
 FReply UCSlotWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)

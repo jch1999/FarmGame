@@ -13,7 +13,7 @@ void UCHUDWidget::NativeConstruct()
 
 void UCHUDWidget::OnItemAdded(FName InItemName, int32 InItemAmount, UTexture2D* InItemIcon)
 {
-	AddItemNotification()
+	AddItemNotification(InItemName, InItemAmount, InItemIcon);
 }
 
 bool UCHUDWidget::AddItemNotification(FName InItemName, int32 InItemAmount, UTexture2D* InItemIcon)

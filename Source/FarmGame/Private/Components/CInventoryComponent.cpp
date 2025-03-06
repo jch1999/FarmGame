@@ -23,7 +23,7 @@ void UCInventoryComponent::BeginPlay()
 
 }
 
-bool UCInventoryComponent::AddItem(ACItemBase* InItemActor, int32& InCount)
+bool UCInventoryComponent::AddItem(ACItemBase* InItemActor)
 {
 	UGameInstance* Instance = GetOwner()->GetGameInstance();
 	if (Instance)
@@ -32,10 +32,16 @@ bool UCInventoryComponent::AddItem(ACItemBase* InItemActor, int32& InCount)
 		if (MyInstance)
 		{
 			TOptional<FItemData> ItemDataOpt = MyInstance->GetItemtData(InItemActor->GetItemID());
-			if (ItemDataOpt.IsSet())
+			TOptional<FItemAssetData> ItemAssetDataOpt = MyInstance->GetItemtAssetData(InItemActor->GetItemID());
+			if (ItemDataOpt.IsSet() && ItemAssetDataOpt.IsSet())
 			{
-				FItemData ItemData = ItemDataOpt.GetValue();
-				float TotalWeight = ItemData.ItemWeight * InCount;
+				TArray<int32> ChangedIndexes;
+				int32 PrevCount = InItemActor->GetAvailableCount();
+				// Get Item Data
+				const FItemData& ItemData = ItemDataOpt.GetValue();
+				const FItemAssetData& ItemAssetData = ItemAssetDataOpt.GetValue();
+
+				float TotalWeight = ItemData.ItemWeight * InItemActor->GetAvailableCount();
 				int32 MaxPossibleCount = FMath::FloorToInt((MaxCapacity - CurrentCapacity) / ItemData.ItemWeight);
 
 				UE_LOG(LogItem, Error, TEXT("Start add item."));
@@ -46,25 +52,30 @@ bool UCInventoryComponent::AddItem(ACItemBase* InItemActor, int32& InCount)
 					UE_LOG(LogItem, Error, TEXT("Inventory capacity is full!"));
 					return false;
 				}
-				uint8 AmountToAdd = FMath::Min(InCount, MaxPossibleCount);
-				InCount -= AmountToAdd;
-				if (!AddToExistingSlot(ItemData, AmountToAdd))
-				{
-					AddToNewSlot(ItemData, AmountToAdd);
-				}
-				InCount += AmountToAdd;
 
-				TOptional<FItemAssetData> ItemAssetDataOpt = MyInstance->GetItemtAssetData(InItemActor->GetItemID());
-				if (ItemAssetDataOpt.IsSet())
+				if (!AddToExistingSlot(InItemActor,ChangedIndexes))
 				{
-					FItemAssetData& ItemAssetData = ItemAssetDataOpt.GetValue();
-					UTexture2D* ItemIcon;
-					CHelpers::GetAssetDynamic(&ItemIcon, ItemAssetData.ItemIconTextureRef);
-					FName ItemName = InItemActor->GetInteractName();
-					OnItemAdded.Broadcast(ItemName,MaxPossibleCount,ItemIcon);
+					AddToNewSlot(InItemActor, ItemData, ItemAssetData, ChangedIndexes);
+					if (ChangedIndexes.Num() == 0)
+					{
+						UE_LOG(LogItem, Error, TEXT("Inventory slots are full!"));
+						return false;
+					}
 				}
-				if (InCount == 0)
+				// Update Inventory Widget
+				OnInventorySlotDataUpdated.Broadcast(ChangedIndexes);
+
+				// Show Item Notification
+				int32 AddedItemCount = PrevCount - InItemActor->GetAvailableCount();
+				UTexture2D* ItemIcon;
+				CHelpers::GetAssetDynamic(&ItemIcon, ItemAssetData.ItemIconTextureRef);
+				FName ItemName = InItemActor->GetInteractName();
+				OnItemAdded.Broadcast(ItemName, AddedItemCount, ItemIcon);
+				
+				// If get all Item, item actor must be destroyed.
+				if (InItemActor->GetAvailableCount() <= 0)
 				{
+					InItemActor->Destroy();
 					return true;
 				}
 			}
@@ -106,64 +117,62 @@ void UCInventoryComponent::HideInventory()
 	}
 }
 
-bool UCInventoryComponent::AddToExistingSlot(FItemData& InItemData, uint8& InCount)
+bool UCInventoryComponent::AddToExistingSlot(ACItemBase* InItemActor, TArray<int32>& ChangedIndexes)
 {
-	for (FInventorySlot& Slot : InventorySlots)
+	for (int32 i = 0; i < InventorySlots.Num(); i++)
 	{
-		if (Slot.ItemID == InItemData.ItemID && Slot.CurrentStack < Slot.MaxStackSize)
+		FInventorySlot& Slot = InventorySlots[i];
+		if (Slot.ItemID == InItemActor->GetItemID() && Slot.CurrentStack < Slot.MaxStackSize)
 		{
-			uint8 AvailableSpace = Slot.MaxStackSize - Slot.CurrentStack;
-			uint8 AmountToAdd = FMath::Min(InCount, AvailableSpace);
+			int32 AvailableSpace = Slot.MaxStackSize - Slot.CurrentStack;
+			int32 AmountToAdd = FMath::Min(InItemActor->GetAvailableCount(), AvailableSpace);
 
 			Slot.CurrentStack += AmountToAdd;
-			InCount -= AmountToAdd;
-
-			if (InCount <= 0) return true;
+			InItemActor->ReduceAvailableCount(AmountToAdd);
+			ChangedIndexes.AddUnique(i);
+			if (InItemActor->GetAvailableCount() <= 0)
+			{
+				return true;
+			}
 		}
 	}
 	return false;
 }
 
-bool UCInventoryComponent::AddToNewSlot(FItemData& InItemData, uint8& InCount)
+bool UCInventoryComponent::AddToNewSlot(ACItemBase* InItemActor, const FItemData& InItemData, const FItemAssetData& InItemAssetData, TArray<int32>& ChangedIndexes)
 {
 	if (CurrentSlotCnt >= MaxSlotCnt)
 	{
 		ShowWarningWidget("No empty slot available!");
 		return false;
 	}
-	for (auto& Slot : InventorySlots)
+	for (int32 i = 0; i < InventorySlots.Num(); i++)
 	{
+		FInventorySlot& Slot = InventorySlots[i];
 		if (Slot.ItemID == EItemID::None)
 		{
-			int32 AmountToAdd = FMath::Min(InCount, InItemData.MaxStackSize);
+			int32 AmountToAdd = FMath::Min(InItemActor->GetAvailableCount(), (int32)(InItemData.MaxStackSize));
 			Slot.ItemID = InItemData.ItemID;
 			Slot.CurrentStack = AmountToAdd;
 			Slot.MaxStackSize = InItemData.MaxStackSize;
 			Slot.MaxDurability = InItemData.MaxDurability;
-			Slot.CurrentDurability=
-			if (UGameInstance* GameInstance = GetWorld()->GetGameInstance())
+			Slot.CurrentDurability = InItemActor->GetCurrentDruability();
+
+			InItemActor->ReduceAvailableCount(AmountToAdd);
+			ChangedIndexes.AddUnique(i);
+
+			if ((InItemAssetData.ItemIconTextureRef).IsEmpty())
 			{
-				if (UCGameInstance* MyGameInstance = Cast<UCGameInstance>(GameInstance))
-				{
-					TOptional<FItemAssetData> ItemAssetDataOpt = MyGameInstance->GetItemtAssetData(InItemData.ItemID);
-					if (ItemAssetDataOpt.IsSet())
-					{
-						FItemAssetData& AssetData= ItemAssetDataOpt.GetValue();
-						if ((AssetData.ItemIconTextureRef).IsEmpty())
-						{
-							UE_LOG(LogItem, Error, TEXT("ItemIconTexture Reference is missing. ItemID : "),*(UEnum::GetValueAsString(Slot.ItemID)));
-						}
-						else
-						{
-							CHelpers::GetAssetDynamic(&Slot.ItemIcon, AssetData.ItemIconTextureRef);
-						}
-						Slot.Description = AssetData.Description;
-					}
-				}
+				UE_LOG(LogItem, Error, TEXT("ItemIconTexture Reference is missing. ItemID : "), *(UEnum::GetValueAsString(Slot.ItemID)));
 			}
+			else
+			{
+				CHelpers::GetAssetDynamic(&Slot.ItemIcon, InItemAssetData.ItemIconTextureRef);
+			}
+			Slot.Description = InItemAssetData.Description;
 		}
 
-		if (InCount <= 0)
+		if (InItemActor->GetAvailableCount() <= 0)
 		{
 			return true;
 		}

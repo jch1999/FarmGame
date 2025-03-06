@@ -52,7 +52,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EItemID CurrentItemID;
 
-	TWeakPtr<FInventorySlot> CurrentSlotData;
+	TSharedPtr<FInventorySlot> CurrentSlotData;
 
 	UPROPERTY()
 	int32 SlotIndex;

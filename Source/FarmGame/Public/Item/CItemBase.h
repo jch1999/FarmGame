@@ -25,10 +25,11 @@ public:
 	virtual void SetUsable() override;
 	virtual void SetUnusable() override;
 	virtual bool UseItem() override PURE_VIRTUAL(ACItemBase::UseItem, return false;);
-
+	// About Item Data Inherited from ICItemInterface
 	virtual void AddAvailableCount(int32 InAmount = 1) override;
-	virtual void ReduceAvailableCount(int32 InAmount = 1) override { AvailableCount = FMath::Max(0, AvailableCount - InAmount); }
+	virtual void ReduceAvailableCount(int32 InAmount = 1) override;
 	virtual int32 GetAvailableCount() const override { return AvailableCount; }
+
 
 	// Inherited from ICInterface_Interactable
 	virtual bool IsInteractable() override { return bInteractable; }
@@ -44,8 +45,8 @@ public:
 
 	// ItemData
 	EItemID GetItemID() { return ItemID; }
+
 	void SetAvailableCnt(int32 cnt);
-	int32 GetAvailableCount() { return AvailableCount; }
 
 	float GetCurrentDruability() { return CurrentDurability; }
 
