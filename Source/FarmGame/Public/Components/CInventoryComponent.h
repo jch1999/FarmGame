@@ -43,7 +43,7 @@ struct FInventorySlot
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventorySlotDataUpdated, const TArray<int32>&, ChangedIndexs);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventorySlotCountUpdated, int32, IncreasedCount);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FITemAdded, FName, InItemName, int32, InItemAmount, const UTexture2D*, InItemIcon);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FITemAdded, FName, InItemName, int32, InItemAmount, UTexture2D*, InItemIcon);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FARMGAME_API UCInventoryComponent : public UActorComponent
@@ -69,6 +69,7 @@ public:
 
 	// void SetQuickSlotIndex(int32 InIndex);
 private:
+	bool CreateInventoryWidget();
 	bool AddToExistingSlot(ACItemBase* InItemActor, TArray<int32>& ChangedIndexes);
 	bool AddToNewSlot(ACItemBase* InItemActor, const FItemData& InItemData, const FItemAssetData& InItemAssetData, TArray<int32>& ChangedIndexes);
 	UFUNCTION()
@@ -112,4 +113,6 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FITemAdded OnItemAdded;
+private:
+	int32 DefaultSlotCnt;
 };

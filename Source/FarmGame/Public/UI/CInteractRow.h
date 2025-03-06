@@ -8,6 +8,7 @@
 
 class UTextBlock;
 class UOverlay;
+class UImage;
 
 UCLASS()
 class FARMGAME_API UCInteractRow : public UUserWidget
@@ -33,6 +34,8 @@ public:
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(BindWidget))
 	UTextBlock* NameText;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	UImage* InteractTypeIconImage;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	UOverlay* InteractKeyOverlay;

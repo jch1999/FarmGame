@@ -33,10 +33,17 @@ void UCGameInstance::Init()
 		ItemAssetDataTable = ItemAssetDataTable.LoadSynchronous();
 	}
 
+	//Interact
+	if (!InteractAssetDataTable.IsValid())
+	{
+		InteractAssetDataTable = InteractAssetDataTable.LoadSynchronous();
+	}
+
 	LoadCropDefaultTable();
 	LoadCropGrowthTable();
 	LoadItemDataTable();
 	LoadItemAssetDataTable();
+	LoadInteractAssetDataTable();
 }
 
 void UCGameInstance::LoadCropDefaultTable()
@@ -120,6 +127,25 @@ void UCGameInstance::LoadItemAssetDataTable()
 	}
 }
 
+void UCGameInstance::LoadInteractAssetDataTable()
+{
+	if (!InteractAssetDataTable.IsValid())
+	{
+		UE_LOG(LogTemp, Error, TEXT("InteractAssetDataTable is not valid!"));
+		return;
+	}
+
+	TArray<FName> RowNames = InteractAssetDataTable->GetRowNames();
+	for (FName RowName : RowNames)
+	{
+		FInteractAssetData* Row = InteractAssetDataTable->FindRow<FInteractAssetData>(RowName, "LoadItemAssetDataTable");
+		if (Row)
+		{
+			InteractAssetDataMap.Add(Row->InteractType, *Row);
+		}
+	}
+}
+
 const TOptional<FCropData> UCGameInstance::GetCropDefaultData(FName InCropName)
 {
 	if (CropDefaultDataMap.Contains(InCropName))
@@ -194,6 +220,19 @@ const TOptional<FItemAssetData> UCGameInstance::GetItemtAssetData(EItemID InItem
 		return {};
 	}
 
+}
+
+const TOptional<FInteractAssetData> UCGameInstance::GetInteractAssetData(EInteractObjectType InInteractType)
+{
+	if (InteractAssetDataMap.Contains(InInteractType))
+	{
+		return InteractAssetDataMap[InInteractType];
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Can't Find Data about %s"), *(UEnum::GetValueAsString(InInteractType)));
+		return {};
+	}
 }
 
 void UCGameInstance::ShowWarningWidget(FString Message)

@@ -31,12 +31,15 @@ public:
 	const TOptional<FItemData> GetItemtData(EItemID InItemID);
 	const TOptional<FItemAssetData> GetItemtAssetData(EItemID InItemID);
 
+	// Get Interact Asset Data
+	const TOptional<FInteractAssetData> GetInteractAssetData(EInteractObjectType InInteractType);
+
 private:
 	void LoadCropDefaultTable();
 	void LoadCropGrowthTable();
 	void LoadItemDataTable();
 	void LoadItemAssetDataTable();
-
+	void LoadInteractAssetDataTable();
 
 public:
 	// Crop Data Table
@@ -53,6 +56,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable|Item")
 	TSoftObjectPtr<UDataTable> ItemAssetDataTable;
 
+	// Interact Data Table
+	TSoftObjectPtr<UDataTable> InteractAssetDataTable;
+	
 	// Widget
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|Warning")
 	TSubclassOf<UUserWidget> WarningWidgetClass;
@@ -63,4 +69,5 @@ private:
 	TMap<FName, TArray<FCropGrowthData>*> CropGrowthDataMap;
 	TMap<EItemID, FItemData> ItemDataMap;
 	TMap<EItemID, FItemAssetData> ItemAssetDataMap;
+	TMap<EInteractObjectType, FInteractAssetData> InteractAssetDataMap;
 };

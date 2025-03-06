@@ -5,10 +5,19 @@
 #include "UI/CInteractRowScroll.h"
 #include "UI/CQuickSlotBarWidget.h"
 #include "Characters/CPlayer.h"
+#include "Components/CInventoryComponent.h"
+#include "Global.h"
 
-void UCHUDWidget::NativeConstruct()
+bool UCHUDWidget::Initialize()
 {
-	Super::NativeConstruct();
+	bool bSuccess = Super::Initialize();
+	if (!bSuccess) return false;
+
+	if (!ItemNotificationClass)
+	{
+		CHelpers::GetClass(&ItemNotificationClass, "/Game/UI/WB_ItemNotification");
+	}
+	return true;
 }
 
 void UCHUDWidget::OnItemAdded(FName InItemName, int32 InItemAmount, UTexture2D* InItemIcon)
@@ -28,6 +37,7 @@ bool UCHUDWidget::AddItemNotification(FName InItemName, int32 InItemAmount, UTex
 
 	ItemNotification->InitializeNotification(InItemName, InItemAmount, InItemIcon);
 	VB_ItemNotifications->AddChild(ItemNotification);
+	ItemNotification->AddToViewport();
 	return true;
 }
 
@@ -39,5 +49,6 @@ void UCHUDWidget::OnInitPlayer(ACPlayer* InPlayer)
 	{
 		InteractRowScroll->OnInitPlyer(InPlayer);
 		QuickSlotBar->OnInitPlayer(InPlayer);
+		InPlayer->GetInventoryComponent()->OnItemAdded.AddDynamic(this, &UCHUDWidget::OnItemAdded);
 	}
 }

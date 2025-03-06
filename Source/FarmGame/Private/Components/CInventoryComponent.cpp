@@ -12,7 +12,8 @@ UCInventoryComponent::UCInventoryComponent()
 	CHelpers::GetClass(&QuickSlotBarWidgetClass, "/Game/UI/WB_CQuickSlotBar");
 	CurrentCapacity = 0.0f;
 	MaxCapacity = 100.0f;
-	CurrentSlotCnt = 20;
+	CurrentSlotCnt = 0;
+	DefaultSlotCnt = 20;
 	MaxSlotCnt = 50;
 }
 
@@ -21,6 +22,7 @@ void UCInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	CreateInventoryWidget();
 }
 
 bool UCInventoryComponent::AddItem(ACItemBase* InItemActor)
@@ -49,7 +51,7 @@ bool UCInventoryComponent::AddItem(ACItemBase* InItemActor)
 				{
 					// 경고 위젯 출력 ("Inventory capacity is full!")
 					ShowWarningWidget("Inventory capacity is full!");
-					UE_LOG(LogItem, Error, TEXT("Inventory capacity is full!"));
+					UE_LOG(LogItem, Error, TEXT("Inventory capacity is full! Curernt/Max Capacity : %f / %f,"),CurrentCapacity,MaxCapacity);
 					return false;
 				}
 
@@ -71,7 +73,9 @@ bool UCInventoryComponent::AddItem(ACItemBase* InItemActor)
 				CHelpers::GetAssetDynamic(&ItemIcon, ItemAssetData.ItemIconTextureRef);
 				FName ItemName = InItemActor->GetInteractName();
 				OnItemAdded.Broadcast(ItemName, AddedItemCount, ItemIcon);
-				
+
+				// Increase InventoryCapacity
+				CurrentCapacity += AddedItemCount * ItemData.ItemWeight;
 				// If get all Item, item actor must be destroyed.
 				if (InItemActor->GetAvailableCount() <= 0)
 				{
@@ -88,21 +92,11 @@ void UCInventoryComponent::ShowInventory()
 {
 	if (InventoryWidget == nullptr)
 	{
-		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-		if (!PlayerController) return;
-
-		InventoryWidget = CreateWidget<UCInventoryWidget>(PlayerController, InventoryWidgetClass);
-		if (!InventoryWidget)
+		if (!CreateInventoryWidget())
 		{
 			UE_LOG(LogItem, Error, TEXT("Can't craete InventoryWidget."));
 			return;
 		}
-		InventoryWidget->SetInventoryComp(this);
-		OnInventorySlotDataUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateInventorySlotWidget);
-		OnInventorySlotCountUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateInventorySlotCount);
-
-		IncreaseSlotCount(CurrentSlotCnt);
-		InventoryWidget->AddToViewport();
 	}
 	InventoryWidget->SetVisibility(ESlateVisibility::Visible);
 	UE_LOG(LogItem, Display, TEXT("Open Inventory."));
@@ -115,6 +109,26 @@ void UCInventoryComponent::HideInventory()
 		InventoryWidget->SetVisibility(ESlateVisibility::Hidden); 
 		UE_LOG(LogItem, Display, TEXT("Close Inventory."));
 	}
+}
+
+bool UCInventoryComponent::CreateInventoryWidget()
+{
+	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
+	{
+		InventoryWidget = CreateWidget<UCInventoryWidget>(PlayerController, InventoryWidgetClass);
+		if (InventoryWidget)
+		{
+			InventoryWidget->SetInventoryComp(this);
+			OnInventorySlotDataUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateInventorySlotWidget);
+			OnInventorySlotCountUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateInventorySlotCount);
+
+			IncreaseSlotCount(DefaultSlotCnt);
+			InventoryWidget->AddToViewport();
+			InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
+			return true;
+		}
+	}
+	return false;
 }
 
 bool UCInventoryComponent::AddToExistingSlot(ACItemBase* InItemActor, TArray<int32>& ChangedIndexes)
@@ -141,11 +155,6 @@ bool UCInventoryComponent::AddToExistingSlot(ACItemBase* InItemActor, TArray<int
 
 bool UCInventoryComponent::AddToNewSlot(ACItemBase* InItemActor, const FItemData& InItemData, const FItemAssetData& InItemAssetData, TArray<int32>& ChangedIndexes)
 {
-	if (CurrentSlotCnt >= MaxSlotCnt)
-	{
-		ShowWarningWidget("No empty slot available!");
-		return false;
-	}
 	for (int32 i = 0; i < InventorySlots.Num(); i++)
 	{
 		FInventorySlot& Slot = InventorySlots[i];
@@ -171,7 +180,10 @@ bool UCInventoryComponent::AddToNewSlot(ACItemBase* InItemActor, const FItemData
 			}
 			Slot.Description = InItemAssetData.Description;
 		}
-
+		else
+		{
+			UE_LOG(LogItem, Error, TEXT("ItemID : "), *(UEnum::GetValueAsString(Slot.ItemID)));
+		}
 		if (InItemActor->GetAvailableCount() <= 0)
 		{
 			return true;
@@ -197,7 +209,7 @@ void UCInventoryComponent::ShowWarningWidget(FString Message)
 	{
 		if (UCGameInstance* MyGameInstance = Cast<UCGameInstance>(GameInstance))
 		{
-			MyGameInstance->ShowWarningWidget("Inventory is full!");
+			MyGameInstance->ShowWarningWidget(Message);
 		}
 	}
 }

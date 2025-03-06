@@ -37,6 +37,12 @@ void UCQuickSlotBarWidget::OnQuickSlotSelected(int InIndex)
 {
     if (QuickSlots.Num() < InIndex && InIndex > 0)
     {
+        if (InIndex == CurrentIndex)
+        {
+            UE_LOG(LogItem, Error, TEXT("Same QuickSlot Index Selected: %d"), InIndex);
+            return;
+        }
+        CurrentIndex = InIndex;
         UE_LOG(LogItem, Error, TEXT("Item Seletecd %s, QuickSlot Index : %d"), *(QuickSlots[InIndex]->GetName()),InIndex);
     }
 }

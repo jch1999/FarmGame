@@ -11,6 +11,21 @@ enum class EInteractObjectType :uint8
 	None, Player, Crop, NPC, FarmField, Item, Max
 };
 
+USTRUCT(BlueprintType)
+struct FInteractAssetData : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EInteractObjectType InteractType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString InteractIconTextureRef;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString InteractSFXRef;
+};
+
 UINTERFACE(MinimalAPI)
 class UCInterface_Interactable : public UInterface
 {

@@ -19,7 +19,7 @@ class FARMGAME_API UCHUDWidget : public UUserWidget
 	GENERATED_BODY()
 	
 protected:
-	virtual void NativeConstruct() override;
+	virtual bool Initialize() override;
 
 public:
 	void OnInitPlayer(ACPlayer* InPlayer);
@@ -29,6 +29,7 @@ public:
 	UCQuickSlotBarWidget* GetQuickSlotBar() { return QuickSlotBar; }
 
 	// Abuot Item
+	UFUNCTION()
 	void OnItemAdded(FName InItemName, int32 InItemAmount, UTexture2D* InItemIcon);
 	bool AddItemNotification(FName InItemName, int32 InItemAmount, UTexture2D* InItemIcon);
 

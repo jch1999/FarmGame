@@ -19,6 +19,8 @@ ACItemBase::ACItemBase()
 	SphereComp->SetSphereRadius(30.0f);
 	SphereComp->SetCollisionProfileName(TEXT("InteractObject"));*/
 
+	SetAvailableCnt(1);
+
 	SetType(EInteractObjectType::Item);
 	SetInteractable();
 }

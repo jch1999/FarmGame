@@ -28,6 +28,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="QuickSlots")
 	TArray<UCQuickSlotWidget*> QuickSlots;
 
+	UPROPERTY(EditDefaultsOnly, Category = "QuickSlots")
+	int32 CurrentIndex;
+
 	UPROPERTY(EditDefaultsOnly,Category="UI|Class")
 	TSubclassOf<UCQuickSlotWidget> QuickSlotClass;
 

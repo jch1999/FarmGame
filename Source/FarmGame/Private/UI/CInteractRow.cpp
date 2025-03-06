@@ -2,7 +2,11 @@
 #include "Utilities/CHelpers.h"
 #include "Components/TextBlock.h"
 #include "Components/Overlay.h"
+#include "Components/Image.h"
 #include "Interfaces/CInterface_Interactable.h"
+#include "CGameInstance.h"
+#include "Global.h"
+
 void UCInteractRow::SetTarget(AActor* InActor)
 {
 	CheckNull(InActor);
@@ -11,6 +15,23 @@ void UCInteractRow::SetTarget(AActor* InActor)
 	ICInterface_Interactable* Interact = Cast<ICInterface_Interactable>(InActor);
 	NameText->SetText(FText::FromName(Interact->GetInteractName()));
 	//NameText->SetText(FText::FromString(InActor->GetActorLabel()));
+
+	if (UCGameInstance* GI = Cast<UCGameInstance>(GetGameInstance()))
+	{
+		if (const TOptional<FInteractAssetData>& InteractAssetDataOpt = GI->GetInteractAssetData(Interact->GetType()))
+		{
+			if (InteractAssetDataOpt.IsSet())
+			{
+				const FInteractAssetData& InteractAssetData = InteractAssetDataOpt.GetValue();
+				UTexture2D* InteractIconTex;
+				CHelpers::GetAssetDynamic(&InteractIconTex, InteractAssetData.InteractIconTextureRef);
+				if (IsValid(InteractIconTex))
+				{
+					InteractTypeIconImage->SetBrushFromTexture(InteractIconTex);
+				}
+			}
+		}
+	}
 }
 
 AActor* UCInteractRow::GetTarget()

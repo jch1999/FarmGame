@@ -176,28 +176,28 @@ void UCInteractRowScroll::UpdateInteractInfo(const TArray<AActor*>& Interactable
 	
 	for (auto InteractableObject : InteractableObjects)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Checking InteractableObject: %s"), *InteractableObject->GetName());
+		//UE_LOG(LogTemp, Warning, TEXT("Checking InteractableObject: %s"), *InteractableObject->GetName());
 		if (!InteractRowMap.Contains(InteractableObject))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Creating InteractRow for: %s"), *InteractableObject->GetName());
+			//UE_LOG(LogTemp, Warning, TEXT("Creating InteractRow for: %s"), *InteractableObject->GetName());
 			UCInteractRow* InteractRow = CreateWidget<UCInteractRow>(World, InteractRowClass);
-			UE_LOG(LogTemp, Warning, TEXT("Create InteractRow! UCInteractRowScroll::UpdateInteractInfo"));
+			//UE_LOG(LogTemp, Warning, TEXT("Create InteractRow! UCInteractRowScroll::UpdateInteractInfo"));
 
 			if (InteractRow)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Add InteractRow! UCInteractRowScroll::UpdateInteractInfo"));
+				//UE_LOG(LogTemp, Warning, TEXT("Add InteractRow! UCInteractRowScroll::UpdateInteractInfo"));
 				InteractRow->SetTarget(InteractableObject);
 				InteractRowScroll->AddChild(InteractRow);
 				InteractRows.Add(InteractRow);
 			}
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Failed to create InteractRow!"));
+				//UE_LOG(LogTemp, Warning, TEXT("Failed to create InteractRow!"));
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("InteractRow already exists for: %s"), *InteractableObject->GetName());
+			//UE_LOG(LogTemp, Warning, TEXT("InteractRow already exists for: %s"), *InteractableObject->GetName());
 		}
 	}
 
