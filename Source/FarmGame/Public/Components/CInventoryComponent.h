@@ -76,6 +76,16 @@ private:
 	bool IncreaseSlotCount(int32 InSlotCount);
 
 public:
+	UPROPERTY(BlueprintAssignable)
+	FInventorySlotDataUpdated OnInventorySlotDataUpdated;
+
+	UPROPERTY(BlueprintAssignable)
+	FInventorySlotCountUpdated OnInventorySlotCountUpdated;
+
+	UPROPERTY(BlueprintAssignable)
+	FITemAdded OnItemAdded;
+
+protected:
 	UPROPERTY(VisibleAnywhere, Category = "Inventory")
 	TArray<FInventorySlot> InventorySlots;
 
@@ -105,14 +115,7 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Widget|QuickSlot")
 	UCQuickSlotBarWidget* QuickSlots;
 	
-	UPROPERTY(BlueprintAssignable)
-	FInventorySlotDataUpdated OnInventorySlotDataUpdated;
-
-	UPROPERTY(BlueprintAssignable)
-	FInventorySlotCountUpdated OnInventorySlotCountUpdated;
-
-	UPROPERTY(BlueprintAssignable)
-	FITemAdded OnItemAdded;
+	
 private:
 	int32 DefaultSlotCnt;
 };

@@ -41,6 +41,22 @@ bool UCHUDWidget::AddItemNotification(FName InItemName, int32 InItemAmount, UTex
 	return true;
 }
 
+void UCHUDWidget::OnGameMode()
+{
+	if (InteractRowScroll)
+	{
+		InteractRowScroll->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+void UCHUDWidget::OnUIMode()
+{
+	if (InteractRowScroll)
+	{
+		InteractRowScroll->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
 void UCHUDWidget::OnInitPlayer(ACPlayer* InPlayer)
 {
 	if (!InPlayer) return;

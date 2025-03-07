@@ -14,8 +14,15 @@ class FARMGAME_API UCExplainWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
+protected:
+	virtual void NativeConstruct() override;
+
+	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
+
 public:
 	void SetItem(TWeakPtr<FInventorySlot> InSlotData);
+	void HideWidget();
 
 public:
 	UPROPERTY(meta=(BindWidget))
@@ -27,4 +34,9 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ItemDescriptionText;
 
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsMouseOver;
+
+private:
+	FTimerHandle HideTimer;
 };

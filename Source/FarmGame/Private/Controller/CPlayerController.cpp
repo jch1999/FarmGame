@@ -241,7 +241,7 @@ void ACPlayerController::SetUIInputMode()
 		ACHUD* MyHud = Cast<ACHUD>(Hud);
 		if (IsValid(MyHud))
 		{
-			MyHud->GetHUD()->SetVisibility(ESlateVisibility::Hidden);
+			MyHud->GetHUD()->OnUIMode();
 		}
 	}
 
@@ -272,7 +272,7 @@ void ACPlayerController::SetGameInputMode()
 		ACHUD* MyHud = Cast<ACHUD>(Hud);
 		if (IsValid(MyHud))
 		{
-			MyHud->GetHUD()->SetVisibility(ESlateVisibility::Visible);
+			MyHud->GetHUD()->OnGameMode();
 		}
 	}
 	UE_LOG(LogTemp, Display, TEXT("Change to Game Input Mode"));

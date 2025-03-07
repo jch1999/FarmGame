@@ -32,7 +32,9 @@ public:
 	UFUNCTION()
 	void OnItemAdded(FName InItemName, int32 InItemAmount, UTexture2D* InItemIcon);
 	bool AddItemNotification(FName InItemName, int32 InItemAmount, UTexture2D* InItemIcon);
-
+	
+	void OnGameMode();
+	void OnUIMode();
 
 protected:
 	// About Interact Variables

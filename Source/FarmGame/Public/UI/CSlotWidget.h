@@ -39,6 +39,9 @@ public:
 	virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent);
 	void OpenDropDownMenu();
 
+private:
+	void HideEplainWidget();
+
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* ItemCountText;
@@ -68,4 +71,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UCSlotDropDownWidget> SlotDropDownWidgetClass;
+
+private:
+	FTimerHandle HideExplainTimer;
 };

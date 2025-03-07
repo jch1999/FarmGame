@@ -39,6 +39,8 @@ public:
 	UFUNCTION()
 	void SetInventoryComp(UCInventoryComponent* InComp);
 
+	bool IsInExpainWidget();
+
 public:
 	UPROPERTY(meta = (BindWidget))
 	UCTitleBarWidget* TitleBarWidget;

@@ -56,7 +56,7 @@ void UCInventoryWidget::ShowExplainWidget(TWeakPtr<FInventorySlot> InSlotData, F
         ExplainWidget->AddToViewport();
     }
     ExplainWidget->SetItem(InSlotData);
-    ExplainWidget->SetPositionInViewport(ViewPortPosition);
+    ExplainWidget->SetPositionInViewport(ViewPortPosition, false);
     ExplainWidget->SetVisibility(ESlateVisibility::Visible);
 }
 
@@ -96,8 +96,9 @@ void UCInventoryWidget::UpdateInventorySlotCount(int32 SlotIndex)
             {
                 FString SlotName = "Slot_" + FString::FromInt(Slots.Num() + 1);
                 UCSlotWidget* SlotWidget = CreateWidget<UCSlotWidget>(this, SlotWidgetClass, FName(*SlotName));
-                SlotWidget->SetItem(SlotDatas[CurrentIndex + i]);
                 SlotWidget->ParentInventoryWidget = this;
+                SlotWidget->SetItem(SlotDatas[CurrentIndex + i]);
+                SlotWidget->SlotIndex = CurrentIndex + i;
                 Slots.Add(SlotWidget);
 
                 InventoryGridPanel->AddChildToUniformGrid(SlotWidget, GridPanelRow, GridPanelCol);
@@ -118,4 +119,14 @@ void UCInventoryWidget::SetInventoryComp(UCInventoryComponent* InComp)
     {
         InventoryComp = InComp;
     }
+}
+
+bool UCInventoryWidget::IsInExpainWidget()
+{
+    if (ExplainWidget && ExplainWidget->bIsMouseOver == true)
+    {
+        return true;
+    }
+
+    return false;
 }

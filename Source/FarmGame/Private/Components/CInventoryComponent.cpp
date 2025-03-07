@@ -216,6 +216,7 @@ void UCInventoryComponent::ShowWarningWidget(FString Message)
 
 void UCInventoryComponent::SwapSlot(int32& SlotIndex1, int32& SlotIndex2)
 {
+	UE_LOG(LogItem, Log, TEXT("InventorySlots.Num() : %d"), InventorySlots.Num());
 	bool bCheck1 = (SlotIndex1 < 0 || SlotIndex1 >= InventorySlots.Num());
 	bool bCheck2 = (SlotIndex2 < 0 || SlotIndex2 >= InventorySlots.Num());
 	if (bCheck1 || bCheck2)

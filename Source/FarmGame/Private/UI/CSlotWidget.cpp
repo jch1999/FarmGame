@@ -66,7 +66,6 @@ void UCSlotWidget::NativeOnDragDetected(const FGeometry& InGemoetry, const FPoin
 	if (CurrentItemID == EItemID::None) return;
 
 	UCInventorySlotDragDropOperation* DragOperation = NewObject<UCInventorySlotDragDropOperation>();
-	DragOperation->DraggedSlotData = MakeShareable(&InventoryComponent->InventorySlots[SlotIndex]);
 	DragOperation->SourceSlot = this;
 
 	OutOperation = DragOperation;
@@ -74,11 +73,21 @@ void UCSlotWidget::NativeOnDragDetected(const FGeometry& InGemoetry, const FPoin
 
 bool UCSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
+
 	if (UCInventorySlotDragDropOperation* DragOperation = Cast<UCInventorySlotDragDropOperation>(InOperation))
 	{
+		if (!DragOperation->SourceSlot)
+		{
+			UE_LOG(LogItem, Error, TEXT("SourceSlot is nullptr in UCSlotWidget::NativeOnDrop"));
+			return false;
+		}
 		if (DragOperation->SourceSlot != this)
 		{
-			InventoryComponent->SwapSlot(DragOperation->SourceSlot->SlotIndex, SlotIndex);
+			if (UCInventoryComponent* InventoryComp = ParentInventoryWidget->InventoryComp)
+			{
+				UE_LOG(LogItem, Log, TEXT("SwapSlot called with SlotIndex1: %d, SlotIndex2: %d"), DragOperation->SourceSlot->SlotIndex, SlotIndex);
+				InventoryComponent->SwapSlot(DragOperation->SourceSlot->SlotIndex, SlotIndex);
+			}
 			return true;
 		}
 	}
@@ -96,10 +105,7 @@ void UCSlotWidget::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointe
 
 void UCSlotWidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 {
-	if (ParentInventoryWidget)
-	{
-		ParentInventoryWidget->HideExplainWidget();
-	}
+	GetWorld()->GetTimerManager().SetTimer(HideExplainTimer, this, &UCSlotWidget::HideEplainWidget, 0.1f, false);
 }
 
 FReply UCSlotWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -118,4 +124,12 @@ void UCSlotWidget::OpenDropDownMenu()
 
 	SlotDropDownWidget->SetItem(CurrentSlotData);
 	SlotDropDownWidget->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UCSlotWidget::HideEplainWidget()
+{
+	if (ParentInventoryWidget && !ParentInventoryWidget->IsInExpainWidget())
+	{
+		ParentInventoryWidget->HideExplainWidget();
+	}
 }
