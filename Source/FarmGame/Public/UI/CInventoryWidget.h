@@ -27,7 +27,7 @@ protected:
 	virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;*/
 
 public:
-	void ShowExplainWidget(TWeakPtr<FInventorySlot> InSlotData, FVector2D ScreenPosition);
+	void ShowExplainWidget(TWeakPtr<FInventorySlot> InSlotData, FVector2D ViewPortPosition);
 	void HideExplainWidget();
 
 	UFUNCTION()

@@ -8,6 +8,7 @@
 #include "Components/ProgressBar.h"
 #include "CGameInstance.h"
 #include "Interfaces/CItemInterface.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
 
 void UCSlotWidget::NativeOnInitialized()
 {
@@ -88,7 +89,7 @@ void UCSlotWidget::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointe
 {
 	if (CurrentItemID != EItemID::None && ParentInventoryWidget)
 	{
-		FVector2D MousePoseition = InMouseEvent.GetScreenSpacePosition();
+		FVector2D MousePoseition = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
 		ParentInventoryWidget->ShowExplainWidget(CurrentSlotData, MousePoseition);
 	}
 }

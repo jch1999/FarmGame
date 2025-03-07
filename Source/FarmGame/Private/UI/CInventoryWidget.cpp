@@ -9,6 +9,7 @@
 #include "UI/CTitleBarWidget.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Controller/CPlayerController.h"
+#include "Global.h"
 
 bool UCInventoryWidget::Initialize()
 {
@@ -31,6 +32,10 @@ bool UCInventoryWidget::Initialize()
             }
         }
     }
+    if (!ExplainWidgetClass)
+    {
+        CHelpers::GetClassDynamic(&ExplainWidgetClass, "/Game/UI/WB_CExplainWidget");
+    }
     return true;
 }
 
@@ -40,7 +45,7 @@ void UCInventoryWidget::NativeOnInitialized()
     SetDesiredSizeInViewport(FVector2D(400, 300));
 }
 
-void UCInventoryWidget::ShowExplainWidget(TWeakPtr<FInventorySlot> InSlotData, FVector2D ScreenPosition)
+void UCInventoryWidget::ShowExplainWidget(TWeakPtr<FInventorySlot> InSlotData, FVector2D ViewPortPosition)
 {
     if (!ExplainWidgetClass) return;
     if (!InSlotData.IsValid()) return;
@@ -48,9 +53,10 @@ void UCInventoryWidget::ShowExplainWidget(TWeakPtr<FInventorySlot> InSlotData, F
     if (!ExplainWidget)
     {
         ExplainWidget = CreateWidget<UCExplainWidget>(this, ExplainWidgetClass, "ExplainWidget");
+        ExplainWidget->AddToViewport();
     }
     ExplainWidget->SetItem(InSlotData);
-    ExplainWidget->SetPositionInViewport(ScreenPosition);
+    ExplainWidget->SetPositionInViewport(ViewPortPosition);
     ExplainWidget->SetVisibility(ESlateVisibility::Visible);
 }
 

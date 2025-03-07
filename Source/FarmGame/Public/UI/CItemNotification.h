@@ -11,10 +11,16 @@ UCLASS()
 class FARMGAME_API UCItemNotification : public UUserWidget
 {
 	GENERATED_BODY()
-	
+protected:
+	virtual void NativeConstruct() override;
+
 public:
 	UFUNCTION(BlueprintCallable)
 	void InitializeNotification(FName InItemName, int32 InItemAmount, UTexture2D* InItemIcon);
+	void PlayWidgetAnimation();
+private:
+	void ReverseWidgetAnimation();
+	void RemoveWidget();
 
 public:
 	UPROPERTY(meta = (BindWidget))
@@ -29,4 +35,10 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Time")
 	float LifeTime;
+
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
+	UWidgetAnimation* AppearFromLeftAnim;
+
+	FTimerHandle ReverseTimerHandle;
+	FTimerHandle RemoveTimerHandle;
 };

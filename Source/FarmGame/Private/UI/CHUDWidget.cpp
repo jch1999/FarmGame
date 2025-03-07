@@ -15,7 +15,7 @@ bool UCHUDWidget::Initialize()
 
 	if (!ItemNotificationClass)
 	{
-		CHelpers::GetClass(&ItemNotificationClass, "/Game/UI/WB_ItemNotification");
+		CHelpers::GetClassDynamic(&ItemNotificationClass, "/Game/UI/WB_ItemNotification.WB_ItemNotification_C");
 	}
 	return true;
 }
