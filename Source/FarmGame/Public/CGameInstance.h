@@ -7,6 +7,9 @@
 #include "Crops/CBase_Crop.h"
 #include "CGameInstance.generated.h"
 
+class UCWarningWidget;
+class UCDragIconWidget;
+
 UCLASS()
 class FARMGAME_API UCGameInstance : public UGameInstance
 {
@@ -20,6 +23,8 @@ protected:
 
 public:
 	void ShowWarningWidget(FString Message);
+	UFUNCTION()
+	void HideWarningWidget();
 
 public:
 	// Get Crop Data
@@ -33,6 +38,10 @@ public:
 
 	// Get Interact Asset Data
 	const TOptional<FInteractAssetData> GetInteractAssetData(EInteractObjectType InInteractType);
+	
+	void StartDragging(UTexture2D* ItemIcon);
+	void StopDragging();
+	void UpdateDragIconPosition(FVector2D NewPosition);
 
 private:
 	void LoadCropDefaultTable();
@@ -62,7 +71,14 @@ public:
 	
 	// Widget
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|Warning")
-	TSubclassOf<UUserWidget> WarningWidgetClass;
+	TSubclassOf<UCWarningWidget> WarningWidgetClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|Warning")
+	UCWarningWidget* WarningWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|Warning")
+	TSubclassOf<UCDragIconWidget> DragIconWidgetClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|Warning")
+	UCDragIconWidget* DragIconWidget;
 
 private:
 	// Data Map

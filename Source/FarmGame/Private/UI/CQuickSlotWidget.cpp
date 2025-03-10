@@ -1,7 +1,22 @@
 #include "UI/CQuickSlotWidget.h"
-#include "Components/TextBlock.h"
+#include "UI/CSlotWidget.h"
 #include "UI/CQuickSlotBarWidget.h"
 #include "UI/CInventorySlotDragDropOperation.h"
+#include "Components/TextBlock.h"
+#include "Components/Image.h"
+#include "CGameInstance.h"
+
+bool UCQuickSlotWidget::Initialize()
+{
+	if (!Super::Initialize())
+	{
+		return false;
+	}
+
+	SlotType = ESlotType::Quick;
+
+	return true;
+}
 
 bool UCQuickSlotWidget::SetQuickSlotIndex(int32 InIndex)
 {
@@ -16,7 +31,7 @@ void UCQuickSlotWidget::SetParentWidget(UUserWidget* InParent)
 {
 	if (UCQuickSlotBarWidget* QuickSlotBar = Cast< UCQuickSlotBarWidget>(InParent))
 	{
-		ParentQuickSlotBarWidget = QuickSlotBar;
+		ParentWidget = QuickSlotBar;
 	}
 	else
 	{
@@ -36,8 +51,31 @@ bool UCQuickSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 		}
 		if (DragOperation->SourceSlot != this)
 		{
-			SetItem(*(DragOperation->SourceSlot->GetSlotItemData()));
-			return true;
+			switch(DragOperation->SourceSlot->SlotType)
+			{
+			case ESlotType::Inventory_Player:
+			{
+				SetItem(*(DragOperation->SourceSlot->GetSlotItemData()));
+			}
+				break;
+			case ESlotType::Quick:
+			{
+				// QuickSlotBar Swap
+			}
+				break;
+			default:
+				break;
+			}
+
+			DragOperation->SourceSlot->ItemIconImage->SetOpacity(1.0f);
+			if (UGameInstance* GI = GetWorld()->GetGameInstance<UCGameInstance>())
+			{
+				if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
+				{
+					MyGI->StopDragging();
+				}
+			}
+			return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
 		}
 	}
 	return false;

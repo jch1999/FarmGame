@@ -59,9 +59,12 @@ protected:
 
 public:
 	bool AddItem(ACItemBase* InItemActor);
-	void ShowInventory();
-	void HideInventory();
+	UFUNCTION()
+	void ShowInventoryWidget();
+	UFUNCTION()
+	void HideInventoryWidget();
 	void ShowWarningWidget(FString Message);
+
 	void SwapSlot(int32& SlotIndex1, int32& SlotIndex2);
 	void UseItem(int32& SlotIndex);
 	void ClearSlot(int32 InIndex);
@@ -80,6 +83,7 @@ public:
 
 private:
 	bool CreateInventoryWidget();
+
 	bool AddToExistingSlot(ACItemBase* InItemActor, TArray<int32>& ChangedIndexes);
 	bool AddToNewSlot(ACItemBase* InItemActor, const FItemData& InItemData, const FItemAssetData& InItemAssetData, TArray<int32>& ChangedIndexes);
 	UFUNCTION()

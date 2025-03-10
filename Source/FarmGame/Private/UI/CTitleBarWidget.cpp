@@ -1,8 +1,8 @@
 #include "UI/CTitleBarWidget.h"
-#include "Components/Button.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Blueprint/SlateBlueprintLibrary.h"
-
+#include "Components/Button.h"
+#include "Components/TextBlock.h"
 
 FReply UCTitleBarWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
@@ -71,4 +71,10 @@ FReply UCTitleBarWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry, cons
 void UCTitleBarWidget::SetParentWidget(UUserWidget* InParentWidget)
 {
     ParentWidget = InParentWidget;
+}
+
+void UCTitleBarWidget::SetTitle(FString InTitleText, FLinearColor InTitleTextColor)
+{
+    TitleText->SetText(FText::FromString(InTitleText));
+    TitleText->SetColorAndOpacity(InTitleTextColor);
 }

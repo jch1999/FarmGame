@@ -5,6 +5,7 @@
 #include "CTitleBarWidget.generated.h"
 
 class UButton;
+class UTextBlock;
 
 UCLASS()
 class FARMGAME_API UCTitleBarWidget : public UUserWidget
@@ -19,9 +20,12 @@ protected:
 public:
 	UFUNCTION(BlueprintCallable)
 	void SetParentWidget(UUserWidget* ParentWidget);
-	FVector2D ScreenSpaceToViewport(FVector2D ScreenPosition);
+	void SetTitle(FString InTitleText, FLinearColor InTitleTextColor);
 
 public:
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* TitleText;
+
 	UPROPERTY(meta=(BindWidget))
 	UButton* CloseButton;
 

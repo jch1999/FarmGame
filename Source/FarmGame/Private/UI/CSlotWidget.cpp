@@ -2,6 +2,7 @@
 #include "UI/CInventoryWidget.h"
 #include "UI/CInventorySlotDragDropOperation.h"
 #include "UI/CSlotDropDownWidget.h"
+#include "UI/CQuickSlotBarWidget.h"
 #include "Global.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
@@ -12,6 +13,24 @@
 
 void UCSlotWidget::NativeOnInitialized()
 {
+	Super::NativeOnInitialized();
+}
+
+void UCSlotWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+	
+	if (UGameInstance* GI = GetWorld()->GetGameInstance<UCGameInstance>())
+	{
+		if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
+		{
+			FVector2D MousePosition;
+			if (GetWorld()->GetFirstPlayerController()->GetMousePosition(MousePosition.X, MousePosition.Y))
+			{
+				MyGI->UpdateDragIconPosition(MousePosition);
+			}
+		}
+	}
 }
 
 void UCSlotWidget::SetItem(const FInventorySlot& SlotData)
@@ -67,7 +86,16 @@ void UCSlotWidget::NativeOnDragDetected(const FGeometry& InGemoetry, const FPoin
 
 	UCInventorySlotDragDropOperation* DragOperation = NewObject<UCInventorySlotDragDropOperation>();
 	DragOperation->SourceSlot = this;
+	
+	ItemIconImage->SetOpacity(0.3f);
 
+	if (UGameInstance* GI = GetGameInstance())
+	{
+		if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
+		{
+			MyGI->StartDragging(CurrentSlotData->ItemIcon);
+		}
+	}
 	OutOperation = DragOperation;
 }
 
@@ -75,5 +103,5 @@ void UCSlotWidget::NativeOnDragDetected(const FGeometry& InGemoetry, const FPoin
 
 void UCSlotWidget::SetParentWidget(UUserWidget* InParent)
 {
-	return;
+	ParentWidget = InParent;
 }

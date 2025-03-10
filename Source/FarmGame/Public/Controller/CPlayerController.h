@@ -36,9 +36,9 @@ public:
 
 	void OpenInventory(const FInputActionValue& Value);
 	void CloseInventory(const FInputActionValue& Value);
-	
-	UFUNCTION()
-	void CloseInventoryForCloseBtn();
+
+	void ShowWidget(UUserWidget* InWidget);
+	void HideWidget(UUserWidget* InWidget);
 
 	void SetUIInputMode();
 	void SetGameInputMode();
@@ -92,6 +92,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input|CommonAction")
 	TArray<UInputAction*> QuickSlotActions;
 
-	UPROPERTY(VisibleDefaulsOnly, Category="Widget")
-	int32 OpenWigetCnt;
+	UPROPERTY(VisibleAnywhere, Category="Widget")
+	int32 OpenWidgetCnt;
 };

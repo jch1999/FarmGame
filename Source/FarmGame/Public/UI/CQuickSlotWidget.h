@@ -13,6 +13,8 @@ class FARMGAME_API UCQuickSlotWidget : public UCSlotWidget
 	GENERATED_BODY()
 	
 public:
+	virtual bool Initialize() override;
+
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 
 	UFUNCTION(BlueprintCallable)
@@ -24,5 +26,4 @@ public:
 	UPROPERTY(meta=(BindWidget))
 	UTextBlock* QuickSlotIndexText;
 
-	UCQuickSlotBarWidget* ParentQuickSlotBarWidget;
 };

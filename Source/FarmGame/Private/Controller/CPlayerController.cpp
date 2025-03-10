@@ -184,7 +184,7 @@ void ACPlayerController::OpenInventory(const FInputActionValue& Value)
 	if (MyPlayer)
 	{
 		SetUIInputMode();
-		MyPlayer->GetInventoryComponent()->ShowInventory();
+		MyPlayer->GetInventoryComponent()->ShowInventoryWidget();
 	}
 	else
 	{
@@ -197,23 +197,13 @@ void ACPlayerController::CloseInventory(const FInputActionValue& Value)
 	ACPlayer* MyPlayer = Cast<ACPlayer>(GetPawn());
 	if (MyPlayer)
 	{
-		MyPlayer->GetInventoryComponent()->HideInventory(); 
+		MyPlayer->GetInventoryComponent()->HideInventoryWidget();
 		SetGameInputMode();
 		UE_LOG(LogTemp, Error, TEXT("Function : ACPlayerController::CloseInventory"))
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("Can't find Player. Function : ACPlayerController::CloseInventory"));
-	}
-}
-
-void ACPlayerController::CloseInventoryForCloseBtn()
-{
-	ACPlayer* MyPlayer = Cast<ACPlayer>(GetPawn());
-	if (MyPlayer)
-	{
-		MyPlayer->GetInventoryComponent()->HideInventory();
-		SetGameInputMode();
 	}
 }
 
@@ -321,4 +311,36 @@ void ACPlayerController::RebindAction()
 void ACPlayerController::InputTest(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp, Error, TEXT("InputText! Input Works!"));
+}
+
+void ACPlayerController::ShowWidget(UUserWidget* InWidget)
+{
+	if (InWidget && !InWidget->IsInViewport())
+	{
+		InWidget->SetVisibility(ESlateVisibility::Visible);
+		OpenWidgetCnt++;
+
+		if (OpenWidgetCnt == 1)
+		{
+			SetUIInputMode();
+		}
+
+		UE_LOG(LogTemp, Log, TEXT("ShowWidget: %s (OpenWidgetCnt: %d)"), *InWidget->GetName(), OpenWidgetCnt);
+	}
+}
+
+void ACPlayerController::HideWidget(UUserWidget* InWidget)
+{
+	if (InWidget && InWidget->IsInViewport())
+	{
+		InWidget->SetVisibility(ESlateVisibility::Collapsed);
+		OpenWidgetCnt = FMath::Max(0, OpenWidgetCnt - 1);
+
+		if (OpenWidgetCnt == 0)
+		{
+			SetGameInputMode();
+		}
+
+		UE_LOG(LogTemp, Log, TEXT("HideWidget: %s (OpenWidgetCnt: %d)"), *InWidget->GetName(), OpenWidgetCnt);
+	}
 }

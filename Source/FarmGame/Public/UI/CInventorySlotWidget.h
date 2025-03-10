@@ -14,6 +14,8 @@ class FARMGAME_API UCInventorySlotWidget : public UCSlotWidget
 	GENERATED_BODY()
 
 public:
+	virtual bool Initialize() override;
+
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 	// About Hover
 	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
@@ -24,13 +26,11 @@ public:
 	void OpenDropDownMenu();
 
 	virtual void SetParentWidget(UUserWidget* InParent) override;
+
 private:
 	void HideEplainWidget();
 
 protected:
-	UPROPERTY()
-	UCInventoryWidget* ParentInventoryWidget;
-
 	UPROPERTY()
 	UCSlotDropDownWidget* SlotDropDownWidget;
 

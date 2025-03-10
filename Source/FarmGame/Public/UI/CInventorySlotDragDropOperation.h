@@ -13,4 +13,5 @@ class FARMGAME_API UCInventorySlotDragDropOperation : public UDragDropOperation
 public:
     UPROPERTY()
     UCSlotWidget* SourceSlot;
+
 };

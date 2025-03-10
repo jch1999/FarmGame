@@ -6,6 +6,20 @@
 #include "CGameInstance.h"
 #include "Interfaces/CItemInterface.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
+#include "UI/CSlotWidget.h"
+#include "Components/Image.h"
+#include "CGameInstance.h"
+
+bool UCInventorySlotWidget::Initialize()
+{
+	if (!Super::Initialize())
+	{
+		return false;
+	}
+
+	SlotType = ESlotType::Inventory_Player;
+	return true;
+}
 
 bool UCInventorySlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
@@ -19,12 +33,31 @@ bool UCInventorySlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDra
 		}
 		if (DragOperation->SourceSlot != this)
 		{
-			if (UCInventoryComponent* InventoryComp = ParentInventoryWidget->InventoryComp)
+			UCInventoryWidget* InventoryWidget = Cast<UCInventoryWidget>(ParentWidget);
+			if (UCInventoryComponent* InventoryComp = InventoryWidget->InventoryComp)
 			{
-				UE_LOG(LogItem, Log, TEXT("SwapSlot called with SlotIndex1: %d, SlotIndex2: %d"), DragOperation->SourceSlot->SlotIndex, SlotIndex);
-				InventoryComp->SwapSlot(DragOperation->SourceSlot->SlotIndex, SlotIndex);
+				switch (DragOperation->SourceSlot->SlotType)
+				{
+				case ESlotType::Inventory_Player:
+				{
+					UE_LOG(LogItem, Log, TEXT("SwapSlot called with SlotIndex1: %d, SlotIndex2: %d"), DragOperation->SourceSlot->SlotIndex, SlotIndex);
+					InventoryComp->SwapSlot(DragOperation->SourceSlot->SlotIndex, SlotIndex);
+				}
+					break;
+				default:
+					break;
+				}
+				DragOperation->SourceSlot->ItemIconImage->SetOpacity(1.0f);
+
+				if (UGameInstance* GI = GetWorld()->GetGameInstance<UCGameInstance>())
+				{
+					if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
+					{
+						MyGI->StopDragging();
+					}
+				}
 			}
-			return true;
+			return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);;
 		}
 	}
 	return false;
@@ -32,10 +65,11 @@ bool UCInventorySlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDra
 
 void UCInventorySlotWidget::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-	if (CurrentItemID != EItemID::None && ParentInventoryWidget)
+	UCInventoryWidget* InventoryWidget = Cast<UCInventoryWidget>(ParentWidget);
+	if (CurrentItemID != EItemID::None && InventoryWidget)
 	{
 		FVector2D MousePoseition = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
-		ParentInventoryWidget->ShowExplainWidget(CurrentSlotData, MousePoseition);
+		InventoryWidget->ShowExplainWidget(CurrentSlotData, MousePoseition);
 	}
 }
 
@@ -66,7 +100,7 @@ void UCInventorySlotWidget::SetParentWidget(UUserWidget* InParent)
 {
 	if (UCInventoryWidget* InventoryWidget = Cast<UCInventoryWidget>(InParent))
 	{
-		ParentInventoryWidget = InventoryWidget;
+		ParentWidget = InventoryWidget;
 	}
 	else
 	{
@@ -76,8 +110,9 @@ void UCInventorySlotWidget::SetParentWidget(UUserWidget* InParent)
 
 void UCInventorySlotWidget::HideEplainWidget()
 {
-	if (ParentInventoryWidget && !ParentInventoryWidget->IsInExpainWidget())
+	UCInventoryWidget* InventoryWidget = Cast<UCInventoryWidget>(ParentWidget);
+	if (InventoryWidget && !InventoryWidget->IsInExpainWidget())
 	{
-		ParentInventoryWidget->HideExplainWidget();
+		InventoryWidget->HideExplainWidget();
 	}
 }

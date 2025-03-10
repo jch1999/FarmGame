@@ -17,9 +17,6 @@ protected:
 public:
 	void SetWarningText(FString InWarningMsg);
 
-	UFUNCTION()
-	void CloseWarning();
-
 public:
 	UPROPERTY(meta = (BindWidget))
 	UCTitleBarWidget* TitleBarWidget;

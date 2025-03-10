@@ -1,11 +1,19 @@
 #include "CGameInstance.h"
 #include "Crops\/CBase_Crop.h"
 #include "Blueprint/UserWidget.h"
+#include "UI/CWarningWidget.h"
+#include "UI/CDragIconWidget.h"
 #include "Components/TextBlock.h"
+#include "Components/Image.h"
+#include "Global.h"
+#include "Controller\/CPlayerController.h"
 
 UCGameInstance::UCGameInstance()
 {
-	
+	if (!WarningWidgetClass)
+	{
+		CHelpers::GetClass(&WarningWidgetClass, "/Game/UI/WB_WarningWidget");
+	}
 }
 
 void UCGameInstance::Init()
@@ -235,17 +243,71 @@ const TOptional<FInteractAssetData> UCGameInstance::GetInteractAssetData(EIntera
 	}
 }
 
+void UCGameInstance::StartDragging(UTexture2D* ItemIcon)
+{
+	if (!DragIconWidget)
+	{
+		DragIconWidget = CreateWidget<UCDragIconWidget>(GetWorld(), DragIconWidgetClass);
+		if (DragIconWidget)
+		{
+			DragIconWidget->AddToViewport();
+		}
+	}
+	DragIconWidget->SetVisibility(ESlateVisibility::Visible);
+	if (UImage* DragImage = Cast<UImage>(DragIconWidget->GetWidgetFromName(TEXT("DragIconImage"))))
+	{
+		DragImage->SetBrushFromTexture(ItemIcon);
+	}
+}
+
+void UCGameInstance::StopDragging()
+{
+	if (DragIconWidget)
+	{
+		DragIconWidget->SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
+
+void UCGameInstance::UpdateDragIconPosition(FVector2D NewPosition)
+{
+	if (DragIconWidget)
+	{
+		DragIconWidget->SetRenderTranslation(NewPosition);
+	}
+}
+
 void UCGameInstance::ShowWarningWidget(FString Message)
 {
-	if (UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), WarningWidgetClass))
+	if (!WarningWidget)
 	{
-		// 위젯에 경고 메시지 설정 - 나중에 WarningWidget으로 이동 에정
-		UTextBlock* TextBlock = Cast<UTextBlock>(Widget->GetWidgetFromName(TEXT("WarningText")));
-		if (TextBlock)
-		{
-			TextBlock->SetText(FText::FromString(Message));
-		}
+		WarningWidget = CreateWidget<UCWarningWidget>(GetWorld(), WarningWidgetClass);
+		WarningWidget->AddToViewport();
+	}
 
-		Widget->AddToViewport();
+	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	{
+		ACPlayerController* MyPC = Cast<ACPlayerController>(PC);
+		if (MyPC)
+		{
+			MyPC->ShowWidget(WarningWidget);
+		}
+	}
+
+	WarningWidget->SetWarningText(Message);
+}
+
+
+void UCGameInstance::HideWarningWidget()
+{
+	if (WarningWidget)
+	{
+		if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+		{
+			ACPlayerController* MyPC = Cast<ACPlayerController>(PC);
+			if (MyPC)
+			{
+				MyPC->HideWidget(WarningWidget);
+			}
+		}
 	}
 }

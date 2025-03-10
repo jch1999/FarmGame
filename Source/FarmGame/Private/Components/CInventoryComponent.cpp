@@ -3,8 +3,11 @@
 #include "CGameInstance.h"
 #include "Global.h"
 #include "UI/CInventoryWidget.h"
-#include "UI/CQuickSlotBarWidget.h"
+#include "UI/CTitleBarWidget.h"
+#include "Components/Button.h"
 #include "Item/CItemBase.h"
+#include "Controller/CPlayerController.h"
+
 
 UCInventoryComponent::UCInventoryComponent()
 {
@@ -88,29 +91,6 @@ bool UCInventoryComponent::AddItem(ACItemBase* InItemActor)
 	return false;
 }
 
-void UCInventoryComponent::ShowInventory()
-{
-	if (InventoryWidget == nullptr)
-	{
-		if (!CreateInventoryWidget())
-		{
-			UE_LOG(LogItem, Error, TEXT("Can't craete InventoryWidget."));
-			return;
-		}
-	}
-	InventoryWidget->SetVisibility(ESlateVisibility::Visible);
-	UE_LOG(LogItem, Display, TEXT("Open Inventory."));
-}
-
-void UCInventoryComponent::HideInventory()
-{
-	if (InventoryWidget)
-	{
-		InventoryWidget->SetVisibility(ESlateVisibility::Hidden); 
-		UE_LOG(LogItem, Display, TEXT("Close Inventory."));
-	}
-}
-
 bool UCInventoryComponent::CreateInventoryWidget()
 {
 	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
@@ -122,14 +102,56 @@ bool UCInventoryComponent::CreateInventoryWidget()
 			OnInventorySlotDataUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateInventorySlotWidget);
 			OnInventorySlotCountUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateInventorySlotCount);
 			OnMoneyUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateMoneyAmount);
+			if (UCTitleBarWidget* InventoryTitleBar = InventoryWidget->TitleBarWidget)
+			{
+				InventoryTitleBar->CloseButton->OnClicked.AddDynamic(this, &UCInventoryComponent::HideInventoryWidget);
+			}
 
 			IncreaseSlotCount(DefaultSlotCnt);
+			// InventoryWidget->AddToViewport();
+			// InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
 			InventoryWidget->AddToViewport();
-			InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
 			return true;
 		}
 	}
 	return false;
+}
+
+void UCInventoryComponent::ShowInventoryWidget()
+{
+	if (!InventoryWidget)
+	{
+		if (!CreateInventoryWidget())
+		{
+			UE_LOG(LogItem, Error, TEXT("Can't craete InventoryWidget."));
+			return;
+		}
+	}
+
+	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	{
+		ACPlayerController* MyPC = Cast<ACPlayerController>(PC);
+		if (MyPC)
+		{
+			MyPC->ShowWidget(InventoryWidget);
+		}
+	}
+}
+
+void UCInventoryComponent::HideInventoryWidget()
+{
+	if (InventoryWidget)
+	{
+		if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+		{
+			ACPlayerController* MyPC = Cast<ACPlayerController>(PC);
+			if (MyPC)
+			{
+				MyPC->HideWidget(InventoryWidget);
+			}
+		}
+	}
+
 }
 
 bool UCInventoryComponent::AddToExistingSlot(ACItemBase* InItemActor, TArray<int32>& ChangedIndexes)

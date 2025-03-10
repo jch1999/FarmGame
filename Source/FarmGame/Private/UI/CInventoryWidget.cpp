@@ -23,15 +23,7 @@ bool UCInventoryWidget::Initialize()
     }
     if (TitleBarWidget)
     {
-        TitleBarWidget->SetParentWidget(this);
-
-        if (APlayerController* Controller = GetOwningPlayer())
-        {
-            if (ACPlayerController* MyController = Cast<ACPlayerController>(Controller))
-            {
-                TitleBarWidget->CloseButton->OnClicked.AddDynamic(MyController,&ACPlayerController::CloseInventoryForCloseBtn);
-            }
-        }
+        TitleBarWidget->SetTitle("Player's Inventory", FLinearColor::Black);
     }
     if (MoneyDisplay)
     {
