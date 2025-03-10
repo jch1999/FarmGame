@@ -44,6 +44,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventorySlotDataUpdated, const TAr
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventorySlotCountUpdated, int32, IncreasedCount);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FITemAdded, FName, InItemName, int32, InItemAmount, UTexture2D*, InItemIcon);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMoneyChanged, int32, NewValue);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FARMGAME_API UCInventoryComponent : public UActorComponent
@@ -68,6 +69,15 @@ public:
 	TWeakPtr<FInventorySlot> GetSlotWeak(int32 Index);
 
 	// void SetQuickSlotIndex(int32 InIndex);
+	UFUNCTION()
+	FORCEINLINE int32 GetMoney() { return OwnMoney; }
+
+	UFUNCTION()
+	bool AddMoney(int32 InGetAmount);
+	
+	UFUNCTION()
+	bool UseMoney(int32 InUsedAmount);
+
 private:
 	bool CreateInventoryWidget();
 	bool AddToExistingSlot(ACItemBase* InItemActor, TArray<int32>& ChangedIndexes);
@@ -84,6 +94,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FITemAdded OnItemAdded;
+
+	UPROPERTY(BlueprintAssignable)
+	FMoneyChanged OnMoneyUpdated;
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Inventory")
@@ -115,7 +128,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Widget|QuickSlot")
 	UCQuickSlotBarWidget* QuickSlots;
 	
-	
+	UPROPERTY(VisibleAnywhere, Category="Money")
+	int32 OwnMoney;
+
 private:
 	int32 DefaultSlotCnt;
 };

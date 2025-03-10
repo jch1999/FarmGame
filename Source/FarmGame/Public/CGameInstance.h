@@ -57,6 +57,7 @@ public:
 	TSoftObjectPtr<UDataTable> ItemAssetDataTable;
 
 	// Interact Data Table
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable|Interact")
 	TSoftObjectPtr<UDataTable> InteractAssetDataTable;
 	
 	// Widget

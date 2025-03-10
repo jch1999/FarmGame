@@ -29,18 +29,8 @@ public:
 	// Drag Begin & Finish
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnDragDetected(const FGeometry& InGemoetry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
-	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 
-	// About Hover
-	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
-	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
-
-	// DropDown
-	virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent);
-	void OpenDropDownMenu();
-
-private:
-	void HideEplainWidget();
+	virtual void SetParentWidget(UUserWidget* InParent);
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
@@ -59,19 +49,4 @@ public:
 
 	UPROPERTY()
 	int32 SlotIndex;
-
-	UPROPERTY()
-	UCInventoryComponent* InventoryComponent;
-
-	UPROPERTY()
-	UCInventoryWidget* ParentInventoryWidget;
-
-	UPROPERTY()
-	UCSlotDropDownWidget* SlotDropDownWidget;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UCSlotDropDownWidget> SlotDropDownWidgetClass;
-
-private:
-	FTimerHandle HideExplainTimer;
 };

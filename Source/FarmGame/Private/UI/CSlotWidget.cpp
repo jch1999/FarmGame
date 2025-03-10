@@ -71,65 +71,9 @@ void UCSlotWidget::NativeOnDragDetected(const FGeometry& InGemoetry, const FPoin
 	OutOperation = DragOperation;
 }
 
-bool UCSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+
+
+void UCSlotWidget::SetParentWidget(UUserWidget* InParent)
 {
-
-	if (UCInventorySlotDragDropOperation* DragOperation = Cast<UCInventorySlotDragDropOperation>(InOperation))
-	{
-		if (!DragOperation->SourceSlot)
-		{
-			UE_LOG(LogItem, Error, TEXT("SourceSlot is nullptr in UCSlotWidget::NativeOnDrop"));
-			return false;
-		}
-		if (DragOperation->SourceSlot != this)
-		{
-			if (UCInventoryComponent* InventoryComp = ParentInventoryWidget->InventoryComp)
-			{
-				UE_LOG(LogItem, Log, TEXT("SwapSlot called with SlotIndex1: %d, SlotIndex2: %d"), DragOperation->SourceSlot->SlotIndex, SlotIndex);
-				InventoryComponent->SwapSlot(DragOperation->SourceSlot->SlotIndex, SlotIndex);
-			}
-			return true;
-		}
-	}
-	return false;
-}
-
-void UCSlotWidget::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
-{
-	if (CurrentItemID != EItemID::None && ParentInventoryWidget)
-	{
-		FVector2D MousePoseition = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
-		ParentInventoryWidget->ShowExplainWidget(CurrentSlotData, MousePoseition);
-	}
-}
-
-void UCSlotWidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
-{
-	GetWorld()->GetTimerManager().SetTimer(HideExplainTimer, this, &UCSlotWidget::HideEplainWidget, 0.1f, false);
-}
-
-FReply UCSlotWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
-{
-	if (InMouseEvent.GetEffectingButton() == EKeys::RightMouseButton)
-	{
-		OpenDropDownMenu();
-		return FReply::Handled();
-	}
-	return FReply::Unhandled();
-}
-
-void UCSlotWidget::OpenDropDownMenu()
-{
-	if (!SlotDropDownWidget) return;
-
-	SlotDropDownWidget->SetItem(CurrentSlotData);
-	SlotDropDownWidget->SetVisibility(ESlateVisibility::Visible);
-}
-
-void UCSlotWidget::HideEplainWidget()
-{
-	if (ParentInventoryWidget && !ParentInventoryWidget->IsInExpainWidget())
-	{
-		ParentInventoryWidget->HideExplainWidget();
-	}
+	return;
 }

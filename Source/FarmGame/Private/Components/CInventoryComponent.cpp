@@ -121,6 +121,7 @@ bool UCInventoryComponent::CreateInventoryWidget()
 			InventoryWidget->SetInventoryComp(this);
 			OnInventorySlotDataUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateInventorySlotWidget);
 			OnInventorySlotCountUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateInventorySlotCount);
+			OnMoneyUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateMoneyAmount);
 
 			IncreaseSlotCount(DefaultSlotCnt);
 			InventoryWidget->AddToViewport();
@@ -264,5 +265,31 @@ TWeakPtr<FInventorySlot> UCInventoryComponent::GetSlotWeak(int32 Index)
         return TWeakPtr<FInventorySlot>(MakeShared<FInventorySlot>(InventorySlots[Index]));
     }
     return TWeakPtr<FInventorySlot>();
+}
+
+bool UCInventoryComponent::AddMoney(int32 InGetAmount)
+{
+	if (InGetAmount > 0)
+	{
+		OwnMoney += InGetAmount;
+		OnMoneyUpdated.Broadcast(OwnMoney);
+		return true;
+	}
+	
+	UE_LOG(LogItem, Error, TEXT("UCInventoryComponent::AddMoney InValid Value : %d"), InGetAmount);
+	return false;
+}
+
+bool UCInventoryComponent::UseMoney(int32 InUsedAmount)
+{
+	if (InUsedAmount < OwnMoney)
+	{
+		OwnMoney -= InUsedAmount;
+		OnMoneyUpdated.Broadcast(OwnMoney);
+		return true;
+	}
+
+	UE_LOG(LogItem, Error, TEXT("UCInventoryComponent::UseMoney Too Much Value : %d"), InUsedAmount);
+	return false;
 }
 

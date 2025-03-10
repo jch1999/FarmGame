@@ -1,8 +1,8 @@
 RowName,InteractType,InteractIconTextureRef,InteractSFXRef
 None,None,Game/ThirdParty/Icon/Icon_Close,
 Player,Player,Game/ThirdParty/Icon/Icon_Human,
-Crop,Crop,,
+Crop,Crop,/Game/ThirdParty/Icon/Icon_Eco,
 NPC,NPC,Game/ThirdParty/Icon/Icon_Human,
-FarmField,FarmField,,
-Item,Item,,
+FarmField,FarmField,/Game/ThirdParty/Icon/Icon_Agriculture,
+Item,Item,/Game/ThirdParty/Icon/Icon_Inventory,
 Max,Max,Game/ThirdParty/Icon/Icon_Close,

@@ -91,4 +91,7 @@ protected:
 	// Common Input Action
 	UPROPERTY(EditDefaultsOnly, Category = "Input|CommonAction")
 	TArray<UInputAction*> QuickSlotActions;
+
+	UPROPERTY(VisibleDefaulsOnly, Category="Widget")
+	int32 OpenWigetCnt;
 };

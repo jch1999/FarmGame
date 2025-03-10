@@ -4,11 +4,16 @@
 #include "Global.h"
 #include "Characters/CPlayer.h"
 #include "Controller/CPlayerController.h"
+#include "Components/CInventoryComponent.h"
 
 void UCQuickSlotBarWidget::NativeOnInitialized()
 {
     Super::NativeOnInitialized();
 
+    if (!QuickSlotClass)
+    {
+        CHelpers::GetClassDynamic(&QuickSlotClass, "/Game/UI/WB_CQuickSlot.WB_CQuickSlot_C");
+    }
     if (QuickSlotGridPanel && QuickSlotClass)
     {
         for (int32 i = 1; i <= 10; i++)
@@ -16,6 +21,7 @@ void UCQuickSlotBarWidget::NativeOnInitialized()
             UCQuickSlotWidget* NewSlot = CreateWidget<UCQuickSlotWidget>(GetOwningPlayer(), QuickSlotClass);
             NewSlot->SetQuickSlotIndex(i == 10 ? 0 : i);
             QuickSlotGridPanel->AddChildToUniformGrid(NewSlot, 0, i - 1);
+            NewSlot->SetItem(FInventorySlot());
             NewSlot->AddToViewport();
             QuickSlots.AddUnique(NewSlot);
         }

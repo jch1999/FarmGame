@@ -6,12 +6,13 @@
 #include "CInventoryWidget.generated.h"
 
 class UCExplainWidget;
-class UCSlotWidget;
+class UCInventorySlotWidget;
 class UCInventoryComponent;
 class UUniformGridPanel;
 class UButton;
 class UBorder;
 class UCTitleBarWidget;
+class UCStateDisplayWidget;
 
 UCLASS()
 class FARMGAME_API UCInventoryWidget : public UUserWidget
@@ -37,9 +38,15 @@ public:
 	void UpdateInventorySlotCount(int32 SlotIndex);
 
 	UFUNCTION()
+	void UpdateMoneyAmount(int32 InNewAmount);
+
+	UFUNCTION()
 	void SetInventoryComp(UCInventoryComponent* InComp);
 
 	bool IsInExpainWidget();
+
+private:
+	void SetMoneyTextLerp();
 
 public:
 	UPROPERTY(meta = (BindWidget))
@@ -47,6 +54,9 @@ public:
 
 	UPROPERTY(meta=(BindWidget))
 	UUniformGridPanel* InventoryGridPanel;
+
+	UPROPERTY(meta = (BindWidget))
+	UCStateDisplayWidget* MoneyDisplay;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget|GridPanel")
 	int32 GridPanelRow;
@@ -57,10 +67,10 @@ public:
 
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget|Slot")
-	TSubclassOf<UCSlotWidget> SlotWidgetClass;
+	TSubclassOf<UCInventorySlotWidget> SlotWidgetClass;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Widget|Explain")
-	TArray<UCSlotWidget*> Slots;
+	TArray<UCInventorySlotWidget*> Slots;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category="Widget|Explain")
 	TSubclassOf<UCExplainWidget> ExplainWidgetClass;
@@ -70,4 +80,9 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Owner")
 	UCInventoryComponent* InventoryComp;
+
+private:
+	FTimerHandle MoneyTextTimer;
+	int32 CurrentMoney;
+	int32 TargetMoney;
 };

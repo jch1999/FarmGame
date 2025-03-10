@@ -1,12 +1,13 @@
 #include "UI/CInventoryWidget.h"
 #include "Components/CInventoryComponent.h"
 #include "UI/CExplainWidget.h"
-#include "UI/CSlotWidget.h"
+#include "UI/CInventorySlotWidget.h"
 #include "Components/UniformGridPanel.h"
 #include "Components/Button.h"
 #include "Components/Border.h"
 #include "UI/CInventoryDragDropOperation.h"
 #include "UI/CTitleBarWidget.h"
+#include "UI/CStateDisplayWidget.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Controller/CPlayerController.h"
 #include "Global.h"
@@ -32,9 +33,24 @@ bool UCInventoryWidget::Initialize()
             }
         }
     }
+    if (MoneyDisplay)
+    {
+        MoneyDisplay->SetAmountText(0);
+
+        UTexture2D* CoinTex;
+        CHelpers::GetAssetDynamic(&CoinTex, "/Game/ThirdParty/Icon/Icon_Money");
+        if (CoinTex)
+        {
+            MoneyDisplay->SetStateIcon(CoinTex, FLinearColor::Yellow);
+        }
+    }
+    if (!SlotWidgetClass)
+    {
+        CHelpers::GetClassDynamic(&SlotWidgetClass, "/Game/I/WB_CInventorySlot.WB_CInventorySlot_C");
+    }
     if (!ExplainWidgetClass)
     {
-        CHelpers::GetClassDynamic(&ExplainWidgetClass, "/Game/UI/WB_CExplainWidget");
+        CHelpers::GetClassDynamic(&ExplainWidgetClass, "/Game/UI/WB_CExplainWidget.WB_CExplainWidget_C");
     }
     return true;
 }
@@ -95,8 +111,8 @@ void UCInventoryWidget::UpdateInventorySlotCount(int32 SlotIndex)
             for (int32 i = 0; i < NewSlotCnt; i++)
             {
                 FString SlotName = "Slot_" + FString::FromInt(Slots.Num() + 1);
-                UCSlotWidget* SlotWidget = CreateWidget<UCSlotWidget>(this, SlotWidgetClass, FName(*SlotName));
-                SlotWidget->ParentInventoryWidget = this;
+                UCInventorySlotWidget* SlotWidget = CreateWidget<UCInventorySlotWidget>(this, SlotWidgetClass, FName(*SlotName));
+                SlotWidget->SetParentWidget(this);
                 SlotWidget->SetItem(SlotDatas[CurrentIndex + i]);
                 SlotWidget->SlotIndex = CurrentIndex + i;
                 Slots.Add(SlotWidget);
@@ -111,6 +127,16 @@ void UCInventoryWidget::UpdateInventorySlotCount(int32 SlotIndex)
             }
         }
     }
+}
+
+void UCInventoryWidget::UpdateMoneyAmount(int32 InNewAmount)
+{
+    TargetMoney = InNewAmount;
+    if (GetWorld()->GetTimerManager().TimerExists(MoneyTextTimer))
+    {
+        GetWorld()->GetTimerManager().ClearTimer(MoneyTextTimer);
+    }
+    GetWorld()->GetTimerManager().SetTimer(MoneyTextTimer, this, &UCInventoryWidget::SetMoneyTextLerp, 0.02f, true, 0.02f);
 }
 
 void UCInventoryWidget::SetInventoryComp(UCInventoryComponent* InComp)
@@ -129,4 +155,18 @@ bool UCInventoryWidget::IsInExpainWidget()
     }
 
     return false;
+}
+
+void UCInventoryWidget::SetMoneyTextLerp()
+{
+    CurrentMoney = FMath::Lerp(CurrentMoney, TargetMoney, 0.2f);
+    if (CurrentMoney == TargetMoney)
+    {
+        GetWorld()->GetTimerManager().ClearTimer(MoneyTextTimer);
+    }
+
+    if (MoneyDisplay)
+    {
+        MoneyDisplay->SetAmountText(CurrentMoney);
+    }
 }
