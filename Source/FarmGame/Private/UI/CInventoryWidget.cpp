@@ -24,6 +24,7 @@ bool UCInventoryWidget::Initialize()
     if (TitleBarWidget)
     {
         TitleBarWidget->SetTitle("Player's Inventory", FLinearColor::Black);
+        TitleBarWidget->SetParentWidget(this);
     }
     if (MoneyDisplay)
     {
@@ -151,9 +152,11 @@ bool UCInventoryWidget::IsInExpainWidget()
 
 void UCInventoryWidget::SetMoneyTextLerp()
 {
+    int32 PrevMoney = CurrentMoney;
     CurrentMoney = FMath::Lerp(CurrentMoney, TargetMoney, 0.2f);
-    if (CurrentMoney == TargetMoney)
+    if (CurrentMoney == PrevMoney)
     {
+        CurrentMoney = TargetMoney;
         GetWorld()->GetTimerManager().ClearTimer(MoneyTextTimer);
     }
 

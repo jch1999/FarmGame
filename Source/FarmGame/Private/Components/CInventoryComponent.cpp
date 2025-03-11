@@ -111,6 +111,7 @@ bool UCInventoryComponent::CreateInventoryWidget()
 			// InventoryWidget->AddToViewport();
 			// InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
 			InventoryWidget->AddToViewport();
+			InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
 			return true;
 		}
 	}

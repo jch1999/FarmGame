@@ -250,6 +250,7 @@ void UCGameInstance::StartDragging(UTexture2D* ItemIcon)
 		DragIconWidget = CreateWidget<UCDragIconWidget>(GetWorld(), DragIconWidgetClass);
 		if (DragIconWidget)
 		{
+			DragIconWidget->SetDesiredSizeInViewport(FVector2D(30, 30));
 			DragIconWidget->AddToViewport();
 		}
 	}
@@ -281,6 +282,7 @@ void UCGameInstance::ShowWarningWidget(FString Message)
 	if (!WarningWidget)
 	{
 		WarningWidget = CreateWidget<UCWarningWidget>(GetWorld(), WarningWidgetClass);
+		WarningWidget->SetDesiredSizeInViewport(FVector2D(450, 150));
 		WarningWidget->AddToViewport();
 	}
 

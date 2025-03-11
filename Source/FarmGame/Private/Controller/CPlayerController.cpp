@@ -9,6 +9,7 @@
 #include "Components/CInteractComponent.h"
 #include "Components/CInventoryComponent.h"
 #include "UI/CHUDWidget.h"
+#include "CGameInstance.h"
 
 ACPlayerController::ACPlayerController()
 {
@@ -31,6 +32,12 @@ ACPlayerController::ACPlayerController()
 	{
 		FString AssetPath = FString::Printf(TEXT("/Game/Input/IA_QuickSlot%d"), i + 1);
 		CHelpers::GetAsset(&QuickSlotActions[i], *AssetPath);
+	}
+	TestActions.SetNum(4);
+	for (int32 i = 0; i < 4; i++)
+	{
+		FString AssetPath = FString::Printf(TEXT("/Game/Input/IA_Test%d"), i + 1);
+		CHelpers::GetAsset(&TestActions[i], *AssetPath);
 	}
 }
 
@@ -305,6 +312,11 @@ void ACPlayerController::RebindAction()
 		{
 			EnhancedInputComponent->BindAction(QuickSlotActions[i], ETriggerEvent::Started, this, &ACPlayerController::OnQuickSlotSelected, i+1);
 		}
+
+		EnhancedInputComponent->BindAction(TestActions[0], ETriggerEvent::Started, this, &ACPlayerController::Test1);
+		EnhancedInputComponent->BindAction(TestActions[1], ETriggerEvent::Started, this, &ACPlayerController::Test2);
+		EnhancedInputComponent->BindAction(TestActions[2], ETriggerEvent::Started, this, &ACPlayerController::Test3);
+		EnhancedInputComponent->BindAction(TestActions[3], ETriggerEvent::Started, this, &ACPlayerController::Test4);
 	}
 }
 
@@ -313,9 +325,49 @@ void ACPlayerController::InputTest(const FInputActionValue& Value)
 	UE_LOG(LogTemp, Error, TEXT("InputText! Input Works!"));
 }
 
+void ACPlayerController::Test1(const FInputActionValue& Value)
+{
+	ACPlayer* MyPlayer = Cast<ACPlayer>(GetPawn());
+	if (MyPlayer)
+	{
+		MyPlayer->GetInventoryComponent()->AddMoney(100);
+	}
+}
+
+void ACPlayerController::Test2(const FInputActionValue& Value)
+{
+	ACPlayer* MyPlayer = Cast<ACPlayer>(GetPawn());
+	if (MyPlayer)
+	{
+		MyPlayer->GetInventoryComponent()->UseMoney(30);
+	}
+}
+
+void ACPlayerController::Test3(const FInputActionValue& Value)
+{
+	if (UGameInstance* GI = GetGameInstance())
+	{
+		if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
+		{
+			MyGI->ShowWarningWidget("Test!!!!!!!!!!!!");
+		}
+	}
+}
+
+void ACPlayerController::Test4(const FInputActionValue& Value)
+{
+	if (UGameInstance* GI = GetGameInstance())
+	{
+		if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
+		{
+			MyGI->HideWarningWidget();
+		}
+	}
+}
+
 void ACPlayerController::ShowWidget(UUserWidget* InWidget)
 {
-	if (InWidget && !InWidget->IsInViewport())
+	if (InWidget && !(InWidget->GetVisibility()== ESlateVisibility::Visible))
 	{
 		InWidget->SetVisibility(ESlateVisibility::Visible);
 		OpenWidgetCnt++;
@@ -331,7 +383,7 @@ void ACPlayerController::ShowWidget(UUserWidget* InWidget)
 
 void ACPlayerController::HideWidget(UUserWidget* InWidget)
 {
-	if (InWidget && InWidget->IsInViewport())
+	if (InWidget && (InWidget->GetVisibility() == ESlateVisibility::Visible))
 	{
 		InWidget->SetVisibility(ESlateVisibility::Collapsed);
 		OpenWidgetCnt = FMath::Max(0, OpenWidgetCnt - 1);

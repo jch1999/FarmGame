@@ -49,6 +49,11 @@ private:
 	void RebindAction();
 	void InputTest(const FInputActionValue& Value);
 
+	void Test1(const FInputActionValue& Value);
+	void Test2(const FInputActionValue& Value);
+	void Test3(const FInputActionValue& Value);
+	void Test4(const FInputActionValue& Value);
+
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnQuickSlotSelected OnQuickSlotSelectedDelegate;
@@ -91,6 +96,8 @@ protected:
 	// Common Input Action
 	UPROPERTY(EditDefaultsOnly, Category = "Input|CommonAction")
 	TArray<UInputAction*> QuickSlotActions;
+	UPROPERTY(EditDefaultsOnly, Category = "Input|CommonAction")
+	TArray<UInputAction*> TestActions;
 
 	UPROPERTY(VisibleAnywhere, Category="Widget")
 	int32 OpenWidgetCnt;
