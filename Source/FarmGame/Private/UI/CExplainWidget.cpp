@@ -10,7 +10,8 @@ void UCExplainWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    bIsMouseOver = false;
+    bIsMouseOver = false; 
+    SetVisibility(ESlateVisibility::HitTestInvisible);
 }
 
 void UCExplainWidget::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -30,6 +31,26 @@ void UCExplainWidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
         [this]() {
             this->SetVisibility(ESlateVisibility::Hidden);
         }, 2.0f, false);
+}
+
+FReply UCExplainWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+    return FReply::Unhandled();
+}
+
+FReply UCExplainWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+    return FReply::Unhandled();
+}
+
+FReply UCExplainWidget::NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+    return FReply::Unhandled();
+}
+
+FReply UCExplainWidget::NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+    return Super::NativeOnMouseWheel(InGeometry, InMouseEvent);
 }
 
 void UCExplainWidget::SetItem(TWeakPtr<FInventorySlot> InSlotData)

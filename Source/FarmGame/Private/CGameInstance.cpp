@@ -254,11 +254,9 @@ void UCGameInstance::StartDragging(UTexture2D* ItemIcon)
 			DragIconWidget->AddToViewport();
 		}
 	}
-	DragIconWidget->SetVisibility(ESlateVisibility::Visible);
-	if (UImage* DragImage = Cast<UImage>(DragIconWidget->GetWidgetFromName(TEXT("DragIconImage"))))
-	{
-		DragImage->SetBrushFromTexture(ItemIcon);
-	}
+	DragIconWidget->InitDragIcon(ItemIcon);
+	DragIconWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+	OnDragIconShowing.Broadcast(true);
 }
 
 void UCGameInstance::StopDragging()
@@ -267,6 +265,7 @@ void UCGameInstance::StopDragging()
 	{
 		DragIconWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
+	OnDragIconShowing.Broadcast(false);
 }
 
 void UCGameInstance::UpdateDragIconPosition(FVector2D NewPosition)

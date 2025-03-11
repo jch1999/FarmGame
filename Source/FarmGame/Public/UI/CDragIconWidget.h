@@ -12,7 +12,7 @@ class FARMGAME_API UCDragIconWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	void SetItemIcon(UTexture2D* InIcon);
+	void InitDragIcon(UTexture2D* InIcon);
 
 public:
 	UPROPERTY(meta = (BindWidget))

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/CInventoryComponent.h"
 #include "CQuickSlotBarWidget.generated.h"
 
 class UUniformGridPanel;
@@ -19,8 +20,15 @@ protected:
 public:
 	void OnInitPlayer(ACPlayer* InPlayer);
 	UFUNCTION()
-	void OnQuickSlotSelected(int InIndex);
+	void OnQuickSlotSelected(int32 InIndex);
 
+private:
+	UFUNCTION()
+	void SwapSlotData(int32 InIndex1, int32 InIndex2);
+
+	UFUNCTION()
+	void FuncForBindUpdate(const TArray<int32>& ChangedIndex);
+	void UpdateQuickSlotDatas();
 public:
 	UPROPERTY(meta=(BindWidget))
 	UUniformGridPanel* QuickSlotGridPanel;
@@ -34,4 +42,6 @@ public:
 	UPROPERTY(EditDefaultsOnly,Category="UI|Class")
 	TSubclassOf<UCQuickSlotWidget> QuickSlotClass;
 
+protected:
+	UCInventoryComponent* InventoryComp;
 };

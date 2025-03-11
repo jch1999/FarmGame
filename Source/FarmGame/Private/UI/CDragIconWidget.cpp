@@ -1,10 +1,11 @@
 #include "UI/CDragIconWidget.h"
 #include "Components/Image.h"
 
-void UCDragIconWidget::SetItemIcon(UTexture2D* InIcon)
+void UCDragIconWidget::InitDragIcon(UTexture2D* InIcon)
 {
     if (IconImage && InIcon)
     {
         IconImage->SetBrushFromTexture(InIcon);
     }
+    SetIsEnabled(false);
 }

@@ -10,6 +10,9 @@
 class UCWarningWidget;
 class UCDragIconWidget;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDragIconShowing, bool, IsOn);
+
+
 UCLASS()
 class FARMGAME_API UCGameInstance : public UGameInstance
 {
@@ -42,6 +45,10 @@ public:
 	void StartDragging(UTexture2D* ItemIcon);
 	void StopDragging();
 	void UpdateDragIconPosition(FVector2D NewPosition);
+
+	UPROPERTY(BlueprintAssignable)
+	FDragIconShowing OnDragIconShowing;
+
 
 private:
 	void LoadCropDefaultTable();
@@ -79,6 +86,7 @@ public:
 	TSubclassOf<UCDragIconWidget> DragIconWidgetClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|Warning")
 	UCDragIconWidget* DragIconWidget;
+	bool IsDragging;
 
 private:
 	// Data Map

@@ -41,6 +41,7 @@ struct FInventorySlot
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventorySlotDataUpdated, const TArray<int32>&, ChangedIndexs);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FInventorySlotSwap, int32, Index1, int32, Index2);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventorySlotCountUpdated, int32, IncreasedCount);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FITemAdded, FName, InItemName, int32, InItemAmount, UTexture2D*, InItemIcon);
@@ -56,6 +57,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void TickComponent(float DelatTime, enum ELevelTick TickType, 
+		FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
 	bool AddItem(ACItemBase* InItemActor);
@@ -88,10 +91,15 @@ private:
 	bool AddToNewSlot(ACItemBase* InItemActor, const FItemData& InItemData, const FItemAssetData& InItemAssetData, TArray<int32>& ChangedIndexes);
 	UFUNCTION()
 	bool IncreaseSlotCount(int32 InSlotCount);
+	UFUNCTION()
+	void ToggleTick(bool IsTickEnable);
 
 public:
 	UPROPERTY(BlueprintAssignable)
 	FInventorySlotDataUpdated OnInventorySlotDataUpdated;
+
+	UPROPERTY(BlueprintAssignable)
+	FInventorySlotSwap OnInventorySlotSwap;
 
 	UPROPERTY(BlueprintAssignable)
 	FInventorySlotCountUpdated OnInventorySlotCountUpdated;
@@ -127,10 +135,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Widget|Inventory")
 	UCInventoryWidget* InventoryWidget;
 
-	UPROPERTY(EditAnywhere, Category = "Widget|QuickSlot")
-	TSubclassOf<UCQuickSlotBarWidget> QuickSlotBarWidgetClass;
 	UPROPERTY(VisibleAnywhere, Category = "Widget|QuickSlot")
-	UCQuickSlotBarWidget* QuickSlots;
+	UCQuickSlotBarWidget* QuickSlotBar;
 	
 	UPROPERTY(VisibleAnywhere, Category="Money")
 	int32 OwnMoney;

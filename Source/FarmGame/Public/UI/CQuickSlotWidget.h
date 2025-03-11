@@ -26,4 +26,6 @@ public:
 	UPROPERTY(meta=(BindWidget))
 	UTextBlock* QuickSlotIndexText;
 
+	UPROPERTY(VisibleAnywhere, Category="Target")
+	int32 TargetSlotIndex;
 };

@@ -26,7 +26,6 @@ class FARMGAME_API UCSlotWidget : public UUserWidget
 	
 protected:
 	virtual void NativeOnInitialized() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 public:
 	UFUNCTION(BlueprintCallable)

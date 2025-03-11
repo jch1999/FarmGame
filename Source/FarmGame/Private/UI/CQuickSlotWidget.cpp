@@ -14,6 +14,7 @@ bool UCQuickSlotWidget::Initialize()
 	}
 
 	SlotType = ESlotType::Quick;
+	TargetSlotIndex = -1;
 
 	return true;
 }
@@ -23,7 +24,9 @@ bool UCQuickSlotWidget::SetQuickSlotIndex(int32 InIndex)
 	if (!QuickSlotIndexText) return false;
 	if (InIndex < 0 || InIndex >= 10) return false;
 	
-	QuickSlotIndexText->SetText(FText::FromString(FString::FromInt(InIndex)));
+	int32 Index = (InIndex + 1) % 10;
+	QuickSlotIndexText->SetText(FText::FromString(FString::FromInt(Index)));
+	SlotIndex = InIndex;
 	return true;
 }
 
@@ -56,6 +59,7 @@ bool UCQuickSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 			case ESlotType::Inventory_Player:
 			{
 				SetItem(*(DragOperation->SourceSlot->GetSlotItemData()));
+				TargetSlotIndex = DragOperation->SourceSlot->SlotIndex;
 			}
 				break;
 			case ESlotType::Quick:

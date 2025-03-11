@@ -7,17 +7,21 @@
 #include "Components/Button.h"
 #include "Item/CItemBase.h"
 #include "Controller/CPlayerController.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
 
 
 UCInventoryComponent::UCInventoryComponent()
 {
 	CHelpers::GetClass(&InventoryWidgetClass, "/Game/UI/WB_CInventoryWidget");
-	CHelpers::GetClass(&QuickSlotBarWidgetClass, "/Game/UI/WB_CQuickSlotBar");
 	CurrentCapacity = 0.0f;
 	MaxCapacity = 100.0f;
 	CurrentSlotCnt = 0;
 	DefaultSlotCnt = 20;
 	MaxSlotCnt = 50;
+
+	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bStartWithTickEnabled = false;
+	PrimaryComponentTick.bTickEvenWhenPaused = true;
 }
 
 
@@ -26,6 +30,33 @@ void UCInventoryComponent::BeginPlay()
 	Super::BeginPlay();
 
 	CreateInventoryWidget();
+
+	if (UGameInstance* GI = GetWorld()->GetGameInstance())
+	{
+		if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
+		{
+			MyGI->OnDragIconShowing.AddDynamic(this, &UCInventoryComponent::ToggleTick);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Can't get UCGameIsntace"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Can't get GameIsntace"));
+	}
+}
+
+void UCInventoryComponent::TickComponent(float DelatTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	if (UGameInstance* GI = GetWorld()->GetGameInstance())
+	{
+		if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
+		{
+			MyGI->UpdateDragIconPosition(UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld()));
+		}
+	}
 }
 
 bool UCInventoryComponent::AddItem(ACItemBase* InItemActor)
@@ -101,6 +132,7 @@ bool UCInventoryComponent::CreateInventoryWidget()
 			InventoryWidget->SetInventoryComp(this);
 			OnInventorySlotDataUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateInventorySlotWidget);
 			OnInventorySlotCountUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateInventorySlotCount);
+			
 			OnMoneyUpdated.AddDynamic(InventoryWidget, &UCInventoryWidget::UpdateMoneyAmount);
 			if (UCTitleBarWidget* InventoryTitleBar = InventoryWidget->TitleBarWidget)
 			{
@@ -226,6 +258,11 @@ bool UCInventoryComponent::IncreaseSlotCount(int32 InSlotCount)
 	return true;
 }
 
+void UCInventoryComponent::ToggleTick(bool IsTickEnable)
+{
+	SetComponentTickEnabled(IsTickEnable);
+}
+
 void UCInventoryComponent::ShowWarningWidget(FString Message)
 {
 	UGameInstance* GameInstance = GetWorld()->GetGameInstance();
@@ -264,6 +301,7 @@ void UCInventoryComponent::SwapSlot(int32& SlotIndex1, int32& SlotIndex2)
 	ChangedIndexes.Add(SlotIndex1);
 	ChangedIndexes.Add(SlotIndex2);
 	OnInventorySlotDataUpdated.Broadcast(ChangedIndexes);
+	OnInventorySlotSwap.Broadcast(SlotIndex1, SlotIndex2);
 }
 
 void UCInventoryComponent::UseItem(int32& SlotIndex)

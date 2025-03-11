@@ -16,23 +16,6 @@ void UCSlotWidget::NativeOnInitialized()
 	Super::NativeOnInitialized();
 }
 
-void UCSlotWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
-	
-	if (UGameInstance* GI = GetWorld()->GetGameInstance<UCGameInstance>())
-	{
-		if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
-		{
-			FVector2D MousePosition;
-			if (GetWorld()->GetFirstPlayerController()->GetMousePosition(MousePosition.X, MousePosition.Y))
-			{
-				MyGI->UpdateDragIconPosition(MousePosition);
-			}
-		}
-	}
-}
-
 void UCSlotWidget::SetItem(const FInventorySlot& SlotData)
 {
 	CurrentSlotData = MakeShared<FInventorySlot>(SlotData);
@@ -96,6 +79,7 @@ void UCSlotWidget::NativeOnDragDetected(const FGeometry& InGemoetry, const FPoin
 			MyGI->StartDragging(CurrentSlotData->ItemIcon);
 		}
 	}
+
 	OutOperation = DragOperation;
 }
 

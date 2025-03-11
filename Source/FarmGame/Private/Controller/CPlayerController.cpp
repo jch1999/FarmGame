@@ -190,7 +190,6 @@ void ACPlayerController::OpenInventory(const FInputActionValue& Value)
 	ACPlayer* MyPlayer = Cast<ACPlayer>(GetPawn());
 	if (MyPlayer)
 	{
-		SetUIInputMode();
 		MyPlayer->GetInventoryComponent()->ShowInventoryWidget();
 	}
 	else
@@ -205,7 +204,6 @@ void ACPlayerController::CloseInventory(const FInputActionValue& Value)
 	if (MyPlayer)
 	{
 		MyPlayer->GetInventoryComponent()->HideInventoryWidget();
-		SetGameInputMode();
 		UE_LOG(LogTemp, Error, TEXT("Function : ACPlayerController::CloseInventory"))
 	}
 	else

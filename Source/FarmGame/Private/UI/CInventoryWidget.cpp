@@ -66,7 +66,7 @@ void UCInventoryWidget::ShowExplainWidget(TWeakPtr<FInventorySlot> InSlotData, F
     }
     ExplainWidget->SetItem(InSlotData);
     ExplainWidget->SetPositionInViewport(ViewPortPosition, false);
-    ExplainWidget->SetVisibility(ESlateVisibility::Visible);
+    ExplainWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 }
 
 void UCInventoryWidget::HideExplainWidget()
