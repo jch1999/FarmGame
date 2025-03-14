@@ -1,6 +1,6 @@
 #include "UI/CSlotWidget.h"
 #include "UI/CInventoryWidget.h"
-#include "UI/CInventorySlotDragDropOperation.h"
+#include "UI/CSlotDragDropOperation.h"
 #include "UI/CSlotDropDownWidget.h"
 #include "UI/CQuickSlotBarWidget.h"
 #include "Global.h"
@@ -55,35 +55,25 @@ FInventorySlot* UCSlotWidget::GetSlotItemData()
 
 FReply UCSlotWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
+	FReply Replay = Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
 	if (InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
 	{
 		return FReply::Handled().DetectDrag(TakeWidget(), EKeys::LeftMouseButton);
 	}
 
-	return FReply::Unhandled();
+	return Replay;
 }
 
 void UCSlotWidget::NativeOnDragDetected(const FGeometry& InGemoetry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {
+	Super::NativeOnDragDetected(InGemoetry, InMouseEvent, OutOperation);
 	if (CurrentItemID == EItemID::None) return;
 
-	UCInventorySlotDragDropOperation* DragOperation = NewObject<UCInventorySlotDragDropOperation>();
-	DragOperation->SourceSlot = this;
-	
-	ItemIconImage->SetOpacity(0.3f);
-
-	if (UGameInstance* GI = GetGameInstance())
-	{
-		if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
-		{
-			MyGI->StartDragging(CurrentSlotData->ItemIcon);
-		}
-	}
+	UCSlotDragDropOperation* DragOperation = NewObject<UCSlotDragDropOperation>();
+	DragOperation->Initialize(this);
 
 	OutOperation = DragOperation;
 }
-
-
 
 void UCSlotWidget::SetParentWidget(UUserWidget* InParent)
 {

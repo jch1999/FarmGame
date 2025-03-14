@@ -1,7 +1,7 @@
 #include "UI/CQuickSlotWidget.h"
 #include "UI/CSlotWidget.h"
 #include "UI/CQuickSlotBarWidget.h"
-#include "UI/CInventorySlotDragDropOperation.h"
+#include "UI/CSlotDragDropOperation.h"
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
 #include "CGameInstance.h"
@@ -24,7 +24,7 @@ bool UCQuickSlotWidget::SetQuickSlotIndex(int32 InIndex)
 	if (!QuickSlotIndexText) return false;
 	if (InIndex < 0 || InIndex >= 10) return false;
 	
-	int32 Index = (InIndex + 1) % 10;
+	int32 Index = InIndex % 10;
 	QuickSlotIndexText->SetText(FText::FromString(FString::FromInt(Index)));
 	SlotIndex = InIndex;
 	return true;
@@ -44,13 +44,13 @@ void UCQuickSlotWidget::SetParentWidget(UUserWidget* InParent)
 
 bool UCQuickSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
-
-	if (UCInventorySlotDragDropOperation* DragOperation = Cast<UCInventorySlotDragDropOperation>(InOperation))
+	bool bHandled = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+	if (UCSlotDragDropOperation* DragOperation = Cast<UCSlotDragDropOperation>(InOperation))
 	{
 		if (!DragOperation->SourceSlot)
 		{
 			UE_LOG(LogItem, Error, TEXT("SourceSlot is nullptr in UCQuickSlotWidget::NativeOnDrop"));
-			return false;
+			return bHandled;
 		}
 		if (DragOperation->SourceSlot != this)
 		{
@@ -70,17 +70,8 @@ bool UCQuickSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 			default:
 				break;
 			}
-
-			DragOperation->SourceSlot->ItemIconImage->SetOpacity(1.0f);
-			if (UGameInstance* GI = GetWorld()->GetGameInstance<UCGameInstance>())
-			{
-				if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
-				{
-					MyGI->StopDragging();
-				}
-			}
-			return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+			return bHandled;
 		}
 	}
-	return false;
+	return bHandled;
 }

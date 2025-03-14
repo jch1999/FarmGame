@@ -6,6 +6,8 @@
 
 FReply UCTitleBarWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
+    FReply Reply = Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
+
     if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton) && ParentWidget)
     {
         bIsDragging = true;
@@ -31,11 +33,13 @@ FReply UCTitleBarWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, co
         // GetCachedGeometry() : Returns the location and size of the widget calculated from the previous frame
         // GetTickSpaceGeometry() : Gets the latest updated location and size from the current frame.
     }
-    return FReply::Unhandled();
+    return Reply;
 }
 
 FReply UCTitleBarWidget::NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
+    FReply Reply = Super::NativeOnMouseMove(InGeometry, InMouseEvent);
+
     if (bIsDragging && HasMouseCapture() && ParentWidget)
     {
         FVector2D ViewportSize;
@@ -54,18 +58,19 @@ FReply UCTitleBarWidget::NativeOnMouseMove(const FGeometry& InGeometry, const FP
         //ParentWidget->SetRenderTranslation(NewPosition);
         return FReply::Handled();
     }
-    return FReply::Unhandled();
+    return Reply;
 }
 
 FReply UCTitleBarWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
+    FReply Reply = Super::NativeOnMouseButtonUp(InGeometry, InMouseEvent);
     if (bIsDragging && InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
     {
         bIsDragging = false;
         UE_LOG(LogTemp, Display, TEXT("MouseUp"));
         return FReply::Handled().ReleaseMouseCapture();
     }
-    return FReply::Unhandled();
+    return Reply;
 }
 
 void UCTitleBarWidget::SetParentWidget(UUserWidget* InParentWidget)

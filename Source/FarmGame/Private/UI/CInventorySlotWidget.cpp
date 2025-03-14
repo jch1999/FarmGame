@@ -1,6 +1,6 @@
 #include "UI/CInventorySlotWidget.h"
 #include "UI/CInventoryWidget.h"
-#include "UI/CInventorySlotDragDropOperation.h"
+#include "UI/CSlotDragDropOperation.h"
 #include "UI/CSlotDropDownWidget.h"
 #include "Global.h"
 #include "CGameInstance.h"
@@ -23,48 +23,44 @@ bool UCInventorySlotWidget::Initialize()
 
 bool UCInventorySlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
-
-	if (UCInventorySlotDragDropOperation* DragOperation = Cast<UCInventorySlotDragDropOperation>(InOperation))
+	bool bHandled = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+	if (UCSlotDragDropOperation* DragOperation = Cast<UCSlotDragDropOperation>(InOperation))
 	{
 		if (!DragOperation->SourceSlot)
 		{
 			UE_LOG(LogItem, Error, TEXT("SourceSlot is nullptr in UCSlotWidget::NativeOnDrop"));
-			return false;
+			return bHandled;
 		}
+		
 		if (DragOperation->SourceSlot != this)
 		{
-			UCInventoryWidget* InventoryWidget = Cast<UCInventoryWidget>(ParentWidget);
-			if (UCInventoryComponent* InventoryComp = InventoryWidget->InventoryComp)
+			if (UCInventoryWidget* InventoryWidget = Cast<UCInventoryWidget>(ParentWidget))
 			{
-				switch (DragOperation->SourceSlot->SlotType)
+				if (UCInventoryComponent* InventoryComp = InventoryWidget->InventoryComp)
 				{
-				case ESlotType::Inventory_Player:
-				{
-					UE_LOG(LogItem, Log, TEXT("SwapSlot called with SlotIndex1: %d, SlotIndex2: %d"), DragOperation->SourceSlot->SlotIndex, SlotIndex);
-					InventoryComp->SwapSlot(DragOperation->SourceSlot->SlotIndex, SlotIndex);
-				}
-					break;
-				default:
-					break;
-				}
-				DragOperation->SourceSlot->ItemIconImage->SetOpacity(1.0f);
-
-				if (UGameInstance* GI = GetWorld()->GetGameInstance<UCGameInstance>())
-				{
-					if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
+					switch (DragOperation->SourceSlot->SlotType)
 					{
-						MyGI->StopDragging();
+					case ESlotType::Inventory_Player:
+					{
+						UE_LOG(LogItem, Log, TEXT("SwapSlot called with SlotIndex1: %d, SlotIndex2: %d"), DragOperation->SourceSlot->SlotIndex, SlotIndex);
+						InventoryComp->SwapSlot(DragOperation->SourceSlot->SlotIndex, SlotIndex);
+					}
+					break;
+					default:
+						break;
 					}
 				}
 			}
-			return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);;
+			return bHandled;
 		}
 	}
-	return false;
+	return bHandled;
+	
 }
 
 void UCInventorySlotWidget::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
+	Super::NativeOnMouseEnter(InGeometry, InMouseEvent);
 	UCInventoryWidget* InventoryWidget = Cast<UCInventoryWidget>(ParentWidget);
 	if (CurrentItemID != EItemID::None && InventoryWidget)
 	{
@@ -75,17 +71,19 @@ void UCInventorySlotWidget::NativeOnMouseEnter(const FGeometry& InGeometry, cons
 
 void UCInventorySlotWidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 {
+	Super::NativeOnMouseLeave(InMouseEvent);
 	GetWorld()->GetTimerManager().SetTimer(HideExplainTimer, this, &UCInventorySlotWidget::HideEplainWidget, 0.1f, false);
 }
 
 FReply UCInventorySlotWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
+	FReply Reply = Super::NativeOnMouseButtonUp(InGeometry, InMouseEvent);
 	if (InMouseEvent.GetEffectingButton() == EKeys::RightMouseButton)
 	{
 		OpenDropDownMenu();
 		return FReply::Handled();
 	}
-	return FReply::Unhandled();
+	return Reply;
 }
 
 void UCInventorySlotWidget::OpenDropDownMenu()

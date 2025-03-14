@@ -88,8 +88,9 @@ void UCQuickSlotBarWidget::UpdateQuickSlotDatas()
     {
         if (QuickSlot->TargetSlotIndex == -1) continue;
 
-        QuickSlot->SetItem(InventoryComp->GetSlotDatas()[QuickSlot->TargetSlotIndex]);
-        if (InventoryComp->GetSlotDatas()[QuickSlot->TargetSlotIndex].ItemID == EItemID::None)
+        const TArray<FInventorySlot>& SlotDatas = InventoryComp->GetSlotDatas();
+        QuickSlot->SetItem(SlotDatas[QuickSlot->TargetSlotIndex]);
+        if (SlotDatas[QuickSlot->TargetSlotIndex].ItemID == EItemID::None)
         {
             QuickSlot->TargetSlotIndex = -1;
         }

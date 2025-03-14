@@ -300,8 +300,8 @@ void UCInventoryComponent::SwapSlot(int32& SlotIndex1, int32& SlotIndex2)
 	TArray<int32> ChangedIndexes;
 	ChangedIndexes.Add(SlotIndex1);
 	ChangedIndexes.Add(SlotIndex2);
-	OnInventorySlotDataUpdated.Broadcast(ChangedIndexes);
 	OnInventorySlotSwap.Broadcast(SlotIndex1, SlotIndex2);
+	OnInventorySlotDataUpdated.Broadcast(ChangedIndexes);
 }
 
 void UCInventoryComponent::UseItem(int32& SlotIndex)
