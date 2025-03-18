@@ -52,14 +52,20 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface|Custom")
 	void ActionInteract();
+	
+	// Camera Move
+	void MoveCameraToLocation(const FVector& TargetLocation, const FRotator& TargetRotation);
+	void RestoreCamera();
 
-public:
 	// Get Components
 	FORCEINLINE UCameraComponent* GetCameraComponent() const { return CameraComp; }
 	FORCEINLINE UCOptionComponent* GetOptionComponent() const { return OptionComp; }
 	FORCEINLINE UCInteractComponent* GetInteractComponent() const  { return InteractComp; }
 	FORCEINLINE UCInventoryComponent* GetInventoryComponent() const { return InventoryComp; }
 	
+private:
+	void UpdateCameraLerp();
+
 protected:
 	// Components
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
@@ -97,4 +103,16 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Item")
 	int32 ItemIndex;
+
+private:
+	FVector OriginalCameraRelativeLocation;
+	FRotator OriginalCameraRelativeRotation; 
+	
+	FTimerHandle CameraLerpTimerHandle;
+	float CameraLerpAlpha = 0.0f;
+
+	FVector CameraStartLocation;
+	FRotator CameraStartRotation;
+	FVector CameraTargetLocation;
+	FRotator CameraTargetRotation;
 };

@@ -13,6 +13,7 @@ class UStaticMeshComponent;
 class UBoxComponent;
 class UCFarmFieldWidget;
 class ACBase_Crop;
+class ACPlayer;
 
 UCLASS()
 class FARMGAME_API ACFarmField : public AActor, public ICInterface_Interactable
@@ -68,6 +69,10 @@ public:
 	UFUNCTION(BlueprintPure)
 	UCNutritionComponent* const GetNutritionComp() { return NutritionComp; }
 
+private:
+	void ShowFarmFieldWidget();
+	void HideFarmFieldWidget();
+
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	UStaticMeshComponent* MeshComp;
@@ -93,6 +98,14 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Widget")
 	UCFarmFieldWidget* InfoWidget;
+	
+	// Camera Move
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	FVector CameraTargetLocation;
+
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	FRotator CameraTargetRotation;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Crop")
 	ACBase_Crop* Crop;

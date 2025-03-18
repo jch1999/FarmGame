@@ -6,6 +6,7 @@
 
 class UTextBlock;
 class UImage;
+class UProgressBar;
 
 UCLASS()
 class FARMGAME_API UCStateDisplayWidget : public UUserWidget
@@ -18,6 +19,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetStateIcon(UTexture2D* InTexture, const FLinearColor& InColor);
+	
+	UFUNCTION(BlueprintCallable)
+	void UpdateStateDisplay(float Value, float MaxValue);
 
 public:
 	UPROPERTY(meta = (BindWidget))
@@ -25,4 +29,7 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UImage* IconImage;
+
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* StateProgressBar;
 };

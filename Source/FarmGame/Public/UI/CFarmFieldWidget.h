@@ -6,6 +6,9 @@
 
 class ACFarmField;
 class UProgressBar;
+class UCStateDisplayWidget;
+class UCanvasPanel;
+class UImage;
 
 UCLASS()
 class FARMGAME_API UCFarmFieldWidget : public UUserWidget
@@ -28,17 +31,31 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void UpdateMoisture(float OldValue, float NewValue, float MaxValue);
 
+
+	void PositionStateDisplays();
+	void DrawConnectionLines();
+
 protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category="FarmField")
 	ACFarmField* FarmField;
 
-	// Info Progress Bar
+	// Canvas
 	UPROPERTY(meta = (BindWidget))
-	UProgressBar* CultivationBar;
-
-	UPROPERTY(meta=(BindWidget))
-	UProgressBar* NutritionBar;
-
+	UCanvasPanel* CanvasPanel;
+	
+	// State Display
 	UPROPERTY(meta = (BindWidget))
-	UProgressBar* MoistureBar;
+	UCStateDisplayWidget* CultivateState;
+	UPROPERTY(meta = (BindWidget))
+	UCStateDisplayWidget* NutritionState;
+	UPROPERTY(meta = (BindWidget))
+	UCStateDisplayWidget* MoistureState;
+
+	// Under Lines
+	UPROPERTY(meta = (BindWidget))
+	UImage* Line_Cultivate;
+	UPROPERTY(meta = (BindWidget))
+	UImage* Line_Nutrition;
+	UPROPERTY(meta = (BindWidget))
+	UImage* Line_Moisture;
 };
