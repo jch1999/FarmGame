@@ -4,15 +4,14 @@
 #include "Components/CNutritionComponent.h"
 #include "Components/CCultivationComponent.h"
 #include "Components/BoxComponent.h"
-#include "Components/WidgetComponent.h"
 #include "Crops/CBase_Crop.h"
-#include "CGameModeBase.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "UI/CFarmFieldWidget.h"
 #include "Characters/CPlayer.h"
 #include "GameFramework/PlayerController.h"
 #include "Controller/CPlayerController.h"
+#include "CGameInstance.h"
 
 ACFarmField::ACFarmField()
 {
@@ -21,21 +20,6 @@ ACFarmField::ACFarmField()
 	CHelpers::CreateActorComponent(this, &NutritionComp, "NutritionComp");
 	CHelpers::CreateActorComponent(this, &CultivationComp, "CultivationComp");
 	CHelpers::CreateSceneComponent(this, &BoxComp, "BoxComp",RootComponent);
-	CHelpers::CreateSceneComponent(this, &InfoWidgetComp, "InfoWidgetComp", MeshComp);
-
-	// Set Widget Component
-	if (InfoWidgetComp)
-	{
-		InfoWidgetComp->SetRelativeLocation(FVector(0, 0, 130.0f));
-		InfoWidgetComp->SetWidgetSpace(EWidgetSpace::Screen);
-		//InfoWidgetComp->SetDrawSize(FVector2D(200.0f, 60.0f));
-
-		CHelpers::GetClass<UCFarmFieldWidget>(&WidgetClass, "/Game/UI/WB_FarmFieldWidget");
-		if (WidgetClass)
-		{
-			InfoWidgetComp->SetWidgetClass(WidgetClass);
-		}
-	}
 
 	// Set Mesh Component
 	UStaticMesh* MeshAsset;
@@ -55,7 +39,7 @@ ACFarmField::ACFarmField()
 
 	PrimaryActorTick.bCanEverTick = false;
 
-	CameraTargetLocation = FVector(0.0f, 0.0f, 300.0f);
+	CameraTargetLocation = FVector(-135.0f, 0.0f, 200.0f);
 	CameraTargetRotation = FRotator(-30.0f, 0.0f, 0.0f);
 }
 
@@ -77,19 +61,6 @@ void ACFarmField::BeginPlay()
 	CultivationComp->SetAutoReduceAmount(0.5f);
 	CultivationComp->SetAutoReduceTimer(1.0f, true, 1.0f);
 
-	// Widget
-	/*UUserWidget* Widget = InfoWidgetComp->GetWidget();
-	if (Widget)
-	{
-		InfoWidget = Cast<UCFarmFieldWidget>(Widget);
-		if (InfoWidget)
-		{
-			InfoWidget->SetFarmField(this);
-			InfoWidget->SetVisibility(ESlateVisibility::Hidden);
-		}
-	}*/
-	//InfoWidgetComp->SetVisibility(false);
-	InfoWidgetComp->GetWidget()->SetVisibility(ESlateVisibility::Collapsed);
 	// Interact
 	SetInteractable();
 
@@ -123,20 +94,26 @@ void ACFarmField::Interact(AActor* OtherActor)
 	FarmFieldWidget->SetFarmField(this);
 	FarmFieldWidget->AddToViewport();
 	*/
-	ACPlayer* Player = Cast<ACPlayer>(OtherActor);
 
-	if (InfoWidget && Player)
+	if (ACPlayer* Player = Cast<ACPlayer>(OtherActor))
 	{
-		InfoWidgetComp->SetWorldRotation((OtherActor->GetActorForwardVector() * -1.0f).Rotation());
+		/*InfoWidgetComp->SetWorldRotation((OtherActor->GetActorForwardVector() * -1.0f).Rotation());
 		InfoWidget->SetVisibility(ESlateVisibility::Visible);
+		*/
 
 		FVector WorldCameraLocation = GetActorLocation() + GetActorRotation().RotateVector(CameraTargetLocation);
 		FRotator WorldCameraRotation = GetActorRotation() + CameraTargetRotation;
 
 		Player->MoveCameraToLocation(WorldCameraLocation, WorldCameraRotation);
-		ShowFarmFieldWidget();
+
+		if (UGameInstance* GI = GetGameInstance())
+		{
+			if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
+			{
+				MyGI->ShowFarmFieldWidget(this);
+			}
+		}
 	}
-	InfoWidgetComp->SetVisibility(true);
 
 	SetUnInteractable();
 }
@@ -155,28 +132,6 @@ bool ACFarmField::PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, const FTransfo
 	SetUnInteractable();
 
 	return true;
-}
-
-void ACFarmField::ShowFarmFieldWidget()
-{
-	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
-	{
-		if (ACPlayerController* MyPC = Cast<ACPlayerController>(PC))
-		{
-			MyPC->ShowWidget(InfoWidget);
-		}
-	}
-}
-
-void ACFarmField::HideFarmFieldWidget()
-{
-	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
-	{
-		if (ACPlayerController* MyPC = Cast<ACPlayerController>(PC))
-		{
-			MyPC->HideWidget(InfoWidget);
-		}
-	}
 }
 
 bool ACFarmField::OnHovered()

@@ -17,7 +17,7 @@ void UCSlotDragDropOperation::DragStart(UDragDropOperation* InOperation)
 	if (SourceSlot && SourceSlot->ItemIconImage)
 	{
 		SourceSlot->ItemIconImage->SetOpacity(0.3f); 
-		if (UUserWidget* OwningWidget = Cast<UUserWidget>(SourceSlot->GetOuter()))
+		if (UUserWidget* OwningWidget = SourceSlot->GetTypedOuter<UUserWidget>())
 		{
 			if (UWorld* World = OwningWidget->GetWorld())
 			{
@@ -41,7 +41,7 @@ void UCSlotDragDropOperation::DragEnd(UDragDropOperation* InOperation)
 	{
 		SourceSlot->ItemIconImage->SetOpacity(1.0f);
 
-		if (UUserWidget* OwningWidget = Cast<UUserWidget>(SourceSlot->GetOuter()))
+		if (UUserWidget* OwningWidget = SourceSlot->GetTypedOuter<UUserWidget>())
 		{
 			if (UWorld* World = OwningWidget->GetWorld())
 			{

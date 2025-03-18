@@ -11,7 +11,6 @@ class UCCultivationComponent;
 class UWidgetComponent;
 class UStaticMeshComponent;
 class UBoxComponent;
-class UCFarmFieldWidget;
 class ACBase_Crop;
 class ACPlayer;
 
@@ -69,10 +68,6 @@ public:
 	UFUNCTION(BlueprintPure)
 	UCNutritionComponent* const GetNutritionComp() { return NutritionComp; }
 
-private:
-	void ShowFarmFieldWidget();
-	void HideFarmFieldWidget();
-
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	UStaticMeshComponent* MeshComp;
@@ -88,16 +83,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	UBoxComponent* BoxComp;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component")
-	UWidgetComponent* InfoWidgetComp;
-
-	// Widget
-	UPROPERTY(VisibleAnywhere, Category = "Widget")
-	TSubclassOf<UCFarmFieldWidget> WidgetClass;
-
-	UPROPERTY(VisibleAnywhere, Category = "Widget")
-	UCFarmFieldWidget* InfoWidget;
 	
 	// Camera Move
 	UPROPERTY(EditAnywhere, Category = "Camera")

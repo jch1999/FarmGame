@@ -3,8 +3,10 @@
 #include "Blueprint/UserWidget.h"
 #include "UI/CWarningWidget.h"
 #include "UI/CDragIconWidget.h"
+#include "UI/CFarmFieldWidget.h"
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
+#include "Components/Button.h"
 #include "Global.h"
 #include "Controller\/CPlayerController.h"
 
@@ -13,6 +15,10 @@ UCGameInstance::UCGameInstance()
 	if (!WarningWidgetClass)
 	{
 		CHelpers::GetClass(&WarningWidgetClass, "/Game/UI/WB_WarningWidget");
+	}
+	if (!FarmFieldWidgetClass)
+	{
+		CHelpers::GetClass<UCFarmFieldWidget>(&FarmFieldWidgetClass, "/Game/UI/WB_FarmFieldWidget");
 	}
 }
 
@@ -308,6 +314,50 @@ void UCGameInstance::HideWarningWidget()
 			if (MyPC)
 			{
 				MyPC->HideWidget(WarningWidget);
+			}
+		}
+	}
+}
+
+void UCGameInstance::ShowFarmFieldWidget(ACFarmField* TargetField)
+{
+	if (FarmFieldWidgetClass && !FarmFieldWidget)
+	{
+		FarmFieldWidget = CreateWidget<UCFarmFieldWidget>(GetWorld(), FarmFieldWidgetClass);
+		if (FarmFieldWidget)
+		{
+			FarmFieldWidget->AddToViewport();
+		}
+	}
+
+	if (FarmFieldWidget)
+	{
+		FarmFieldWidget->SetFarmField_Implementation(TargetField);
+		FarmFieldWidget->GetPlantBtn()->OnClicked.AddDynamic(this, &UCGameInstance::HideFarmFieldWidget);
+		FarmFieldWidget->PositionStateDisplays();
+
+		if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+		{
+			ACPlayerController* MyPC = Cast<ACPlayerController>(PC);
+			if (MyPC)
+			{
+				MyPC->ShowWidget(FarmFieldWidget);
+			}
+		}
+	}
+}
+
+void UCGameInstance::HideFarmFieldWidget()
+{
+	if (FarmFieldWidget)
+	{
+		FarmFieldWidget->ResetFarmField_Implementation();
+		if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+		{
+			ACPlayerController* MyPC = Cast<ACPlayerController>(PC);
+			if (MyPC)
+			{
+				MyPC->HideWidget(FarmFieldWidget);
 			}
 		}
 	}

@@ -9,6 +9,7 @@
 
 class UCWarningWidget;
 class UCDragIconWidget;
+class UCFarmFieldWidget;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDragIconShowing, bool, IsOn);
 
@@ -25,11 +26,6 @@ protected:
 	virtual void Init() override;
 
 public:
-	void ShowWarningWidget(FString Message);
-	UFUNCTION()
-	void HideWarningWidget();
-
-public:
 	// Get Crop Data
 	const TOptional<FCropData> GetCropDefaultData(FName InCropName);
 
@@ -42,13 +38,20 @@ public:
 	// Get Interact Asset Data
 	const TOptional<FInteractAssetData> GetInteractAssetData(EInteractObjectType InInteractType);
 	
+	// Widget - Warning
+	void ShowWarningWidget(FString Message);
+	UFUNCTION()
+	void HideWarningWidget();
+
+	// Widget - DragIcon
 	void StartDragging(UTexture2D* ItemIcon);
 	void StopDragging();
 	void UpdateDragIconPosition(FVector2D NewPosition);
 
-	UPROPERTY(BlueprintAssignable)
-	FDragIconShowing OnDragIconShowing;
-
+	// Widget - FarmField
+	void ShowFarmFieldWidget(ACFarmField* TargetField);
+	UFUNCTION()
+	void HideFarmFieldWidget();
 
 private:
 	void LoadCropDefaultTable();
@@ -58,6 +61,11 @@ private:
 	void LoadInteractAssetDataTable();
 
 public:
+	// Delegate
+	UPROPERTY(BlueprintAssignable)
+	FDragIconShowing OnDragIconShowing;
+
+protected:
 	// Crop Data Table
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable|Crop")
 	TSoftObjectPtr<UDataTable> CropDefaultTable;
@@ -76,17 +84,25 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable|Interact")
 	TSoftObjectPtr<UDataTable> InteractAssetDataTable;
 	
-	// Widget
+	// Widget - Warning
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|Warning")
 	TSubclassOf<UCWarningWidget> WarningWidgetClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|Warning")
 	UCWarningWidget* WarningWidget;
 
+	// Widget - DragIcon
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|Warning")
 	TSubclassOf<UCDragIconWidget> DragIconWidgetClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|Warning")
 	UCDragIconWidget* DragIconWidget;
 	bool IsDragging;
+
+	// Widget - FarmField
+	UPROPERTY(VisibleAnywhere, Category = "Widget")
+	TSubclassOf<UCFarmFieldWidget> FarmFieldWidgetClass;
+
+	UPROPERTY(VisibleAnywhere, Category = "Widget")
+	UCFarmFieldWidget* FarmFieldWidget;
 
 private:
 	// Data Map

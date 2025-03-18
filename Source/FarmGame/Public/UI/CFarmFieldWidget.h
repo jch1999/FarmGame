@@ -9,11 +9,15 @@ class UProgressBar;
 class UCStateDisplayWidget;
 class UCanvasPanel;
 class UImage;
+class UButton;
 
 UCLASS()
 class FARMGAME_API UCFarmFieldWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
+protected:
+	virtual void NativeOnInitialized() override;
 
 public:
 	UFUNCTION(BlueprintNativeEvent)
@@ -35,6 +39,7 @@ public:
 	void PositionStateDisplays();
 	void DrawConnectionLines();
 
+	UButton* GetPlantBtn() { return PlantBtn; }
 protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category="FarmField")
 	ACFarmField* FarmField;
@@ -58,4 +63,10 @@ protected:
 	UImage* Line_Nutrition;
 	UPROPERTY(meta = (BindWidget))
 	UImage* Line_Moisture;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* PlantBtn;
+
+	UPROPERTY(EditDefaultsOnly, Category="Display")
+	FVector2D Offset;
 };

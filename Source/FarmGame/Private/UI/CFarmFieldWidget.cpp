@@ -7,7 +7,9 @@
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Image.h"
+#include "Components/Button.h"
 #include "UI/CStateDisplayWidget.h"
+#include "Blueprint/SlateBlueprintLibrary.h"
 
 void UCFarmFieldWidget::SetFarmField_Implementation(ACFarmField* InFarmField)
 {
@@ -33,9 +35,9 @@ void UCFarmFieldWidget::SetFarmField_Implementation(ACFarmField* InFarmField)
 		FarmField->GetMoistureComp()->OnMoistureChanged.AddDynamic(this, &UCFarmFieldWidget::UpdateMoisture);
 		UpdateMoisture(0.0f, MoistureComp->GetCurrentMoisture(), MoistureComp->GetMaxMoisture());
 	}
+	Offset=FVector2D(100.0f, 80.0f);
 
 	PositionStateDisplays();
-	DrawConnectionLines();
 }
 
 void UCFarmFieldWidget::ResetFarmField_Implementation()
@@ -71,62 +73,91 @@ void UCFarmFieldWidget::UpdateMoisture_Implementation(float OldValue, float NewV
 	}
 }
 
+void UCFarmFieldWidget::NativeOnInitialized()
+{
+	Super::NativeOnInitialized();
+	
+}
+
 void UCFarmFieldWidget::PositionStateDisplays()
 {
-	if (!CanvasPanel || !CultivateState || !NutritionState || !MoistureState) return;
+	if (!CanvasPanel || !FarmField || !CultivateState || !NutritionState || !MoistureState) return;
 
-	FVector2D CenterPosition(150.0f, 150.0f);
-	FVector2D Offset(120.0f, 100.0f);
-
-	if (UCanvasPanelSlot* CultivateSlot = Cast<UCanvasPanelSlot>(CultivateState->Slot))
+	// FarmField의 화면 좌표를 가져옴
+	FVector2D ScreenPosition;
+	APlayerController* PC = GetOwningPlayer();
+	if (PC && PC->ProjectWorldLocationToScreen(FarmField->GetActorLocation(), ScreenPosition))
 	{
-		CultivateSlot->SetPosition(CenterPosition + FVector2D(-Offset.X, -Offset.Y));
-	}
+		// 중심을 FarmField의 화면 위치로 설정
+		FVector2D CenterPosition = ScreenPosition;
+		
+		if (UCanvasPanelSlot* PlantBtnSlot = Cast<UCanvasPanelSlot>(PlantBtn->Slot))
+		{
+			PlantBtnSlot->SetPosition(CenterPosition);
+		}
+		if (UCanvasPanelSlot* CultivateSlot = Cast<UCanvasPanelSlot>(CultivateState->Slot))
+		{
+			CultivateSlot->SetPosition(CenterPosition + FVector2D(-Offset.X, -Offset.Y));
+		}
 
-	if (UCanvasPanelSlot* NutritionSlot = Cast<UCanvasPanelSlot>(NutritionState->Slot))
-	{
-		NutritionSlot->SetPosition(CenterPosition + FVector2D(Offset.X, -Offset.Y));
-	}
+		if (UCanvasPanelSlot* NutritionSlot = Cast<UCanvasPanelSlot>(NutritionState->Slot))
+		{
+			NutritionSlot->SetPosition(CenterPosition + FVector2D(Offset.X, -Offset.Y));
+		}
 
-	if (UCanvasPanelSlot* MoistureSlot = Cast<UCanvasPanelSlot>(MoistureState->Slot))
-	{
-		MoistureSlot->SetPosition(CenterPosition + FVector2D(0, Offset.Y));
+		if (UCanvasPanelSlot* MoistureSlot = Cast<UCanvasPanelSlot>(MoistureState->Slot))
+		{
+			MoistureSlot->SetPosition(CenterPosition + FVector2D(0, Offset.Y));
+		}
+
+		// 선도 갱신
+		DrawConnectionLines();
 	}
 }
 
 void UCFarmFieldWidget::DrawConnectionLines()
 {
-	if (!Line_Cultivate || !Line_Nutrition || !Line_Moisture) return;
+	if (!FarmField || !Line_Cultivate || !Line_Nutrition || !Line_Moisture) return;
 
-	FVector2D LineSize(100.0f, 2.0f);
-
-	if (UCanvasPanelSlot* CultivateLineSlot = Cast<UCanvasPanelSlot>(Line_Cultivate->Slot))
+	FVector2D CenterPosition;
+	APlayerController* PC = GetOwningPlayer();
+	if (PC && PC->ProjectWorldLocationToScreen(FarmField->GetActorLocation(), CenterPosition))
 	{
-		CultivateLineSlot->SetSize(LineSize);
-		CultivateLineSlot->SetPosition(FVector2D(110.0f, 100.0f));
+		FVector2D CultivatePos, NutritionPos, MoisturePos, dummy;
+		auto geometry = CultivateState->GetCachedGeometry();
+		USlateBlueprintLibrary::AbsoluteToViewport(GetWorld(), geometry.GetAbsolutePosition(), dummy, CultivatePos); 
+		geometry = NutritionState->GetCachedGeometry();
+		USlateBlueprintLibrary::AbsoluteToViewport(GetWorld(), geometry.GetAbsolutePosition(), dummy, NutritionPos);
+		geometry = MoistureState->GetCachedGeometry();
+		USlateBlueprintLibrary::AbsoluteToViewport(GetWorld(), geometry.GetAbsolutePosition(), dummy, MoisturePos);
 
-		FWidgetTransform Transform;
-		Transform.Angle = -45.0f;
-		Line_Cultivate->SetRenderTransform(Transform);
-	}
+		FVector2D LineSize(100.0f, 2.0f);
 
-	if (UCanvasPanelSlot* NutritionLineSlot = Cast<UCanvasPanelSlot>(Line_Nutrition->Slot))
-	{
-		NutritionLineSlot->SetSize(LineSize);
-		NutritionLineSlot->SetPosition(FVector2D(190.0f, 100.0f));
-		
-		FWidgetTransform Transform;
-		Transform.Angle = 45.0f;
-		Line_Cultivate->SetRenderTransform(Transform);
-	}
+		if (UCanvasPanelSlot* CultivateLineSlot = Cast<UCanvasPanelSlot>(Line_Cultivate->Slot))
+		{
+			CultivateLineSlot->SetSize(LineSize);
+			CultivateLineSlot->SetPosition((CenterPosition + CultivatePos) * 0.5f); // 중앙 위치
+			FWidgetTransform Transform;
+			Transform.Angle = FMath::Atan2(CultivatePos.Y - CenterPosition.Y, CultivatePos.X - CenterPosition.X) * (180.0f / PI);
+			Line_Cultivate->SetRenderTransform(Transform);
+		}
 
-	if (UCanvasPanelSlot* MoistureLineSlot = Cast<UCanvasPanelSlot>(Line_Moisture->Slot))
-	{
-		MoistureLineSlot->SetSize(LineSize);
-		MoistureLineSlot->SetPosition(FVector2D(150.0f, 180.0f));
-		
-		FWidgetTransform Transform;
-		Transform.Angle = 90.0f;
-		Line_Moisture->SetRenderTransform(Transform);
+		if (UCanvasPanelSlot* NutritionLineSlot = Cast<UCanvasPanelSlot>(Line_Nutrition->Slot))
+		{
+			NutritionLineSlot->SetSize(LineSize);
+			NutritionLineSlot->SetPosition((CenterPosition + NutritionPos) * 0.5f);
+			FWidgetTransform Transform;
+			Transform.Angle = FMath::Atan2(NutritionPos.Y - CenterPosition.Y, NutritionPos.X - CenterPosition.X) * (180.0f / PI);
+			Line_Nutrition->SetRenderTransform(Transform);
+		}
+
+		if (UCanvasPanelSlot* MoistureLineSlot = Cast<UCanvasPanelSlot>(Line_Moisture->Slot))
+		{
+			MoistureLineSlot->SetSize(LineSize);
+			MoistureLineSlot->SetPosition((CenterPosition + MoisturePos) * 0.5f);
+			FWidgetTransform Transform;
+			Transform.Angle = FMath::Atan2(MoisturePos.Y - CenterPosition.Y, MoisturePos.X - CenterPosition.X) * (180.0f / PI);
+			Line_Moisture->SetRenderTransform(Transform);
+		}
 	}
 }
