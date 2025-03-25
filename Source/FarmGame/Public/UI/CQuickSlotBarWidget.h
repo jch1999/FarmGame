@@ -22,6 +22,8 @@ public:
 	UFUNCTION()
 	void OnQuickSlotSelected(int32 InIndex);
 
+	const FInventorySlot& GetCurrentSlotData();
+	const UCQuickSlotWidget* const GetCurrentSlot();
 private:
 	UFUNCTION()
 	void SwapSlotData(int32 InIndex1, int32 InIndex2);

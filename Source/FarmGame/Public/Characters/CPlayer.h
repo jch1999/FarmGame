@@ -14,6 +14,7 @@ class UCOptionComponent;
 class USphereComponent;
 class UCInteractComponent;
 class ICItemInterface;
+class UAnimMontage;
 
 UCLASS()
 class FARMGAME_API ACPlayer : public ACharacter, public ICInterface_Interactable
@@ -26,7 +27,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 public:
@@ -52,19 +53,16 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface|Custom")
 	void ActionInteract();
-	
-	// Camera Move
-	void MoveCameraToLocation(const FVector& TargetLocation, const FRotator& TargetRotation);
-	void RestoreCamera();
 
 	// Get Components
 	FORCEINLINE UCameraComponent* GetCameraComponent() const { return CameraComp; }
 	FORCEINLINE UCOptionComponent* GetOptionComponent() const { return OptionComp; }
-	FORCEINLINE UCInteractComponent* GetInteractComponent() const  { return InteractComp; }
+	FORCEINLINE UCInteractComponent* GetInteractComponent() const { return InteractComp; }
 	FORCEINLINE UCInventoryComponent* GetInventoryComponent() const { return InventoryComp; }
-	
-private:
-	void UpdateCameraLerp();
+
+	// Animation
+	void StartPlantingAnimation();
+	void OnPlantingAnimationFinished();
 
 protected:
 	// Components
@@ -94,25 +92,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
 	EInteractObjectType InteractType;
 
-	// Temp Inventory
-	UPROPERTY(VisibleAnywhere, Category="Item")
-	TArray<TScriptInterface<ICItemInterface>> ItemContainer;
-
-	UPROPERTY(VisibleAnywhere, Category = "Item")
-	int32 ItemContainerSize;
-
-	UPROPERTY(VisibleAnywhere, Category = "Item")
-	int32 ItemIndex;
-
 private:
-	FVector OriginalCameraRelativeLocation;
-	FRotator OriginalCameraRelativeRotation; 
-	
-	FTimerHandle CameraLerpTimerHandle;
-	float CameraLerpAlpha = 0.0f;
+	// Animation
+	UPROPERTY(EditDefaultsOnly,Category="Animation")
+	UAnimMontage* PlantAnim;
 
-	FVector CameraStartLocation;
-	FRotator CameraStartRotation;
-	FVector CameraTargetLocation;
-	FRotator CameraTargetRotation;
+
 };

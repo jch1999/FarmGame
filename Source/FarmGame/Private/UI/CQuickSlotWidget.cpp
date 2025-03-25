@@ -42,6 +42,7 @@ void UCQuickSlotWidget::SetParentWidget(UUserWidget* InParent)
 	}
 }
 
+
 bool UCQuickSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
 	bool bHandled = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);

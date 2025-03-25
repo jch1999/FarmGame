@@ -1,6 +1,6 @@
 #include "UI/CSlotDragDropOperation.h"
 #include "UI/CSlotWidget.h"
-#include "CGameInstance.h"
+#include "Controller/CPlayerController.h"
 #include "Components/Image.h"
 
 void UCSlotDragDropOperation::Initialize(UCSlotWidget* InSourceSlot)
@@ -19,14 +19,11 @@ void UCSlotDragDropOperation::DragStart(UDragDropOperation* InOperation)
 		SourceSlot->ItemIconImage->SetOpacity(0.3f); 
 		if (UUserWidget* OwningWidget = SourceSlot->GetTypedOuter<UUserWidget>())
 		{
-			if (UWorld* World = OwningWidget->GetWorld())
+			if (APlayerController* PC = OwningWidget->GetOwningPlayer<APlayerController>())
 			{
-				if (UGameInstance* GI = World->GetGameInstance())
+				if (ACPlayerController* MyPC = Cast<ACPlayerController>(PC))
 				{
-					if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
-					{
-						MyGI->StartDragging(SourceSlot->CurrentSlotData->ItemIcon);
-					}
+					MyPC->StartDragging(SourceSlot->CurrentSlotData->ItemIcon);
 				}
 			}
 		}
@@ -43,14 +40,11 @@ void UCSlotDragDropOperation::DragEnd(UDragDropOperation* InOperation)
 
 		if (UUserWidget* OwningWidget = SourceSlot->GetTypedOuter<UUserWidget>())
 		{
-			if (UWorld* World = OwningWidget->GetWorld())
+			if (APlayerController* PC = OwningWidget->GetOwningPlayer<APlayerController>())
 			{
-				if (UGameInstance* GI = World->GetGameInstance())
+				if (ACPlayerController* MyPC = Cast<ACPlayerController>(PC))
 				{
-					if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
-					{
-						MyGI->StopDragging();
-					}
+					MyPC->StopDragging();
 				}
 			}
 		}

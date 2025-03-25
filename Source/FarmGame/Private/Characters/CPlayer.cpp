@@ -63,10 +63,6 @@ void ACPlayer::BeginPlay()
 	Super::BeginPlay();
 	
 	SetInteractable();
-	ItemContainer.SetNum(ItemContainerSize);
-
-	OriginalCameraRelativeLocation = GetActorRotation().UnrotateVector(CameraComp->GetComponentLocation() - GetActorLocation());
-	OriginalCameraRelativeRotation = CameraComp->GetComponentRotation() - GetActorRotation();
 }
 
 void ACPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -105,42 +101,23 @@ void ACPlayer::ActionInteract()
 	InteractComp->DoActionInteract();
 }
 
-void ACPlayer::MoveCameraToLocation(const FVector& TargetLocation, const FRotator& TargetRotation)
+void ACPlayer::StartPlantingAnimation()
 {
-	CameraStartLocation = CameraComp->GetComponentLocation();
-	CameraStartRotation = CameraComp->GetComponentRotation();
-	CameraTargetLocation = TargetLocation;
-	CameraTargetRotation = TargetRotation;
-	CameraLerpAlpha = 0.0f;
-
-	GetWorld()->GetTimerManager().SetTimer(CameraLerpTimerHandle, this, &ACPlayer::UpdateCameraLerp, 0.01f, true);
-}
-
-void ACPlayer::RestoreCamera()
-{
-	CameraStartLocation = CameraComp->GetComponentLocation();
-	CameraStartRotation = CameraComp->GetComponentRotation();
-	CameraTargetLocation = GetActorLocation() + GetActorRotation().RotateVector(OriginalCameraRelativeLocation);
-	CameraTargetRotation = GetActorRotation() + OriginalCameraRelativeRotation;
-	CameraLerpAlpha = 0.0f;
-
-	GetWorld()->GetTimerManager().SetTimer(CameraLerpTimerHandle, this, &ACPlayer::UpdateCameraLerp, 0.01f, true);
-}
-
-void ACPlayer::UpdateCameraLerp()
-{
-	CameraLerpAlpha += 0.05f;
-	if (CameraLerpAlpha >= 1.0f)
+	if (PlantAnim)
 	{
-		CameraLerpAlpha = 1.0f;
-		GetWorld()->GetTimerManager().ClearTimer(CameraLerpTimerHandle);
+		PlayAnimMontage(PlantAnim);
+
+		float MontageDuration = PlantAnim->GetPlayLength();
+		FTimerHandle PlantingAnimTimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(PlantingAnimTimerHandle, this, &ACPlayer::OnPlantingAnimationFinished, MontageDuration, false);
 	}
-
-	FVector NewLocation = FMath::Lerp(CameraStartLocation, CameraTargetLocation, CameraLerpAlpha);
-	FRotator NewRotation = FMath::Lerp(CameraStartRotation, CameraTargetRotation, CameraLerpAlpha);
-
-	CameraComp->SetWorldLocationAndRotation(NewLocation, NewRotation);
 }
+
+void ACPlayer::OnPlantingAnimationFinished()
+{
+	// if(InteractComp->)
+}
+
 
 bool ACPlayer::OnHovered()
 {

@@ -1,13 +1,16 @@
 #include "Components/CInventoryComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "CGameInstance.h"
+#include "Characters/CPlayer.h"
 #include "Global.h"
 #include "UI/CInventoryWidget.h"
 #include "UI/CTitleBarWidget.h"
 #include "Components/Button.h"
 #include "Item/CItemBase.h"
+#include "Item/CItem_Consumable.h"
 #include "Controller/CPlayerController.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
+#include "Camera/CameraComponent.h"
 
 
 UCInventoryComponent::UCInventoryComponent()
@@ -31,30 +34,32 @@ void UCInventoryComponent::BeginPlay()
 
 	CreateInventoryWidget();
 
-	if (UGameInstance* GI = GetWorld()->GetGameInstance())
+	OwnerCharacter = Cast<ACPlayer>(GetOwner());
+
+	if (AController* Controller = OwnerCharacter->GetController())
 	{
-		if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
+		if (ACPlayerController* MyPC = Cast<ACPlayerController>(Controller))
 		{
-			MyGI->OnDragIconShowing.AddDynamic(this, &UCInventoryComponent::ToggleTick);
+			MyPC->OnDragIconShowing.AddDynamic(this, &UCInventoryComponent::ToggleTick);
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("Can't get UCGameIsntace"));
+			UE_LOG(LogTemp, Error, TEXT("Can't get PlayerController"));
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Can't get GameIsntace"));
+		UE_LOG(LogTemp, Error, TEXT("Can't get PlayerController"));
 	}
 }
 
 void UCInventoryComponent::TickComponent(float DelatTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	if (UGameInstance* GI = GetWorld()->GetGameInstance())
+	if (AController* Controller = OwnerCharacter->GetController())
 	{
-		if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
+		if (ACPlayerController* MyPC = Cast<ACPlayerController>(Controller))
 		{
-			MyGI->UpdateDragIconPosition(UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld()));
+			MyPC->UpdateDragIconPosition(UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld()));
 		}
 	}
 }
@@ -222,7 +227,15 @@ bool UCInventoryComponent::AddToNewSlot(ACItemBase* InItemActor, const FItemData
 			Slot.MaxStackSize = InItemData.MaxStackSize;
 			Slot.MaxDurability = InItemData.MaxDurability;
 			Slot.CurrentDurability = InItemActor->GetCurrentDruability();
-
+			Slot.ItemClass = InItemActor->GetClass();
+			if (ACItem_Consumable* Consumable = Cast<ACItem_Consumable>(InItemActor))
+			{
+				Slot.ConsumableType = Consumable->ConsumableType;
+			}
+			else
+			{
+				Slot.ConsumableType = EConsumableType::None;
+			}
 			InItemActor->ReduceAvailableCount(AmountToAdd);
 			ChangedIndexes.AddUnique(i);
 
@@ -265,12 +278,11 @@ void UCInventoryComponent::ToggleTick(bool IsTickEnable)
 
 void UCInventoryComponent::ShowWarningWidget(FString Message)
 {
-	UGameInstance* GameInstance = GetWorld()->GetGameInstance();
-	if (GameInstance)
+	if (AController* Controller = OwnerCharacter->GetController())
 	{
-		if (UCGameInstance* MyGameInstance = Cast<UCGameInstance>(GameInstance))
+		if (ACPlayerController* MyPC = Cast<ACPlayerController>(Controller))
 		{
-			MyGameInstance->ShowWarningWidget(Message);
+			MyPC->ShowWarningWidget(Message);
 		}
 	}
 }
@@ -306,6 +318,25 @@ void UCInventoryComponent::SwapSlot(int32& SlotIndex1, int32& SlotIndex2)
 
 void UCInventoryComponent::UseItem(int32& SlotIndex)
 {
+}
+
+void UCInventoryComponent::DropItem(int32 InIndex)
+{
+	// 버리는 아이템 생성
+	if (InventorySlots.IsValidIndex(InIndex))
+	{
+		TSubclassOf<ACItemBase> ItemClass = InventorySlots[InIndex].ItemClass;
+		FTransform SpawnTransform = GetOwner()->GetTransform();
+		if (UCameraComponent* CameraComp = OwnerCharacter->GetCameraComponent())
+		{
+			FVector ForwardVec = CameraComp->GetForwardVector();
+			SpawnTransform.SetLocation(SpawnTransform.GetLocation() + ForwardVec * 50.0f);
+		}
+		ACItemBase* Item = GetWorld()->SpawnActorDeferred<ACItemBase>(ItemClass, SpawnTransform);
+		Item->FinishSpawning(SpawnTransform);
+
+		ClearSlot(InIndex);
+	}
 }
 
 void UCInventoryComponent::ClearSlot(int32 InIndex)

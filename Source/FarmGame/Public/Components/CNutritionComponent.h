@@ -80,6 +80,6 @@ protected:
 	FVector2D NutritionSafeRange;
 
 private:
-	FTimerHandle NutiritionReduceTimer;
+	FTimerHandle NutritionReduceTimer;
 	ENutritionState NutritionState;
 };

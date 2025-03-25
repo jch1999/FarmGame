@@ -2,7 +2,7 @@
 #include "Components/TextBlock.h"
 #include "UI/CTitleBarWidget.h"
 #include "Components/Button.h"
-#include "CGameInstance.h"
+#include "Controller/CPlayerController.h"
 
 bool UCWarningWidget::Initialize()
 {
@@ -14,11 +14,11 @@ bool UCWarningWidget::Initialize()
         TitleBarWidget->SetParentWidget(this);
         TitleBarWidget->SetTitle("Warning!", FLinearColor::Red);
 
-        if (UGameInstance* GI = GetGameInstance())
+        if (APlayerController* PC = GetOwningPlayer<APlayerController>())
         {
-            if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
+            if (ACPlayerController* MyPC = Cast<ACPlayerController>(PC))
             {
-                TitleBarWidget->CloseButton->OnClicked.AddDynamic(MyGI, &UCGameInstance::HideWarningWidget);
+                TitleBarWidget->CloseButton->OnClicked.AddDynamic(MyPC, &ACPlayerController::HideWarningWidget);
             }
         }
     }

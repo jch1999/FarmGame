@@ -6,11 +6,14 @@
 #include "Components/CNutritionComponent.h"
 #include "Components/CHealthComponent.h"
 #include "Components/BoxComponent.h"
+#include "Camera/CameraComponent.h"
 #include "UI/CCropWidget.h"
 #include "Item/CItem_Crop.h"
 #include "CGameInstance.h"
 #include "Item/CItem_Crop.h"
 #include "Particles/ParticleSystem.h"
+#include "Controller/CPlayerController.h"
+#include "GameFramework/Character.h"
 
 DEFINE_LOG_CATEGORY(LogCrop);
 
@@ -25,6 +28,9 @@ ACBase_Crop::ACBase_Crop()
 	// Box Component
 	CHelpers::CreateSceneComponent(this, &BoxComp, "BoxComp", RootComponent);
 
+	// Camera Component
+	CHelpers::CreateSceneComponent(this, &CameraComp, "CameraComp", RootComponent);
+
 	// Mosisture & Nutrition
 	CHelpers::CreateActorComponent(this, &MoistureComp, "MoistureComp");
 	CHelpers::CreateActorComponent(this, &NutritionComp, "NutritionComp");
@@ -34,6 +40,10 @@ ACBase_Crop::ACBase_Crop()
 	BoxComp->SetBoxExtent(FVector(64.0f, 64.0f, 96.0f));
 	BoxComp->SetRelativeLocation(FVector(0.0f, 0.0f, 96.0f));
 	BoxComp->SetCollisionProfileName(TEXT("ActionInteractObject"));
+
+	// Set Camera Component
+	CameraComp->SetRelativeLocation(FVector(-135.0f, 0.0f, 200.0f));
+	CameraComp->SetRelativeRotation(FQuat(FRotator(-30.0f, 0.0f, 0.0f)));
 
 	// Property
 	CurrentGrowLevel = 0;
@@ -90,7 +100,23 @@ void ACBase_Crop::Interact(AActor* OtherActor)
 	// ForTest
 	else
 	{
-		GrowUp();
+		if (ACharacter* Character = Cast<ACharacter>(OtherActor))
+		{
+			float WidgetDelay = 0.0f;
+			if (AController* Controller = Character->GetController())
+			{
+				if (ACPlayerController* MyPC = Cast<ACPlayerController>(Controller))
+				{
+					CachedPlayerController = MyPC;
+					CachedPlayerController->ShowCropWidget(this);
+					WidgetDelay = CachedPlayerController->GetCameraMoveTime();
+
+					FTimerHandle TimerHandle;
+					GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ACBase_Crop::ShowCropWidget, WidgetDelay, false);
+				}
+			}
+		}
+		//GrowUp();
 	}
 
 	// SetUnInteractable();
@@ -305,6 +331,14 @@ void ACBase_Crop::ChangeQualityByHealth(float CureentHealth, float PrevHealth, f
 	}
 }
 
+void ACBase_Crop::SetFarmField(ACFarmField* InFarmField)
+{
+	if (InFarmField)
+	{
+		OwnerField = InFarmField;
+	}
+}
+
 void ACBase_Crop::AutoGrow()
 {
 	UGameInstance* Instance = GetGameInstance();
@@ -355,11 +389,14 @@ void ACBase_Crop::AutoGrow()
 				// Calc Weather, Moisture, Nutrition Effect
 
 				// 성장 값 증가
+				float PrevValue = CurrentGrowValue;
 				CurrentGrowValue += GrowUpValue;
 				if (CurrentGrowValue > GrowthData.TargetGrowthValue)
 				{
 					GrowUp();
+					TargetGrowthValue = GrowthData.TargetGrowthValue;
 				}
+				OnGrowthChanged.Broadcast(PrevValue, CurrentGrowValue, TargetGrowthValue);
 			}
 			else
 			{
@@ -411,6 +448,14 @@ void ACBase_Crop::SetCropDatas()
 	else
 	{
 		UE_LOG(LogCrop, Error, TEXT("Can't get GameInstance. %s : "), *CropName.ToString());
+	}
+}
+
+void ACBase_Crop::ShowCropWidget()
+{
+	if (CachedPlayerController)
+	{
+		CachedPlayerController->ShowCropWidget(this);
 	}
 }
 

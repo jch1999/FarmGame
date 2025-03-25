@@ -12,9 +12,11 @@ DECLARE_LOG_CATEGORY_EXTERN(LogCrop, Log, All);
 class UCMoistureComponent;
 class UCNutritionComponent;
 class UCHealthComponent;
+class UCameraComponent;
 class ACFarmField;
 class UStaticMesh;
 class ACItem_Crop;
+class ACPlayerController;
 
 UENUM(BlueprintType)
 enum class ECropGrowStage :uint8
@@ -93,6 +95,8 @@ public:
 
 class UBoxComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FGrowthChanged, float, OldValue, float, NewValue, float, MaxValue);
+
 UCLASS()
 class FARMGAME_API ACBase_Crop : public AActor, public ICInterface_Interactable
 {
@@ -170,9 +174,19 @@ public:
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE UCMoistureComponent* const GetMoistureComp() { return MoistureComp; }
 
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE float GetCurretnGrowth() { return CurrentGrowValue; }
+
+	void SetFarmField(ACFarmField* InFarmField);
+
 private:
 	void AutoGrow();
 	void SetCropDatas();
+	void ShowCropWidget();
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FGrowthChanged OnGrowthChanged;
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Component")
@@ -193,6 +207,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	UBoxComponent* BoxComp;
 
+	UPROPERTY(VisibleAnywhere, Category = "Component")
+	UCameraComponent* CameraComp;
+
 	// Effect
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
 	UParticleSystem* GrowthParticleEffect;  // 성장 파티클 효과
@@ -209,6 +226,8 @@ protected:
 	int32 CurrentGrowLevel;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crop|Defualt")
 	float CurrentGrowValue;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crop|Defualt")
+	float TargetGrowthValue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|Time")
 	float UpdateTime;
@@ -227,6 +246,8 @@ protected:
 
 private:
 	FTimerHandle AutoGrowTimer;
+	UPROPERTY()
 	ACFarmField* OwnerField;
-
+	UPROPERTY()
+	ACPlayerController* CachedPlayerController;
 };

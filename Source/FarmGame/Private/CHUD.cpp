@@ -1,7 +1,7 @@
 #include "CHUD.h"
 #include "UI/CHUDWidget.h"
 
-void ACHUD::CreateHUD()
+void ACHUD::CreateHUD(APlayerController* PC)
 {
 	if (UIHudWidget != nullptr) return;
 
@@ -11,7 +11,7 @@ void ACHUD::CreateHUD()
 		return;
 	}
 
-	UIHudWidget = CreateWidget<UCHUDWidget>(GetWorld(), UIHudWidgetClass);
+	UIHudWidget = CreateWidget<UCHUDWidget>(PC, UIHudWidgetClass);
 	UIHudWidget->AddToViewport();
 	UE_LOG(LogTemp, Warning, TEXT("UIHUDClass Created!"));
 }

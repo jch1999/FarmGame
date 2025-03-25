@@ -10,6 +10,10 @@
 #include "Components/Button.h"
 #include "UI/CStateDisplayWidget.h"
 #include "Blueprint/SlateBlueprintLibrary.h"
+#include "CHUD.h"
+#include "UI/CHUDWidget.h"
+#include "UI/CQuickSlotBarWidget.h"
+#include "UI/CQuickSlotWidget.h"
 
 void UCFarmFieldWidget::SetFarmField_Implementation(ACFarmField* InFarmField)
 {
@@ -32,7 +36,7 @@ void UCFarmFieldWidget::SetFarmField_Implementation(ACFarmField* InFarmField)
 	UCMoistureComponent* MoistureComp = FarmField->GetMoistureComp();
 	if (MoistureComp)
 	{
-		FarmField->GetMoistureComp()->OnMoistureChanged.AddDynamic(this, &UCFarmFieldWidget::UpdateMoisture);
+		MoistureComp->OnMoistureChanged.AddDynamic(this, &UCFarmFieldWidget::UpdateMoisture);
 		UpdateMoisture(0.0f, MoistureComp->GetCurrentMoisture(), MoistureComp->GetMaxMoisture());
 	}
 	Offset=FVector2D(100.0f, 80.0f);
@@ -42,11 +46,14 @@ void UCFarmFieldWidget::SetFarmField_Implementation(ACFarmField* InFarmField)
 
 void UCFarmFieldWidget::ResetFarmField_Implementation()
 {
-	FarmField->GetCultivationComp()->OnCultivationChanged.RemoveDynamic(this, &UCFarmFieldWidget::UpdateCultivation);
-	FarmField->GetNutritionComp()->OnNutritionChanged.RemoveDynamic(this, &UCFarmFieldWidget::UpdateNutrition);
-	FarmField->GetMoistureComp()->OnMoistureChanged.RemoveDynamic(this, &UCFarmFieldWidget::UpdateMoisture);
+	if (FarmField)
+	{
+		FarmField->GetCultivationComp()->OnCultivationChanged.RemoveDynamic(this, &UCFarmFieldWidget::UpdateCultivation);
+		FarmField->GetNutritionComp()->OnNutritionChanged.RemoveDynamic(this, &UCFarmFieldWidget::UpdateNutrition);
+		FarmField->GetMoistureComp()->OnMoistureChanged.RemoveDynamic(this, &UCFarmFieldWidget::UpdateMoisture);
 
-	FarmField = nullptr;
+		FarmField = nullptr;
+	}
 }
 
 void UCFarmFieldWidget::UpdateCultivation_Implementation(float OldValue, float NewValue, float MaxValue)
@@ -77,6 +84,35 @@ void UCFarmFieldWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 	
+}
+
+void UCFarmFieldWidget::CheckPlantBtnActive(int32 InIndex)
+{
+	if (FarmField->GetCrop())
+	{
+		PlantBtn->SetIsEnabled(false);
+		return;
+	}
+
+	if (APlayerController* PC = GetOwningPlayer())
+	{
+		if (AHUD* HUD=PC->GetHUD())
+		{
+			if (ACHUD* MyHud = Cast<ACHUD>(HUD))
+			{
+				if (UCHUDWidget* HudWidget = MyHud->GetHUD())
+				{
+					if (HudWidget->GetQuickSlotBar()->GetCurrentSlotData().ConsumableType == EConsumableType::Seed)
+					{
+						PlantBtn->SetIsEnabled(true);
+						return;
+					}
+				}
+			}
+		}
+	}
+
+	PlantBtn->SetIsEnabled(false);
 }
 
 void UCFarmFieldWidget::PositionStateDisplays()

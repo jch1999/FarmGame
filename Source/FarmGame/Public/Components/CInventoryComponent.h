@@ -9,6 +9,7 @@ class UUserWidget;
 class UCInventoryWidget;
 class UCQuickSlotBarWidget;
 class ACItemBase;
+class ACPlayer;
 
 USTRUCT(BlueprintType)
 struct FInventorySlot
@@ -34,9 +35,15 @@ struct FInventorySlot
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString Description;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EConsumableType ConsumableType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<ACItemBase> ItemClass;
 
 	FInventorySlot()
-		: ItemID(EItemID::None), CurrentStack(0), MaxStackSize(1), MaxDurability(0.0f), CurrentDurability(0.0f), ItemIcon(nullptr),Description() {
+		: ItemID(EItemID::None), CurrentStack(0), MaxStackSize(1), MaxDurability(0.0f), CurrentDurability(0.0f), ItemIcon(nullptr),Description(),
+		ConsumableType(EConsumableType::None), ItemClass(nullptr){
 	}
 };
 
@@ -70,6 +77,7 @@ public:
 
 	void SwapSlot(int32& SlotIndex1, int32& SlotIndex2);
 	void UseItem(int32& SlotIndex);
+	void DropItem(int32 InIndex);;
 	void ClearSlot(int32 InIndex);
 	FORCEINLINE const TArray<FInventorySlot>& GetSlotDatas() { return InventorySlots; }
 	TWeakPtr<FInventorySlot> GetSlotWeak(int32 Index);
@@ -111,6 +119,9 @@ public:
 	FMoneyChanged OnMoneyUpdated;
 
 protected:
+	UPROPERTY()
+	ACPlayer* OwnerCharacter;
+
 	UPROPERTY(VisibleAnywhere, Category = "Inventory")
 	TArray<FInventorySlot> InventorySlots;
 

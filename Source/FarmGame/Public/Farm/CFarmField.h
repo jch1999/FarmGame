@@ -11,8 +11,10 @@ class UCCultivationComponent;
 class UWidgetComponent;
 class UStaticMeshComponent;
 class UBoxComponent;
+class UCameraComponent;
 class ACBase_Crop;
 class ACPlayer;
+class ACPlayerController;
 
 UCLASS()
 class FARMGAME_API ACFarmField : public AActor, public ICInterface_Interactable
@@ -55,8 +57,12 @@ public:
 
 
 	// Crop
+	ACBase_Crop* GetCrop() { return Crop; }
 	UFUNCTION(BlueprintCallable)
 	bool PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, const FTransform& InTM);
+
+	void FarmFieldOn();
+	void FarmFieldOff();
 
 	// Component
 	UFUNCTION(BlueprintPure)
@@ -67,6 +73,9 @@ public:
 	
 	UFUNCTION(BlueprintPure)
 	UCNutritionComponent* const GetNutritionComp() { return NutritionComp; }
+
+private:
+	void ShowFarmFieldWidget();
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Component")
@@ -83,14 +92,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 	UBoxComponent* BoxComp;
-	
-	// Camera Move
-	UPROPERTY(EditAnywhere, Category = "Camera")
-	FVector CameraTargetLocation;
 
-	UPROPERTY(EditAnywhere, Category = "Camera")
-	FRotator CameraTargetRotation;
-
+	UPROPERTY(VisibleAnywhere, Category = "Component")
+	UCameraComponent* CameraComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Crop")
 	ACBase_Crop* Crop;
@@ -102,5 +106,8 @@ protected:
 	EInteractObjectType InteractType;
 
 private:
-	UMaterialInstanceDynamic* FieldMaterial;
+	UMaterialInstanceDynamic* FieldMaterial; 
+
+	UPROPERTY()
+	ACPlayerController* CachedPlayerController;
 };

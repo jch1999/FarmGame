@@ -8,8 +8,15 @@
 
 class UInputMappingContext;
 class UInputAction;
+class ACFarmField;
+class ACBase_Crop;
+class UCWarningWidget;
+class UCDragIconWidget;
+class UCFarmFieldWidget;
+class UCCropWidget;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuickSlotSelected, int32, QuickSlotIndex);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDragIconShowing, bool, IsOn);
 
 UCLASS()
 class FARMGAME_API ACPlayerController : public APlayerController
@@ -44,6 +51,32 @@ public:
 	void SetGameInputMode();
 
 	void OnQuickSlotSelected(int32 InIndex);
+	
+	// Widget
+	// Widget - Warning
+	void ShowWarningWidget(FString Message);
+	UFUNCTION()
+	void HideWarningWidget();
+
+	// Widget - DragIcon
+	void StartDragging(UTexture2D* ItemIcon);
+	void StopDragging();
+	void UpdateDragIconPosition(FVector2D NewPosition);
+
+	// Widget - FarmField
+	void ShowFarmFieldWidget(ACFarmField* TargetField);
+	UFUNCTION()
+	void HideFarmFieldWidget();
+
+	// Widget - Crop
+	void ShowCropWidget(ACBase_Crop* TargetField);
+	UFUNCTION()
+	void HideCropWidget();
+
+	// Switch Camera
+	void SwitchCamera(AActor* TargetCamera);
+	void ResetCamera();
+	float GetCameraMoveTime() { return CameraMoveTime; }
 
 private:
 	void RebindAction();
@@ -56,7 +89,10 @@ private:
 
 public:
 	UPROPERTY(BlueprintAssignable)
-	FOnQuickSlotSelected OnQuickSlotSelectedDelegate;
+	FOnQuickSlotSelected OnQuickSlotSelectedDelegate; 
+	
+	UPROPERTY(BlueprintAssignable)
+	FDragIconShowing OnDragIconShowing;
 
 protected:
 	// Input
@@ -99,6 +135,37 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input|CommonAction")
 	TArray<UInputAction*> TestActions;
 
+	// Widget
 	UPROPERTY(VisibleAnywhere, Category="Widget")
 	int32 OpenWidgetCnt;
+
+	// Widget - Warning
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|Warning")
+	TSubclassOf<UCWarningWidget> WarningWidgetClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|Warning")
+	UCWarningWidget* WarningWidget;
+
+	// Widget - DragIcon
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|DragIcon")
+	TSubclassOf<UCDragIconWidget> DragIconWidgetClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|DragIcon")
+	UCDragIconWidget* DragIconWidget;
+	bool IsDragging;
+
+	// Widget - FarmField
+	UPROPERTY(VisibleAnywhere, Category = "Widget|FarmField")
+	TSubclassOf<UCFarmFieldWidget> FarmFieldWidgetClass;
+
+	UPROPERTY(VisibleAnywhere, Category = "Widget|FarmField")
+	UCFarmFieldWidget* FarmFieldWidget;
+
+	// Widget - Crop
+	UPROPERTY(VisibleAnywhere, Category = "Widget|Crop")
+	TSubclassOf<UCCropWidget> CropWidgetClass;
+
+	UPROPERTY(VisibleAnywhere, Category = "Widget|Crop")
+	UCCropWidget* CropWidget;
+
+	UPROPERTY(VisibleAnywhere, Category = "Camera")
+	float CameraMoveTime;
 };

@@ -4,6 +4,7 @@
 #include "Components/CNutritionComponent.h"
 #include "Components/CCultivationComponent.h"
 #include "Components/BoxComponent.h"
+#include "Camera/CameraComponent.h"
 #include "Crops/CBase_Crop.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -20,6 +21,7 @@ ACFarmField::ACFarmField()
 	CHelpers::CreateActorComponent(this, &NutritionComp, "NutritionComp");
 	CHelpers::CreateActorComponent(this, &CultivationComp, "CultivationComp");
 	CHelpers::CreateSceneComponent(this, &BoxComp, "BoxComp",RootComponent);
+	CHelpers::CreateSceneComponent(this, &CameraComp, "CameraComp", RootComponent);
 
 	// Set Mesh Component
 	UStaticMesh* MeshAsset;
@@ -34,13 +36,15 @@ ACFarmField::ACFarmField()
 	BoxComp->SetRelativeLocation(FVector(0.0f, 0.0f, 96.0f));
 	BoxComp->SetCollisionProfileName(TEXT("ActionInteractObject"));
 
+	// Set Camera Component
+	CameraComp->SetRelativeLocation(FVector(-135.0f, 0.0f, 200.0f));
+	CameraComp->SetRelativeRotation(FQuat(FRotator(-30.0f, 0.0f, 0.0f)));
+
 	SetInteractable();
 	SetType(EInteractObjectType::FarmField);
 
 	PrimaryActorTick.bCanEverTick = false;
 
-	CameraTargetLocation = FVector(-135.0f, 0.0f, 200.0f);
-	CameraTargetRotation = FRotator(-30.0f, 0.0f, 0.0f);
 }
 
 void ACFarmField::BeginPlay()
@@ -53,7 +57,7 @@ void ACFarmField::BeginPlay()
 	MoistureComp->SetSafeRange(FVector2D(0.0f, 100.0f));
 
 	NutritionComp->AddNutrition(50.0f);
-	NutritionComp->SetAutoReduceAmount(0.05f);
+	NutritionComp->SetAutoReduceAmount(0.0f);
 	NutritionComp->SetAutoReduceTimer(1.0f, true, 1.0f);
 	NutritionComp->SetSafeRange(FVector2D(0.0f, 100.0f));
 
@@ -86,33 +90,21 @@ void ACFarmField::SetType(EInteractObjectType InNewType)
 
 void ACFarmField::Interact(AActor* OtherActor)
 {
-	/*UCFarmFieldWidget* FarmFieldWidget = GameMode->GetFarmFieldWidget();
-	CheckNull(FarmFieldWidget);
-
-	CheckFalse(FarmFieldWidget->IsAvailable());
-
-	FarmFieldWidget->SetFarmField(this);
-	FarmFieldWidget->AddToViewport();
-	*/
-
 	if (ACPlayer* Player = Cast<ACPlayer>(OtherActor))
 	{
-		/*InfoWidgetComp->SetWorldRotation((OtherActor->GetActorForwardVector() * -1.0f).Rotation());
-		InfoWidget->SetVisibility(ESlateVisibility::Visible);
-		*/
-
-		FVector WorldCameraLocation = GetActorLocation() + GetActorRotation().RotateVector(CameraTargetLocation);
-		FRotator WorldCameraRotation = GetActorRotation() + CameraTargetRotation;
-
-		Player->MoveCameraToLocation(WorldCameraLocation, WorldCameraRotation);
-
-		if (UGameInstance* GI = GetGameInstance())
+		float WidgetDelay = 0.0f;
+		if (APlayerController* PC = Cast<APlayerController>(Player->GetController()))
 		{
-			if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
+			if (ACPlayerController* MyPC = Cast<ACPlayerController>(PC))
 			{
-				MyGI->ShowFarmFieldWidget(this);
+				CachedPlayerController = MyPC;
+				CachedPlayerController->SwitchCamera(this);
+				WidgetDelay = CachedPlayerController->GetCameraMoveTime();
 			}
 		}
+
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ACFarmField::ShowFarmFieldWidget, WidgetDelay, false);
 	}
 
 	SetUnInteractable();
@@ -132,6 +124,26 @@ bool ACFarmField::PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, const FTransfo
 	SetUnInteractable();
 
 	return true;
+}
+
+void ACFarmField::FarmFieldOn()
+{
+	SetInteractable();
+	BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+}
+
+void ACFarmField::FarmFieldOff()
+{
+	SetUnInteractable();
+	BoxComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void ACFarmField::ShowFarmFieldWidget()
+{
+	if (CachedPlayerController)
+	{
+		CachedPlayerController->ShowFarmFieldWidget(this);
+	}
 }
 
 bool ACFarmField::OnHovered()

@@ -1,25 +1,11 @@
 #include "CGameInstance.h"
-#include "Crops\/CBase_Crop.h"
-#include "Blueprint/UserWidget.h"
-#include "UI/CWarningWidget.h"
-#include "UI/CDragIconWidget.h"
-#include "UI/CFarmFieldWidget.h"
-#include "Components/TextBlock.h"
-#include "Components/Image.h"
-#include "Components/Button.h"
+#include "Crops/CBase_Crop.h"
+#include "CHUD.h"
 #include "Global.h"
-#include "Controller\/CPlayerController.h"
 
 UCGameInstance::UCGameInstance()
 {
-	if (!WarningWidgetClass)
-	{
-		CHelpers::GetClass(&WarningWidgetClass, "/Game/UI/WB_WarningWidget");
-	}
-	if (!FarmFieldWidgetClass)
-	{
-		CHelpers::GetClass<UCFarmFieldWidget>(&FarmFieldWidgetClass, "/Game/UI/WB_FarmFieldWidget");
-	}
+	
 }
 
 void UCGameInstance::Init()
@@ -246,119 +232,5 @@ const TOptional<FInteractAssetData> UCGameInstance::GetInteractAssetData(EIntera
 	{
 		UE_LOG(LogTemp, Error, TEXT("Can't Find Data about %s"), *(UEnum::GetValueAsString(InInteractType)));
 		return {};
-	}
-}
-
-void UCGameInstance::StartDragging(UTexture2D* ItemIcon)
-{
-	if (!DragIconWidget)
-	{
-		DragIconWidget = CreateWidget<UCDragIconWidget>(GetWorld(), DragIconWidgetClass);
-		if (DragIconWidget)
-		{
-			DragIconWidget->SetDesiredSizeInViewport(FVector2D(30, 30));
-			DragIconWidget->AddToViewport();
-		}
-	}
-	DragIconWidget->InitDragIcon(ItemIcon);
-	DragIconWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
-	OnDragIconShowing.Broadcast(true);
-}
-
-void UCGameInstance::StopDragging()
-{
-	if (DragIconWidget)
-	{
-		DragIconWidget->SetVisibility(ESlateVisibility::Collapsed);
-	}
-	OnDragIconShowing.Broadcast(false);
-}
-
-void UCGameInstance::UpdateDragIconPosition(FVector2D NewPosition)
-{
-	if (DragIconWidget)
-	{
-		DragIconWidget->SetRenderTranslation(NewPosition);
-	}
-}
-
-void UCGameInstance::ShowWarningWidget(FString Message)
-{
-	if (!WarningWidget)
-	{
-		WarningWidget = CreateWidget<UCWarningWidget>(GetWorld(), WarningWidgetClass);
-		WarningWidget->SetDesiredSizeInViewport(FVector2D(450, 150));
-		WarningWidget->AddToViewport();
-	}
-
-	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
-	{
-		ACPlayerController* MyPC = Cast<ACPlayerController>(PC);
-		if (MyPC)
-		{
-			MyPC->ShowWidget(WarningWidget);
-		}
-	}
-
-	WarningWidget->SetWarningText(Message);
-}
-
-
-void UCGameInstance::HideWarningWidget()
-{
-	if (WarningWidget)
-	{
-		if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
-		{
-			ACPlayerController* MyPC = Cast<ACPlayerController>(PC);
-			if (MyPC)
-			{
-				MyPC->HideWidget(WarningWidget);
-			}
-		}
-	}
-}
-
-void UCGameInstance::ShowFarmFieldWidget(ACFarmField* TargetField)
-{
-	if (FarmFieldWidgetClass && !FarmFieldWidget)
-	{
-		FarmFieldWidget = CreateWidget<UCFarmFieldWidget>(GetWorld(), FarmFieldWidgetClass);
-		if (FarmFieldWidget)
-		{
-			FarmFieldWidget->AddToViewport();
-		}
-	}
-
-	if (FarmFieldWidget)
-	{
-		FarmFieldWidget->SetFarmField_Implementation(TargetField);
-		FarmFieldWidget->GetPlantBtn()->OnClicked.AddDynamic(this, &UCGameInstance::HideFarmFieldWidget);
-		FarmFieldWidget->PositionStateDisplays();
-
-		if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
-		{
-			ACPlayerController* MyPC = Cast<ACPlayerController>(PC);
-			if (MyPC)
-			{
-				MyPC->ShowWidget(FarmFieldWidget);
-			}
-		}
-	}
-}
-
-void UCGameInstance::HideFarmFieldWidget()
-{
-	if (FarmFieldWidget)
-	{
-		FarmFieldWidget->ResetFarmField_Implementation();
-		if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
-		{
-			ACPlayerController* MyPC = Cast<ACPlayerController>(PC);
-			if (MyPC)
-			{
-				MyPC->HideWidget(FarmFieldWidget);
-			}
-		}
 	}
 }

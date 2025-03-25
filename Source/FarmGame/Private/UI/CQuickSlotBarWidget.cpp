@@ -77,6 +77,16 @@ void UCQuickSlotBarWidget::OnQuickSlotSelected(int32 InIndex)
     }
 }
 
+const FInventorySlot& UCQuickSlotBarWidget::GetCurrentSlotData()
+{
+    return *(QuickSlots[CurrentIndex]->GetSlotItemData());
+}
+
+const UCQuickSlotWidget* const UCQuickSlotBarWidget::GetCurrentSlot()
+{
+    return QuickSlots[CurrentIndex];
+}
+
 void UCQuickSlotBarWidget::FuncForBindUpdate(const TArray<int32>& ChangedIndex)
 {
     UpdateQuickSlotDatas();

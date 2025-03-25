@@ -19,6 +19,6 @@ protected:
 	UCHUDWidget* UIHudWidget;
 
 public:
-	void CreateHUD();
+	void CreateHUD(APlayerController* PC);
 	UCHUDWidget* GetHUD();
 };

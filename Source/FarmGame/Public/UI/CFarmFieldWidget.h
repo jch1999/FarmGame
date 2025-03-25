@@ -35,6 +35,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void UpdateMoisture(float OldValue, float NewValue, float MaxValue);
 
+	UFUNCTION()
+	void CheckPlantBtnActive(int32 InIndex);
 
 	void PositionStateDisplays();
 	void DrawConnectionLines();

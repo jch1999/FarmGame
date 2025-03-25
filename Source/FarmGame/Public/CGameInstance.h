@@ -7,13 +7,6 @@
 #include "Crops/CBase_Crop.h"
 #include "CGameInstance.generated.h"
 
-class UCWarningWidget;
-class UCDragIconWidget;
-class UCFarmFieldWidget;
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDragIconShowing, bool, IsOn);
-
-
 UCLASS()
 class FARMGAME_API UCGameInstance : public UGameInstance
 {
@@ -37,21 +30,6 @@ public:
 
 	// Get Interact Asset Data
 	const TOptional<FInteractAssetData> GetInteractAssetData(EInteractObjectType InInteractType);
-	
-	// Widget - Warning
-	void ShowWarningWidget(FString Message);
-	UFUNCTION()
-	void HideWarningWidget();
-
-	// Widget - DragIcon
-	void StartDragging(UTexture2D* ItemIcon);
-	void StopDragging();
-	void UpdateDragIconPosition(FVector2D NewPosition);
-
-	// Widget - FarmField
-	void ShowFarmFieldWidget(ACFarmField* TargetField);
-	UFUNCTION()
-	void HideFarmFieldWidget();
 
 private:
 	void LoadCropDefaultTable();
@@ -59,11 +37,6 @@ private:
 	void LoadItemDataTable();
 	void LoadItemAssetDataTable();
 	void LoadInteractAssetDataTable();
-
-public:
-	// Delegate
-	UPROPERTY(BlueprintAssignable)
-	FDragIconShowing OnDragIconShowing;
 
 protected:
 	// Crop Data Table
@@ -83,26 +56,6 @@ protected:
 	// Interact Data Table
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable|Interact")
 	TSoftObjectPtr<UDataTable> InteractAssetDataTable;
-	
-	// Widget - Warning
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|Warning")
-	TSubclassOf<UCWarningWidget> WarningWidgetClass;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|Warning")
-	UCWarningWidget* WarningWidget;
-
-	// Widget - DragIcon
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|Warning")
-	TSubclassOf<UCDragIconWidget> DragIconWidgetClass;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget|Warning")
-	UCDragIconWidget* DragIconWidget;
-	bool IsDragging;
-
-	// Widget - FarmField
-	UPROPERTY(VisibleAnywhere, Category = "Widget")
-	TSubclassOf<UCFarmFieldWidget> FarmFieldWidgetClass;
-
-	UPROPERTY(VisibleAnywhere, Category = "Widget")
-	UCFarmFieldWidget* FarmFieldWidget;
 
 private:
 	// Data Map

@@ -9,6 +9,12 @@
 #include "Components/CInteractComponent.h"
 #include "Components/CInventoryComponent.h"
 #include "UI/CHUDWidget.h"
+#include "UI/CWarningWidget.h"
+#include "UI/CDragIconWidget.h"
+#include "UI/CFarmFieldWidget.h"
+#include "UI/CCropWidget.h"
+#include "UI/CQuickSlotBarWidget.h"
+#include "Components/Button.h"
 #include "CGameInstance.h"
 
 ACPlayerController::ACPlayerController()
@@ -24,7 +30,7 @@ ACPlayerController::ACPlayerController()
 	CHelpers::GetAsset(&OpenInventoryAction, "/Game/Input/IA_OpenInventory");
 	// UI
 	CHelpers::GetAsset(&UIContext, "/Game/Input/IMC_UI");
-	CHelpers::GetAsset(&CloseInventoryAction, "/Game/Input/IA_CloseInventory");
+
 	// Common
 	QuickSlotActions.SetNum(6);
 
@@ -39,6 +45,27 @@ ACPlayerController::ACPlayerController()
 		FString AssetPath = FString::Printf(TEXT("/Game/Input/IA_Test%d"), i + 1);
 		CHelpers::GetAsset(&TestActions[i], *AssetPath);
 	}
+
+	// UI Class
+	CHelpers::GetAsset(&CloseInventoryAction, "/Game/Input/IA_CloseInventory");
+	if (!WarningWidgetClass)
+	{
+		CHelpers::GetClass(&WarningWidgetClass, "/Game/UI/WB_WarningWidget");
+	}
+	if(!DragIconWidgetClass)
+	{
+		CHelpers::GetClass(&DragIconWidgetClass, "/Game/UI/WB_DragIcon");
+	}
+	if (!FarmFieldWidgetClass)
+	{
+		CHelpers::GetClass<UCFarmFieldWidget>(&FarmFieldWidgetClass, "/Game/UI/WB_FarmFieldWidget");
+	}
+	if (!CropWidgetClass)
+	{
+		CHelpers::GetClass<UCCropWidget>(&CropWidgetClass, "/Game/UI/WB_CropWidget");
+	}
+
+	CameraMoveTime = 1.5f;
 }
 
 void ACPlayerController::OnPossess(APawn* aPawn)
@@ -57,7 +84,7 @@ void ACPlayerController::OnPossess(APawn* aPawn)
 		ACHUD* MyHud = Cast<ACHUD>(Hud);
 		if (IsValid(MyHud))
 		{
-			MyHud->CreateHUD();
+			MyHud->CreateHUD(this);
 			ACPlayer* MyPlayer = Cast<ACPlayer>(aPawn);
 			if (MyPlayer)
 			{
@@ -87,7 +114,7 @@ void ACPlayerController::OnRep_PlayerState()
 		ACHUD* MyHud = Cast<ACHUD>(Hud);
 		if (IsValid(MyHud))
 		{
-			MyHud->CreateHUD();
+			MyHud->CreateHUD(this);
 			ACPlayer* MyPlayer = Cast<ACPlayer>(GetPawn());
 			if (MyPlayer)
 			{
@@ -280,6 +307,22 @@ void ACPlayerController::OnQuickSlotSelected(int32 InIndex)
 	OnQuickSlotSelectedDelegate.Broadcast(InIndex);
 }
 
+void ACPlayerController::SwitchCamera(AActor* TargetCamera)
+{
+	if (!TargetCamera) return;
+
+	SetViewTargetWithBlend(TargetCamera, CameraMoveTime, EViewTargetBlendFunction::VTBlend_Cubic, 0.5f, false);
+}
+
+void ACPlayerController::ResetCamera()
+{
+	if (APawn* PossessedPawn = GetPawn())
+	{
+		SetViewTargetWithBlend(PossessedPawn, CameraMoveTime, EViewTargetBlendFunction::VTBlend_Cubic, 0.5f, false);
+	}
+}
+
+
 void ACPlayerController::RebindAction()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Rebinding Actions in Context: %s"), *CurrentContext->GetFName().ToString());
@@ -343,25 +386,145 @@ void ACPlayerController::Test2(const FInputActionValue& Value)
 
 void ACPlayerController::Test3(const FInputActionValue& Value)
 {
-	if (UGameInstance* GI = GetGameInstance())
-	{
-		if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
-		{
-			MyGI->ShowWarningWidget("Test!!!!!!!!!!!!");
-		}
-	}
+	ShowWarningWidget("Test!!!!!!!!!!!!");
 }
 
 void ACPlayerController::Test4(const FInputActionValue& Value)
 {
-	if (UGameInstance* GI = GetGameInstance())
+	HideWarningWidget();
+}
+
+void ACPlayerController::StartDragging(UTexture2D* ItemIcon)
+{
+	if (!DragIconWidget)
 	{
-		if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
+		DragIconWidget = CreateWidget<UCDragIconWidget>(this, DragIconWidgetClass);
+		if (DragIconWidget)
 		{
-			MyGI->HideWarningWidget();
+			DragIconWidget->SetDesiredSizeInViewport(FVector2D(30, 30));
+			DragIconWidget->AddToViewport();
 		}
 	}
+	DragIconWidget->InitDragIcon(ItemIcon);
+	DragIconWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+	OnDragIconShowing.Broadcast(true);
 }
+
+void ACPlayerController::StopDragging()
+{
+	if (DragIconWidget)
+	{
+		DragIconWidget->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	OnDragIconShowing.Broadcast(false);
+}
+
+void ACPlayerController::UpdateDragIconPosition(FVector2D NewPosition)
+{
+	if (DragIconWidget)
+	{
+		DragIconWidget->SetRenderTranslation(NewPosition);
+	}
+}
+
+void ACPlayerController::ShowWarningWidget(FString Message)
+{
+	if (!WarningWidget)
+	{
+		WarningWidget = CreateWidget<UCWarningWidget>(this, WarningWidgetClass);
+		WarningWidget->SetDesiredSizeInViewport(FVector2D(450, 150));
+		WarningWidget->AddToViewport();
+	}
+
+	ShowWidget(WarningWidget);
+	WarningWidget->SetWarningText(Message);
+}
+
+
+void ACPlayerController::HideWarningWidget()
+{
+	if (WarningWidget)
+	{
+		HideWidget(WarningWidget);
+	}
+}
+
+void ACPlayerController::ShowFarmFieldWidget(ACFarmField* TargetField)
+{
+	if (FarmFieldWidgetClass && !FarmFieldWidget)
+	{
+		FarmFieldWidget = CreateWidget<UCFarmFieldWidget>(this, FarmFieldWidgetClass);
+		if (FarmFieldWidget)
+		{
+			FarmFieldWidget->AddToViewport();
+		}
+	}
+
+	if (FarmFieldWidget)
+	{
+		FarmFieldWidget->SetFarmField_Implementation(TargetField);
+		FarmFieldWidget->GetPlantBtn()->OnClicked.AddDynamic(this, &ACPlayerController::HideFarmFieldWidget);
+		FarmFieldWidget->PositionStateDisplays();
+
+		if (AHUD* HUD = GetHUD())
+		{
+			if (ACHUD* MyHud = Cast<ACHUD>(HUD))
+			{
+				if (UCHUDWidget* HudWidget = MyHud->GetHUD())
+				{
+					if (UCQuickSlotBarWidget* QuickSlotBar = HudWidget->GetQuickSlotBar())
+					{
+						FarmFieldWidget->CheckPlantBtnActive(QuickSlotBar->CurrentIndex);
+					}
+				}
+			}
+		}
+		ShowWidget(FarmFieldWidget);
+	}
+}
+
+void ACPlayerController::HideFarmFieldWidget()
+{
+	if (FarmFieldWidget)
+	{
+		FarmFieldWidget->ResetFarmField_Implementation();
+		HideWidget(FarmFieldWidget);
+		ResetCamera();
+	}
+}
+
+void ACPlayerController::ShowCropWidget(ACBase_Crop* TargetCrop)
+{
+	if (CropWidgetClass && !CropWidget)
+	{
+		CropWidget = CreateWidget<UCCropWidget>(this, CropWidgetClass);
+		if (CropWidget)
+		{
+			CropWidget->AddToViewport();
+		}
+	}
+
+	if (CropWidget)
+	{
+		CropWidget->SetCrop_Implementation(TargetCrop);
+		CropWidget->GetHarvestBtn()->OnClicked.AddDynamic(this, &ACPlayerController::HideCropWidget);
+		// CropWidget->PositionStateDisplays();
+
+		ShowWidget(CropWidget);
+	}
+}
+
+void ACPlayerController::HideCropWidget()
+{
+	if (CropWidget)
+	{
+		CropWidget->ResetCrop_Implementation();
+		HideWidget(CropWidget);
+		ResetCamera();
+	}
+}
+
+
 
 void ACPlayerController::ShowWidget(UUserWidget* InWidget)
 {

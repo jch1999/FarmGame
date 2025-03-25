@@ -7,6 +7,15 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogItem, Log, All);
 
 UENUM(BlueprintType)
+enum class EConsumableType : uint8
+{
+	None,
+	Seed,        // 씨앗
+	Fertilizer,  // 비료
+	Potion       // 포션, 기타 소모품
+};
+
+UENUM(BlueprintType)
 enum class EItemType : uint8
 {
 	Consumable,   // 소모품 (예: 씨앗, 비료)
