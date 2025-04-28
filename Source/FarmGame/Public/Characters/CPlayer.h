@@ -15,6 +15,7 @@ class USphereComponent;
 class UCInteractComponent;
 class ICItemInterface;
 class UAnimMontage;
+class UCQuickSlotBarWidget;
 
 UCLASS()
 class FARMGAME_API ACPlayer : public ACharacter, public ICInterface_Interactable
@@ -64,6 +65,10 @@ public:
 	void StartPlantingAnimation();
 	void OnPlantingAnimationFinished();
 
+	// Item
+	UCQuickSlotBarWidget* GetQuickSlotBar();
+	void EquipItemFromQuickSlot(int32 QuickSlotIndex);
+
 protected:
 	// Components
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
@@ -96,6 +101,8 @@ private:
 	// Animation
 	UPROPERTY(EditDefaultsOnly,Category="Animation")
 	UAnimMontage* PlantAnim;
-
-
+	
+	// EuqipedItem
+	UPROPERTY(VisibleAnywhere, Category="Item")
+	ACItemBase* CurrentEquippedItem;
 };

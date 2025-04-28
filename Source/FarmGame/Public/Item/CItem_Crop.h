@@ -16,5 +16,5 @@ public:
 public:
 	// From Interface
 	virtual bool UseItem() override;;
-	virtual void Interact(AActor* OtherActor) override;
+	//virtual void Interact(AActor* OtherActor) override;
 };

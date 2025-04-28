@@ -12,29 +12,29 @@ bool ACItem_Crop::UseItem()
 	return false;
 }
 
-void ACItem_Crop::Interact(AActor* OtherActor)
-{  
-	if (UCInventoryComponent* InventoryComp = OtherActor->GetComponentByClass<UCInventoryComponent>())
-	{
-		UGameInstance* Instance = GetGameInstance();
-		if (Instance)
-		{
-			UCGameInstance* MyInstance = Cast<UCGameInstance>(Instance);
-			if (MyInstance)
-			{
-				TOptional<FItemData> ItemDataOpt = MyInstance->GetItemtData(ItemID);
-				if (ItemDataOpt.IsSet())
-				{
-					if (InventoryComp->AddItem(this))
-					{
-						Destroy();
-					}
-				}
-				else
-				{
-					UE_LOG(LogItem, Error, TEXT("Add Item failed on %s"), *(UEnum::GetValueAsString(ItemID)));
-				}
-			}
-		}
-	}
-}
+//void ACItem_Crop::Interact(AActor* OtherActor)
+//{  
+//	if (UCInventoryComponent* InventoryComp = OtherActor->GetComponentByClass<UCInventoryComponent>())
+//	{
+//		UGameInstance* Instance = GetGameInstance();
+//		if (Instance)
+//		{
+//			UCGameInstance* MyInstance = Cast<UCGameInstance>(Instance);
+//			if (MyInstance)
+//			{
+//				TOptional<FItemData> ItemDataOpt = MyInstance->GetItemtData(ItemID);
+//				if (ItemDataOpt.IsSet())
+//				{
+//					if (InventoryComp->AddItem(this))
+//					{
+//						Destroy();
+//					}
+//				}
+//				else
+//				{
+//					UE_LOG(LogItem, Error, TEXT("Add Item failed on %s"), *(UEnum::GetValueAsString(ItemID)));
+//				}
+//			}
+//		}
+//	}
+//}

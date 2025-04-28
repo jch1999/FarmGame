@@ -66,13 +66,13 @@ void UCInventoryWidget::ShowExplainWidget(TWeakPtr<FInventorySlot> InSlotData, F
     }
     ExplainWidget->SetItem(InSlotData);
     ExplainWidget->SetPositionInViewport(ViewPortPosition, false);
-    ExplainWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+    ExplainWidget->SetVisibility(ESlateVisibility::Visible);
 }
 
 void UCInventoryWidget::HideExplainWidget()
 {
     if (!ExplainWidget) return;
-    
+    if (ExplainWidget->bIsMouseOver) return;
     ExplainWidget->SetVisibility(ESlateVisibility::Hidden);
 }
 

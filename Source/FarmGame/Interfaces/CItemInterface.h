@@ -106,6 +106,28 @@ struct FItemData : public FTableRowBase
 	float Price;
 };
 
+USTRUCT(BlueprintType)
+struct FItemAttachData : public FTableRowBase
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attach")
+	EItemID ItemID;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attach")
+	FName SocketName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attach")
+	FVector Location;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attach")
+	FRotator Rotation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attach")
+	FVector Scale;
+};
+
 UINTERFACE(MinimalAPI)
 class UCItemInterface : public UInterface
 {

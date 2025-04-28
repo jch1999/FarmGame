@@ -27,7 +27,7 @@ public:
 	// Get Item Data
 	const TOptional<FItemData> GetItemtData(EItemID InItemID);
 	const TOptional<FItemAssetData> GetItemtAssetData(EItemID InItemID);
-
+	const TOptional<FItemAttachData> GetItemAttachData(EItemID InItemID);
 	// Get Interact Asset Data
 	const TOptional<FInteractAssetData> GetInteractAssetData(EInteractObjectType InInteractType);
 
@@ -36,6 +36,7 @@ private:
 	void LoadCropGrowthTable();
 	void LoadItemDataTable();
 	void LoadItemAssetDataTable();
+	void LoadItemAttachDataTable();
 	void LoadInteractAssetDataTable();
 
 protected:
@@ -53,6 +54,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable|Item")
 	TSoftObjectPtr<UDataTable> ItemAssetDataTable;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable|Item")
+	TSoftObjectPtr<UDataTable> ItemAttachDataTable;
+
 	// Interact Data Table
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable|Interact")
 	TSoftObjectPtr<UDataTable> InteractAssetDataTable;
@@ -63,5 +67,6 @@ private:
 	TMap<FName, TArray<FCropGrowthData>*> CropGrowthDataMap;
 	TMap<EItemID, FItemData> ItemDataMap;
 	TMap<EItemID, FItemAssetData> ItemAssetDataMap;
+	TMap<EItemID, FItemAttachData> ItemAttachDataMap;
 	TMap<EInteractObjectType, FInteractAssetData> InteractAssetDataMap;
 };

@@ -38,7 +38,8 @@ public:
 	virtual EInteractObjectType GetType() override { return InteractType; }
 	virtual FName GetInteractName() override;
 	virtual void SetType(EInteractObjectType InNewType) override;
-	virtual void Interact(AActor* OtherActor) PURE_VIRTUAL(ACItemBase::Interact, return;);
+	// virtual void Interact(AActor* OtherActor) PURE_VIRTUAL(ACItemBase::Interact, return;);
+	virtual void Interact(AActor* OtherActor);
 	virtual bool OnHovered() PURE_VIRTUAL(ACItemBase::OnHovered, return false;);
 	virtual bool OnUnhovered() PURE_VIRTUAL(ACItemBase::OnUnhovered, return false;);
 
@@ -49,6 +50,8 @@ public:
 	void SetAvailableCnt(int32 cnt);
 
 	float GetCurrentDruability() { return CurrentDurability; }
+
+	void SetCollision(bool bEnabled);
 
 protected:
 	// Components

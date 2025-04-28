@@ -5,13 +5,14 @@
 #include "Global.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "Components/ScrollBox.h"
 
 void UCExplainWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
     bIsMouseOver = false; 
-    SetVisibility(ESlateVisibility::HitTestInvisible);
+    SetVisibility(ESlateVisibility::Visible);
 }
 
 void UCExplainWidget::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -29,7 +30,10 @@ void UCExplainWidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
     GetWorld()->GetTimerManager().ClearTimer(HideTimer);
     GetWorld()->GetTimerManager().SetTimer(HideTimer, 
         [this]() {
-            this->SetVisibility(ESlateVisibility::Hidden);
+            if (!IsHovered())
+            {
+                this->SetVisibility(ESlateVisibility::Hidden);
+            }
         }, 2.0f, false);
 }
 
@@ -50,6 +54,19 @@ FReply UCExplainWidget::NativeOnMouseMove(const FGeometry& InGeometry, const FPo
 
 FReply UCExplainWidget::NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
+    if (ItemDescriptionScrollBox)
+    {
+        float CurrentOffset = ItemDescriptionScrollBox->GetScrollOffset();
+
+        // 마우스 휠 방향에 따라 이동량 계산
+        float ScrollAmount = -InMouseEvent.GetWheelDelta() * 50.0f; // 50은 스크롤 속도 조정
+
+        float NewOffset = FMath::Clamp(CurrentOffset + ScrollAmount, 0.0f, ItemDescriptionScrollBox->GetScrollOffsetOfEnd());
+
+        ItemDescriptionScrollBox->SetScrollOffset(NewOffset);
+        return FReply::Handled(); // 내가 처리했으니 부모로 전달 X
+    }
+
     return Super::NativeOnMouseWheel(InGeometry, InMouseEvent);
 }
 

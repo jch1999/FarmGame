@@ -3,17 +3,18 @@
 #include "Global.h"
 #include "CGameInstance.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
+#include "Components/CInventoryComponent.h"
 
 ACItemBase::ACItemBase()
 {
 	// Mesh Component
 	CHelpers::CreateSceneComponent(this, &MeshComp, "MeshComp", RootComponent);
-	MeshComp->SetSimulatePhysics(true);
+	//MeshComp->SetSimulatePhysics(true);
 	MeshComp->SetMassOverrideInKg(NAME_None, 100.0f);
-	MeshComp->SetCollisionProfileName(TEXT("InteractObject"));
+	//MeshComp->SetCollisionProfileName(TEXT("InteractObject"));
 	MeshComp->BodyInstance.bUseCCD = true; 
-	MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-
+	//MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	SetCollision(true);
 	// Sphere Component
 	/*CHelpers::CreateSceneComponent(this, &SphereComp, "SphereComp", RootComponent);
 	SphereComp->SetSphereRadius(30.0f);
@@ -35,8 +36,10 @@ void ACItemBase::BeginPlay()
 		// Reduce Restitution
 		UPhysicalMaterial* PhysMaterial = NewObject<UPhysicalMaterial>();
 		PhysMaterial->Restitution = 0.0f; // 반발력 최소화
-		PhysMaterial->Friction = 0.8f;    // 적절한 마찰력 부여
-		MeshComp->SetPhysMaterialOverride(PhysMaterial);
+		PhysMaterial->Friction = 1.2f;    // 적절한 마찰력 부여
+		MeshComp->SetPhysMaterialOverride(PhysMaterial); 
+		MeshComp->SetLinearDamping(1.5f);   // 공기 저항 효과 적용 (기본값 0 → 1.5)
+		MeshComp->SetAngularDamping(2.0f);  // 회전 감속 효과 적용 (기본값 0 → 2.0)
 	}
 }
 
@@ -98,4 +101,46 @@ void ACItemBase::SetType(EInteractObjectType InNewType)
 void ACItemBase::SetAvailableCnt(int32 InCnt)
 {
 	AvailableCount = InCnt;
+}
+
+void ACItemBase::SetCollision(bool bEnabled)
+{
+	MeshComp->SetSimulatePhysics(bEnabled);
+	if (bEnabled)
+	{
+		MeshComp->SetCollisionProfileName(TEXT("InteractObject"));
+		MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	}
+	else
+	{
+		MeshComp->SetCollisionProfileName(TEXT("NoCollision"));
+		MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+void ACItemBase::Interact(AActor* OtherActor)
+{
+	if (UCInventoryComponent* InventoryComp = OtherActor->GetComponentByClass<UCInventoryComponent>())
+	{
+		UGameInstance* Instance = GetGameInstance();
+		if (Instance)
+		{
+			UCGameInstance* MyInstance = Cast<UCGameInstance>(Instance);
+			if (MyInstance)
+			{
+				TOptional<FItemData> ItemDataOpt = MyInstance->GetItemtData(ItemID);
+				if (ItemDataOpt.IsSet())
+				{
+					if (InventoryComp->AddItem(this))
+					{
+						Destroy();
+					}
+				}
+				else
+				{
+					UE_LOG(LogItem, Error, TEXT("Add Item failed on %s"), *(UEnum::GetValueAsString(ItemID)));
+				}
+			}
+		}
+	}
 }

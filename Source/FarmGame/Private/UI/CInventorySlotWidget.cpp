@@ -72,6 +72,10 @@ void UCInventorySlotWidget::NativeOnMouseEnter(const FGeometry& InGeometry, cons
 void UCInventorySlotWidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 {
 	Super::NativeOnMouseLeave(InMouseEvent);
+	if (GetWorld()->GetTimerManager().TimerExists(HideExplainTimer))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(HideExplainTimer);
+	}
 	GetWorld()->GetTimerManager().SetTimer(HideExplainTimer, this, &UCInventorySlotWidget::HideEplainWidget, 0.1f, false);
 }
 

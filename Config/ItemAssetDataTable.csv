@@ -8,7 +8,17 @@ Berry_High,Berry_High,/Game/Item/Crops/BP_CItem_Berry_High.BP_CItem_Berry_High_C
 Carrot_Low,Carrot_Low,,/Game/Item/Icons/CropIcon_Carrot,,,The carrots are not in good condition. They are small and underdeveloped. I think it's best to use them for juicing or making carrot puree.
 Carrot_Normal,Carrot_Normal,,/Game/Item/Icons/CropIcon_Carrot,,,"The carrots are in good condition. They are well-formed and have a vibrant color. I think they'll be delicious roasted, stir-fried, or added to soups and stews."
 Carrot_High,Carrot_High,,/Game/Item/Icons/CropIcon_Carrot,,,"The carrots are in excellent condition. They are large, firm, and have a deep orange color. They look incredibly appetizing and are perfect for eating raw, adding to salads, or showcasing in a beautiful dish"
-Seed_Tomato,Seed_Tomato,,,,,
-Seed_Berry,Seed_Berry,,,,,
-Seed_Carrot,Seed_Carrot,,,,,
+Seed_Tomato,Seed_Tomato,/Game/Item/Consumable/Seeds/Seed_Tomato.Seed_Tomato_C,/Game/Item/Icons/SeedIcon_Tomato,,,"Can be planted in the ground to harvest red and juicy tomatoes. Usage: Interact with tilled ground to plant. The ground must be empty of other crops, and these seeds must be in your active quickslot. Press the plant button to consume the seeds and grow tomatoes.
+
+Seeds of the tomato, a versatile ingredient in many dishes. They take longer to grow than berries but yield a larger amount of food."
+Seed_Berry,Seed_Berry,/Game/Item/Consumable/Seeds/Seed_Berry.Seed_Berry_C,/Game/Item/Icons/SeedIcon_Berry,,,"Can be planted in the ground to harvest berries.
+
+Usage: Interact with tilled ground to plant. The ground must be empty of other crops, and these seeds must be in your active quickslot. Press the plant button to consume the seeds and grow berries.
+
+Seeds of the berry, which yields small, red fruits. They grow relatively quickly, making them useful for early food acquisition."
+Seed_Carrot,Seed_Carrot,/Game/Item/Consumable/Seeds/Seed_Carrot.Seed_Carrot_C,/Game/Item/Icons/SeedIcon_Carrot,,,"Can be planted in the ground to harvest crisp and sweet carrots.
+
+Usage: Interact with tilled ground to plant. The ground must be empty of other crops, and these seeds must be in your active quickslot. Press the plant button to consume the seeds and grow carrots.
+
+Seeds of the carrot, a root vegetable. They have a similar growth time to tomatoes and offer a unique texture and nutrients."
 WaterCan,WaterCan,,,,,

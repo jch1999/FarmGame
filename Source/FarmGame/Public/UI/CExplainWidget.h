@@ -8,6 +8,7 @@
 class ICItemInterface;
 class UImage;
 class UTextBlock;
+class UScrollBox;
 
 UCLASS()
 class FARMGAME_API UCExplainWidget : public UUserWidget
@@ -38,6 +39,8 @@ public:
 	UTextBlock* ItemExtraText; // Seed의 경우 종류 출력, Crop의 경우 품질이 출력됨
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ItemDescriptionText;
+	UPROPERTY(meta = (BindWidget))
+	UScrollBox* ItemDescriptionScrollBox;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsMouseOver;

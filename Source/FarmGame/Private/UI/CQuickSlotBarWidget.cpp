@@ -65,14 +65,24 @@ void UCQuickSlotBarWidget::SwapSlotData(int32 InIndex1, int32 InIndex2)
 
 void UCQuickSlotBarWidget::OnQuickSlotSelected(int32 InIndex)
 {
-    if (QuickSlots.Num() < InIndex && InIndex > 0)
+    if (QuickSlots.Num() > InIndex && InIndex > 0)
     {
+        InIndex--;
         if (InIndex == CurrentIndex)
         {
             UE_LOG(LogItem, Error, TEXT("Same QuickSlot Index Selected: %d"), InIndex);
             return;
         }
+        
         CurrentIndex = InIndex;
+        if (ACPlayerController* PC = Cast<ACPlayerController>(GetOwningPlayer()))
+        {
+            if (ACPlayer* Player = Cast<ACPlayer>(PC->GetPawn()))
+            {
+                Player->EquipItemFromQuickSlot(InIndex);
+            }
+        }
+
         UE_LOG(LogItem, Error, TEXT("Item Seletecd %s, QuickSlot Index : %d"), *(QuickSlots[InIndex]->GetName()),InIndex);
     }
 }

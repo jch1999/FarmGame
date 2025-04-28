@@ -33,6 +33,10 @@ void UCGameInstance::Init()
 		ItemAssetDataTable = ItemAssetDataTable.LoadSynchronous();
 	}
 
+	if (!ItemAttachDataTable.IsValid())
+	{
+		ItemAttachDataTable = ItemAttachDataTable.LoadSynchronous();
+	}
 	//Interact
 	if (!InteractAssetDataTable.IsValid())
 	{
@@ -43,6 +47,7 @@ void UCGameInstance::Init()
 	LoadCropGrowthTable();
 	LoadItemDataTable();
 	LoadItemAssetDataTable();
+	LoadItemAttachDataTable();
 	LoadInteractAssetDataTable();
 }
 
@@ -123,6 +128,25 @@ void UCGameInstance::LoadItemAssetDataTable()
 		if (Row)
 		{
 			ItemAssetDataMap.Add(Row->ItemID, *Row);
+		}
+	}
+}
+
+void UCGameInstance::LoadItemAttachDataTable()
+{
+	if (!ItemAssetDataTable.IsValid())
+	{
+		UE_LOG(LogTemp, Error, TEXT("ItemAttachDataTable is not valid!"));
+		return;
+	}
+
+	TArray<FName> RowNames = ItemAttachDataTable->GetRowNames();
+	for (FName RowName : RowNames)
+	{
+		FItemAttachData* Row = ItemAttachDataTable->FindRow<FItemAttachData>(RowName, "LoadItemAttachDataTable");
+		if (Row)
+		{
+			ItemAttachDataMap.Add(Row->ItemID, *Row);
 		}
 	}
 }
@@ -220,6 +244,19 @@ const TOptional<FItemAssetData> UCGameInstance::GetItemtAssetData(EItemID InItem
 		return {};
 	}
 
+}
+
+const TOptional<FItemAttachData> UCGameInstance::GetItemAttachData(EItemID InItemID)
+{
+	if (ItemAttachDataMap.Contains(InItemID))
+	{
+		return ItemAttachDataMap[InItemID];
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Can't Find Data about %s"), *(UEnum::GetValueAsString(InItemID)));
+		return {};
+	}
 }
 
 const TOptional<FInteractAssetData> UCGameInstance::GetInteractAssetData(EInteractObjectType InInteractType)

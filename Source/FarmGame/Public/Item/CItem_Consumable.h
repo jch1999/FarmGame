@@ -8,8 +8,13 @@ UCLASS()
 class FARMGAME_API ACItem_Consumable : public ACItemBase
 {
 	GENERATED_BODY()
-	
+
 public:
-	UPROPERTY(VisibleAnywhere, Category ="Consumable")
+	// From Interface
+	virtual bool UseItem() override;;
+	//virtual void Interact(AActor* OtherActor) override;
+
+public:
+	UPROPERTY(EditDefaultsOnly, Category ="Consumable")
 	EConsumableType ConsumableType;
 };

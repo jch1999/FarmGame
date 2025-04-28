@@ -88,7 +88,9 @@ void ACPlayerController::OnPossess(APawn* aPawn)
 			ACPlayer* MyPlayer = Cast<ACPlayer>(aPawn);
 			if (MyPlayer)
 			{
+				OnQuickSlotSelectedDelegate.Clear();
 				MyHud->GetHUD()->OnInitPlayer(MyPlayer);
+				OnQuickSlotSelectedDelegate.AddDynamic(MyPlayer, &ACPlayer::EquipItemFromQuickSlot);
 			}
 		}
 		else
@@ -118,7 +120,9 @@ void ACPlayerController::OnRep_PlayerState()
 			ACPlayer* MyPlayer = Cast<ACPlayer>(GetPawn());
 			if (MyPlayer)
 			{
+				OnQuickSlotSelectedDelegate.Clear();
 				MyHud->GetHUD()->OnInitPlayer(MyPlayer);
+				OnQuickSlotSelectedDelegate.AddDynamic(MyPlayer, &ACPlayer::EquipItemFromQuickSlot);
 			}
 		}
 		else
@@ -303,7 +307,7 @@ void ACPlayerController::SetGameInputMode()
 void ACPlayerController::OnQuickSlotSelected(int32 InIndex)
 {
 	UE_LOG(LogTemp, Warning, TEXT("QuickSlot %d Selected"), InIndex);
-
+	
 	OnQuickSlotSelectedDelegate.Broadcast(InIndex);
 }
 

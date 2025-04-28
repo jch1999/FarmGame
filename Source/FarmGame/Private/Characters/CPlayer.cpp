@@ -11,6 +11,10 @@
 #include "Interfaces/CItemInterface.h"
 #include "CHUD.h"
 #include "UI/CHUDWidget.h"
+#include "UI/CQuickSlotBarWidget.h"
+#include "UI/CQuickSlotWidget.h"
+#include "Item/CItemBase.h"
+#include "CGameInstance.h"
 
 ACPlayer::ACPlayer()
 {
@@ -116,6 +120,67 @@ void ACPlayer::StartPlantingAnimation()
 void ACPlayer::OnPlantingAnimationFinished()
 {
 	// if(InteractComp->)
+}
+
+UCQuickSlotBarWidget* ACPlayer::GetQuickSlotBar()
+{
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		if (ACHUD* MyHUD = Cast<ACHUD>(PC->GetHUD()))
+		{
+			return MyHUD->GetHUD()->GetQuickSlotBar();
+		}
+	}
+	return nullptr;
+}
+
+void ACPlayer::EquipItemFromQuickSlot(int32 QuickSlotIndex)
+{
+	UCQuickSlotBarWidget* QuickSlotBar = GetQuickSlotBar();
+	if (!QuickSlotBar) return;
+
+	if (!InventoryComp) return;
+	
+	// 기존 아이템 제거
+	if (CurrentEquippedItem)
+	{
+		CurrentEquippedItem->Destroy();
+		CurrentEquippedItem = nullptr;
+	}
+
+	int32 TargetSlotIndex = QuickSlotBar->GetCurrentSlot()->TargetSlotIndex;
+	if (TargetSlotIndex < 0) return;
+
+	const FInventorySlot* const SlotData = &(InventoryComp->GetSlotDatas()[TargetSlotIndex]);
+	if (!SlotData || SlotData->ItemID == EItemID::None) return;
+	
+
+	// 새 아이템 생성
+	FTransform SpawnTransform;
+	CurrentEquippedItem = GetWorld()->SpawnActor<ACItemBase>(SlotData->ItemClass, SpawnTransform);
+
+	if (CurrentEquippedItem)
+	{
+		if (UGameInstance* GI = GetGameInstance())
+		{
+			if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
+			{
+				if (TOptional<FItemAttachData> AttachOpt = MyGI->GetItemAttachData(SlotData->ItemID))
+				{
+					if (AttachOpt.IsSet())
+					{
+						FItemAttachData& AttachData = AttachOpt.GetValue();
+						FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);
+						CurrentEquippedItem->AttachToComponent(GetMesh(), AttachRules, AttachData.SocketName);
+						CurrentEquippedItem->SetActorRelativeLocation(AttachData.Location);
+						CurrentEquippedItem->SetActorRelativeRotation(AttachData.Rotation);
+						CurrentEquippedItem->SetActorRelativeScale3D(AttachData.Scale);
+						CurrentEquippedItem->SetCollision(false);
+					}
+				}
+			}
+		}
+	}
 }
 
 

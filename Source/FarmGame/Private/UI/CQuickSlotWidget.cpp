@@ -22,7 +22,7 @@ bool UCQuickSlotWidget::Initialize()
 bool UCQuickSlotWidget::SetQuickSlotIndex(int32 InIndex)
 {
 	if (!QuickSlotIndexText) return false;
-	if (InIndex < 0 || InIndex >= 10) return false;
+	if (InIndex < 0 || InIndex > 10) return false;
 	
 	int32 Index = InIndex % 10;
 	QuickSlotIndexText->SetText(FText::FromString(FString::FromInt(Index)));
