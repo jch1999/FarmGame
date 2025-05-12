@@ -50,6 +50,10 @@ void UCSlotWidget::SetItem(const FInventorySlot& SlotData)
 
 FInventorySlot* UCSlotWidget::GetSlotItemData()
 {
+	if (!CurrentSlotData.IsValid())
+	{
+		UE_LOG(LogTemp, Error, TEXT("UCSlotWidget::GetSlotItemData() SharedPtr is missing!"));
+	}
 	return CurrentSlotData.Get();
 }
 

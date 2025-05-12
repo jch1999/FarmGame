@@ -142,6 +142,7 @@ void ACPlayerController::BeginPlay()
 		SubSystem->AddMappingContext(DefaultContext, 0);
 		CurrentContext = DefaultContext;
 	}
+	SetSlotChangable();
 }
 
 void ACPlayerController::SetupInputComponent()
@@ -306,9 +307,21 @@ void ACPlayerController::SetGameInputMode()
 
 void ACPlayerController::OnQuickSlotSelected(int32 InIndex)
 {
+	if (!IsSlotChangable()) return;
+
 	UE_LOG(LogTemp, Warning, TEXT("QuickSlot %d Selected"), InIndex);
 	
 	OnQuickSlotSelectedDelegate.Broadcast(InIndex);
+}
+
+void ACPlayerController::SetSlotChangable()
+{
+	bChangable = true;
+}
+
+void ACPlayerController::SetUnSlotChangable()
+{
+	bChangable = false;
 }
 
 void ACPlayerController::SwitchCamera(AActor* TargetCamera)
@@ -469,7 +482,7 @@ void ACPlayerController::ShowFarmFieldWidget(ACFarmField* TargetField)
 		FarmFieldWidget->SetFarmField_Implementation(TargetField);
 		FarmFieldWidget->GetPlantBtn()->OnClicked.AddDynamic(this, &ACPlayerController::HideFarmFieldWidget);
 		FarmFieldWidget->PositionStateDisplays();
-
+		OnQuickSlotSelectedDelegate.AddDynamic(FarmFieldWidget, &UCFarmFieldWidget::CheckPlantBtnActive);
 		if (AHUD* HUD = GetHUD())
 		{
 			if (ACHUD* MyHud = Cast<ACHUD>(HUD))
@@ -492,6 +505,7 @@ void ACPlayerController::HideFarmFieldWidget()
 	if (FarmFieldWidget)
 	{
 		FarmFieldWidget->ResetFarmField_Implementation();
+		OnQuickSlotSelectedDelegate.RemoveDynamic(FarmFieldWidget, &UCFarmFieldWidget::CheckPlantBtnActive);
 		HideWidget(FarmFieldWidget);
 		ResetCamera();
 	}

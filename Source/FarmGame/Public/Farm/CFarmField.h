@@ -59,7 +59,7 @@ public:
 	// Crop
 	ACBase_Crop* GetCrop() { return Crop; }
 	UFUNCTION(BlueprintCallable)
-	bool PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, const FTransform& InTM);
+	bool PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, const FVector& RelativeOffset);
 
 	void FarmFieldOn();
 	void FarmFieldOff();

@@ -42,6 +42,9 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UScrollBox* ItemDescriptionScrollBox;
 
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* ItemPriceText;
+
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsMouseOver;
 

@@ -38,6 +38,7 @@ public:
 
 	// Return currently seleted interact object
 	AActor* GetCurrentInteractTarget();
+	AActor* GetActionInteractTarget();
 
 	UFUNCTION(BlueprintCallable, Category = "InteractSystem")
 	bool SetDetectInterval(float InTime);

@@ -90,6 +90,16 @@ void UCExplainWidget::SetItem(TWeakPtr<FInventorySlot> InSlotData)
         ItemExtraText->SetText(FText::FromString(""));
     }
     ItemDescriptionText->SetText(FText::FromString(SlotData->Description));
+
+    UCGameInstance* MyGI = Cast<UCGameInstance>(GetGameInstance());
+    if (const TOptional<FItemData>& ItemDataOpt = MyGI->GetItemtData(SlotData->ItemID))
+    {
+        if (ItemDataOpt.IsSet())
+        {
+            FItemData ItemData = ItemDataOpt.GetValue();
+            ItemPriceText->SetText(FText::FromString(FString::FromInt(ItemData.Price)));
+        }
+    }
 }
 
 void UCExplainWidget::HideWidget()

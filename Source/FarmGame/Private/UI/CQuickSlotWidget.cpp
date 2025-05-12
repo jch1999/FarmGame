@@ -5,6 +5,8 @@
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
 #include "CGameInstance.h"
+#include "Controller/CPlayerController.h"
+#include "Characters/CPlayer.h"
 
 bool UCQuickSlotWidget::Initialize()
 {
@@ -24,7 +26,7 @@ bool UCQuickSlotWidget::SetQuickSlotIndex(int32 InIndex)
 	if (!QuickSlotIndexText) return false;
 	if (InIndex < 0 || InIndex > 10) return false;
 	
-	int32 Index = InIndex % 10;
+	int32 Index = (InIndex + 1) % 10;
 	QuickSlotIndexText->SetText(FText::FromString(FString::FromInt(Index)));
 	SlotIndex = InIndex;
 	return true;
@@ -55,12 +57,14 @@ bool UCQuickSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 		}
 		if (DragOperation->SourceSlot != this)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("QuickSlot Inserted!"));
 			switch(DragOperation->SourceSlot->SlotType)
 			{
 			case ESlotType::Inventory_Player:
 			{
-				SetItem(*(DragOperation->SourceSlot->GetSlotItemData()));
 				TargetSlotIndex = DragOperation->SourceSlot->SlotIndex;
+				UE_LOG(LogTemp, Warning, TEXT("TargetSlotIndex : %d"), TargetSlotIndex);
+				SetItem(*(DragOperation->SourceSlot->GetSlotItemData()));
 			}
 				break;
 			case ESlotType::Quick:
@@ -70,6 +74,25 @@ bool UCQuickSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 				break;
 			default:
 				break;
+			}
+
+			if (UCQuickSlotBarWidget* Bar = Cast<UCQuickSlotBarWidget>(ParentWidget))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Bar->CurrentIndex : %d , SlotIndex : %d"), Bar->CurrentIndex, SlotIndex);
+
+				// 현재 선택된 퀵슬롯이면 아이템 액터 부착
+				if (Bar->CurrentIndex==SlotIndex)
+				{
+					if (ACPlayerController* PC = GetOwningPlayer<ACPlayerController>())
+					{
+						if (ACPlayer* Player = Cast<ACPlayer>(PC->GetPawn()))
+						{
+							UE_LOG(LogTemp, Warning, TEXT("Item Attached!"));
+
+							Player->EquipItemFromQuickSlot(SlotIndex);
+						}
+					}
+				}
 			}
 			return bHandled;
 		}

@@ -15,7 +15,7 @@ void UCQuickSlotBarWidget::NativeOnInitialized()
     }
     if (QuickSlotGridPanel && QuickSlotClass)
     {
-        for (int32 i = 1; i <= 10; i++)
+        for (int32 i = 0; i < 10; i++)
         {
             UCQuickSlotWidget* NewSlot = CreateWidget<UCQuickSlotWidget>(GetOwningPlayer(), QuickSlotClass);
             NewSlot->SetQuickSlotIndex(i);
@@ -26,6 +26,8 @@ void UCQuickSlotBarWidget::NativeOnInitialized()
             QuickSlots.AddUnique(NewSlot);
         }
     }
+
+    CurrentIndex = 0;
 }
 
 void UCQuickSlotBarWidget::OnInitPlayer(ACPlayer* InPlayer)
@@ -90,6 +92,9 @@ void UCQuickSlotBarWidget::OnQuickSlotSelected(int32 InIndex)
 const FInventorySlot& UCQuickSlotBarWidget::GetCurrentSlotData()
 {
     return *(QuickSlots[CurrentIndex]->GetSlotItemData());
+    //FInventorySlot* SlotData = QuickSlots[CurrentIndex]->GetSlotItemData();
+    //check(SlotData);
+    //return *SlotData;
 }
 
 const UCQuickSlotWidget* const UCQuickSlotBarWidget::GetCurrentSlot()

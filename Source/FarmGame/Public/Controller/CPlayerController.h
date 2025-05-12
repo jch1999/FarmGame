@@ -52,6 +52,10 @@ public:
 
 	void OnQuickSlotSelected(int32 InIndex);
 	
+	bool IsSlotChangable() { return bChangable; }
+	void SetSlotChangable();
+	void SetUnSlotChangable();
+
 	// Widget
 	// Widget - Warning
 	void ShowWarningWidget(FString Message);
@@ -134,6 +138,8 @@ protected:
 	TArray<UInputAction*> QuickSlotActions;
 	UPROPERTY(EditDefaultsOnly, Category = "Input|CommonAction")
 	TArray<UInputAction*> TestActions;
+	UPROPERTY(EditAnywhere, Category = "Input|CommonAction")
+	bool bChangable;
 
 	// Widget
 	UPROPERTY(VisibleAnywhere, Category="Widget")

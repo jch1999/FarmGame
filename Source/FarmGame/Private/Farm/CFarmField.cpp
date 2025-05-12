@@ -110,17 +110,20 @@ void ACFarmField::Interact(AActor* OtherActor)
 	SetUnInteractable();
 }
 
-bool ACFarmField::PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, const FTransform& InTM)
+bool ACFarmField::PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, const FVector& RelativeOffset)
 {
-	CheckNullResult(InCropClass, false);
 	CheckTrueResult(Crop != nullptr, false);
+	CheckNullResult(InCropClass, false);
+	FTransform CropTM = FTransform(FRotator::ZeroRotator, GetActorLocation() + RelativeOffset);
+	ACBase_Crop* NewCrop = GetWorld()->SpawnActorDeferred<ACBase_Crop>(InCropClass, CropTM, this, nullptr);
+	if (!NewCrop) return false;
 
-	Crop = GetWorld()->SpawnActorDeferred<ACBase_Crop>(InCropClass, InTM, this, nullptr);
+	NewCrop->FinishSpawning(CropTM); 
+	NewCrop->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
+	NewCrop->SetOwner(this);
+	NewCrop->SetFarmField(this);
+	Crop = NewCrop;
 
-	Crop->FinishSpawning(InTM);
-	CheckNullResult(Crop, false);
-
-	Crop->SetOwner(this);
 	SetUnInteractable();
 
 	return true;
@@ -148,7 +151,7 @@ void ACFarmField::ShowFarmFieldWidget()
 
 bool ACFarmField::OnHovered()
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s is Hovered!"), *GetInteractName().ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("%s is Hovered!"), *GetInteractName().ToString());
 	MeshComp->SetRenderCustomDepth(true);
 	MeshComp->SetCustomDepthStencilValue(1);
 
@@ -157,7 +160,7 @@ bool ACFarmField::OnHovered()
 
 bool ACFarmField::OnUnhovered()
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s is Unhovered!"), *GetInteractName().ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("%s is Unhovered!"), *GetInteractName().ToString());
 	MeshComp->SetRenderCustomDepth(false);
 	MeshComp->SetCustomDepthStencilValue(0);
 

@@ -14,6 +14,7 @@
 #include "UI/CHUDWidget.h"
 #include "UI/CQuickSlotBarWidget.h"
 #include "UI/CQuickSlotWidget.h"
+#include "Characters/CPlayer.h"
 
 void UCFarmFieldWidget::SetFarmField_Implementation(ACFarmField* InFarmField)
 {
@@ -41,7 +42,7 @@ void UCFarmFieldWidget::SetFarmField_Implementation(ACFarmField* InFarmField)
 	}
 	Offset=FVector2D(100.0f, 80.0f);
 
-	PositionStateDisplays();
+	//PositionStateDisplays();
 }
 
 void UCFarmFieldWidget::ResetFarmField_Implementation()
@@ -83,7 +84,11 @@ void UCFarmFieldWidget::UpdateMoisture_Implementation(float OldValue, float NewV
 void UCFarmFieldWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
-	
+
+	if (PlantBtn)
+	{
+		PlantBtn->OnClicked.AddDynamic(this, &UCFarmFieldWidget::OnPlantClicked);
+	}
 }
 
 void UCFarmFieldWidget::CheckPlantBtnActive(int32 InIndex)
@@ -102,9 +107,15 @@ void UCFarmFieldWidget::CheckPlantBtnActive(int32 InIndex)
 			{
 				if (UCHUDWidget* HudWidget = MyHud->GetHUD())
 				{
+					UE_LOG(LogTemp, Warning, TEXT("ConsumalbeType : %s"), *UEnum::GetValueAsString(HudWidget->GetQuickSlotBar()->GetCurrentSlotData().ConsumableType));
+					UE_LOG(LogTemp, Warning, TEXT("ConsumableType Enum Value: %d"), static_cast<int32>(HudWidget->GetQuickSlotBar()->GetCurrentSlotData().ConsumableType));
+					UE_LOG(LogTemp, Warning, TEXT("Seed Enum Value: %d"), static_cast<int32>(EConsumableType::Seed));
 					if (HudWidget->GetQuickSlotBar()->GetCurrentSlotData().ConsumableType == EConsumableType::Seed)
 					{
+						PlantBtn->SetVisibility(ESlateVisibility::Visible);
 						PlantBtn->SetIsEnabled(true);
+						PlantBtn->SetRenderOpacity(1.0f);
+						UE_LOG(LogTemp, Error, TEXT("Plant Btn Enabled"));
 						return;
 					}
 				}
@@ -112,7 +123,9 @@ void UCFarmFieldWidget::CheckPlantBtnActive(int32 InIndex)
 		}
 	}
 
+	PlantBtn->SetVisibility(ESlateVisibility::Hidden);
 	PlantBtn->SetIsEnabled(false);
+	UE_LOG(LogTemp, Error, TEXT("Plant Btn Disabled"));
 }
 
 void UCFarmFieldWidget::PositionStateDisplays()
@@ -194,6 +207,17 @@ void UCFarmFieldWidget::DrawConnectionLines()
 			FWidgetTransform Transform;
 			Transform.Angle = FMath::Atan2(MoisturePos.Y - CenterPosition.Y, MoisturePos.X - CenterPosition.X) * (180.0f / PI);
 			Line_Moisture->SetRenderTransform(Transform);
+		}
+	}
+}
+
+void UCFarmFieldWidget::OnPlantClicked()
+{
+	if (APlayerController* PC = GetOwningPlayer())
+	{
+		if (ACPlayer* Player = Cast<ACPlayer>(PC->GetPawn()))
+		{
+			Player->StartPlantingAnimation();
 		}
 	}
 }

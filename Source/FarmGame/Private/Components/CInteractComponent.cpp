@@ -151,6 +151,11 @@ AActor* UCInteractComponent::GetCurrentInteractTarget()
 	return nullptr;
 }
 
+AActor* UCInteractComponent::GetActionInteractTarget()
+{
+	return ActionInteractTarget;
+}
+
 bool UCInteractComponent::SetDetectInterval(float InTime)
 {
 	if (InTime < 0.0f) return false;

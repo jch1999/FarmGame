@@ -8,13 +8,17 @@
 #include "Components/COptionComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/CInteractComponent.h"
+#include "Components/CInventoryComponent.h"
 #include "Interfaces/CItemInterface.h"
 #include "CHUD.h"
 #include "UI/CHUDWidget.h"
 #include "UI/CQuickSlotBarWidget.h"
 #include "UI/CQuickSlotWidget.h"
 #include "Item/CItemBase.h"
+#include "Item/CItem_Seed.h"
 #include "CGameInstance.h"
+#include "Farm/CFarmField.h"
+#include "Controller/CPlayerController.h"
 
 ACPlayer::ACPlayer()
 {
@@ -110,16 +114,39 @@ void ACPlayer::StartPlantingAnimation()
 	if (PlantAnim)
 	{
 		PlayAnimMontage(PlantAnim);
-
-		float MontageDuration = PlantAnim->GetPlayLength();
+		UE_LOG(LogTemp, Warning, TEXT("Play Plant Anim"));
+		if (ACPlayerController* MyController = Cast<ACPlayerController>(GetController()))
+		{
+			MyController->SetUnSlotChangable();
+		}
+		/*float MontageDuration = PlantAnim->GetPlayLength();
 		FTimerHandle PlantingAnimTimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(PlantingAnimTimerHandle, this, &ACPlayer::OnPlantingAnimationFinished, MontageDuration, false);
+		GetWorld()->GetTimerManager().SetTimer(PlantingAnimTimerHandle, this, &ACPlayer::OnPlantingAnimationFinished, MontageDuration, false);*/
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Plant Animation is missing!"));
 	}
 }
 
 void ACPlayer::OnPlantingAnimationFinished()
 {
-	// if(InteractComp->)
+	if (ACFarmField* FarmField = Cast<ACFarmField>(InteractComp->GetActionInteractTarget()))
+	{
+		if (ACItem_Seed* Seed = Cast<ACItem_Seed>(CurrentEquippedItem))
+		{
+			const FInventorySlot& SlotData = GetQuickSlotBar()->GetCurrentSlotData();
+			UCGameInstance* MyGI = Cast<UCGameInstance>(GetGameInstance());
+			FarmField->PlantCrop(Seed->CropClass, Seed->PlantLocation);
+			UE_LOG(LogTemp, Warning, TEXT("Plant Crop"));
+		}
+	}
+
+
+	if (ACPlayerController* MyController = Cast<ACPlayerController>(GetController()))
+	{
+		MyController->SetSlotChangable();
+	}
 }
 
 UCQuickSlotBarWidget* ACPlayer::GetQuickSlotBar()
@@ -149,10 +176,11 @@ void ACPlayer::EquipItemFromQuickSlot(int32 QuickSlotIndex)
 	}
 
 	int32 TargetSlotIndex = QuickSlotBar->GetCurrentSlot()->TargetSlotIndex;
+	UE_LOG(LogTemp, Warning, TEXT("TargetSlotIndex :%d"), TargetSlotIndex);
 	if (TargetSlotIndex < 0) return;
 
 	const FInventorySlot* const SlotData = &(InventoryComp->GetSlotDatas()[TargetSlotIndex]);
-	if (!SlotData || SlotData->ItemID == EItemID::None) return;
+	if ((!SlotData) || SlotData->ItemID == EItemID::None) return;
 	
 
 	// 새 아이템 생성

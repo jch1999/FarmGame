@@ -42,6 +42,11 @@ public:
 	void DrawConnectionLines();
 
 	UButton* GetPlantBtn() { return PlantBtn; }
+
+private:
+	UFUNCTION()
+	void OnPlantClicked();
+
 protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category="FarmField")
 	ACFarmField* FarmField;
