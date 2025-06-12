@@ -34,7 +34,8 @@ bool UCInventoryWidget::Initialize()
         CHelpers::GetAssetDynamic(&CoinTex, "/Game/ThirdParty/Icon/Icon_Money");
         if (CoinTex)
         {
-            MoneyDisplay->SetStateIcon(CoinTex, FLinearColor::Yellow);
+            MoneyDisplay->SetStateIconTexture(CoinTex);
+            MoneyDisplay->SetStateIconColor(FLinearColor::Yellow);
         }
     }
     if (!SlotWidgetClass)

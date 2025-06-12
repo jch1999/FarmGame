@@ -57,8 +57,8 @@ void ACBase_Crop::BeginPlay()
 {
 	Super::BeginPlay();
 
-	HealthComp->OnHealthChanged.AddDynamic(this, &ACBase_Crop::ChangeQualityByHealth);
-	SetInteractable();
+	HealthComp->OnStateValueChanged.AddDynamic(this, &ACBase_Crop::ChangeQualityByHealth);
+	SetUnInteractable();
 	GrowUp();
 	SetAutoGrowTimer(UpdateTime, true, UpdateTime);
 }
@@ -71,6 +71,24 @@ void ACBase_Crop::SetInteractable()
 void ACBase_Crop::SetUnInteractable()
 {
 	bInteractable = false;
+}
+
+void ACBase_Crop::SetDelayedInteractable(float DelayTime)
+{
+	if (GetWorld()->GetTimerManager().TimerExists(InteractTimer))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(InteractTimer);
+	}
+	GetWorld()->GetTimerManager().SetTimer(InteractTimer, this, &ACBase_Crop::SetInteractable, DelayTime, false);
+}
+
+void ACBase_Crop::SetDelayedUninteractable(float DelayTime)
+{
+	if (GetWorld()->GetTimerManager().TimerExists(InteractTimer))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(InteractTimer);
+	}
+	GetWorld()->GetTimerManager().SetTimer(InteractTimer, this, &ACBase_Crop::SetUnInteractable, DelayTime, false);
 }
 
 void ACBase_Crop::SetType(EInteractObjectType InNewType)
@@ -100,7 +118,7 @@ void ACBase_Crop::Interact(AActor* OtherActor)
 	// ForTest
 	else
 	{
-		if (ACharacter* Character = Cast<ACharacter>(OtherActor))
+		/*if (ACharacter* Character = Cast<ACharacter>(OtherActor))
 		{
 			float WidgetDelay = 0.0f;
 			if (AController* Controller = Character->GetController())
@@ -115,7 +133,7 @@ void ACBase_Crop::Interact(AActor* OtherActor)
 					GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ACBase_Crop::ShowCropWidget, WidgetDelay, false);
 				}
 			}
-		}
+		}*/
 		//GrowUp();
 	}
 
@@ -171,6 +189,10 @@ void ACBase_Crop::GrowUp()
 					CheckTrue(CurrentGrowLevel == CropData.MaxLevel);
 
 					PlayGrowthEffects();
+					if (IsHarvestable())
+					{
+						SetInteractable();
+					}
 				}
 			}
 			++CurrentGrowLevel;
@@ -212,14 +234,14 @@ void ACBase_Crop::PlayGrowthEffects()
 
 bool ACBase_Crop::IsDead()
 {
-	return HealthComp->GetCurrentHealth() < 0.0f;
+	return HealthComp->GetCurrentHealth() <= 0.0f;
 }
 
 bool ACBase_Crop::IsHarvestable()
 {
 	if (IsDead())
 	{
-		return false;
+		return true;
 	}
 	UGameInstance* Instance = GetGameInstance();
 	if (Instance)
@@ -354,29 +376,29 @@ void ACBase_Crop::AutoGrow()
 				if (OwnerField)
 				{
 					// 양분 및 수분 소비
-					float AvailableNutrition = FMath::Min(GrowthData.ConsumeNutrition, OwnerField->GetNutritionComp()->GetCurrentNutrition());
+					float AvailableNutrition = FMath::Min(GrowthData.ConsumeNutrition, OwnerField->GetNutritionComp()->GetCurrentValue());
 					NutritionComp->AddNutrition(AvailableNutrition);
 					OwnerField->GetNutritionComp()->ReduceNutrition(AvailableNutrition);
 
-					float AvailableMoisture = FMath::Min(GrowthData.ConsumeMoisture, OwnerField->GetMoistureComp()->GetCurrentMoisture());
+					float AvailableMoisture = FMath::Min(GrowthData.ConsumeMoisture, OwnerField->GetMoistureComp()->GetCurrentValue());
 					MoistureComp->AddMoisture(AvailableMoisture);
 					OwnerField->GetMoistureComp()->ReduceMoisture(AvailableMoisture);
 
 					// Drain Nutrition From Field
-					float LeftNutritionapacity = GrowthData.Max_Nutrition - NutritionComp->GetCurrentNutrition();
+					float LeftNutritionapacity = GrowthData.Max_Nutrition - NutritionComp->GetCurrentValue();
 					float CurrentConsumeNutrition = LeftNutritionapacity > GrowthData.ConsumeNutrition ? GrowthData.ConsumeMoisture : LeftNutritionapacity;
 
-					float FieldNutrtion = OwnerField->GetNutritionComp()->GetCurrentNutrition();
+					float FieldNutrtion = OwnerField->GetNutritionComp()->GetCurrentValue();
 					CurrentConsumeNutrition = FieldNutrtion < CurrentConsumeNutrition ? FieldNutrtion : CurrentConsumeNutrition;
 
 					NutritionComp->AddNutrition(CurrentConsumeNutrition);
 					OwnerField->GetNutritionComp()->ReduceNutrition(CurrentConsumeNutrition);
 
 					// Drain Moisture From Field
-					float LeftMoistureCapacity = GrowthData.Max_Moisture - MoistureComp->GetCurrentMoisture();
+					float LeftMoistureCapacity = GrowthData.Max_Moisture - MoistureComp->GetCurrentValue();
 					float CurrentConsumeMoisture = LeftMoistureCapacity > GrowthData.ConsumeMoisture ? GrowthData.ConsumeMoisture : LeftMoistureCapacity;
 
-					float FieldMoisture = OwnerField->GetMoistureComp()->GetCurrentMoisture();
+					float FieldMoisture = OwnerField->GetMoistureComp()->GetCurrentValue();
 					CurrentConsumeMoisture = FieldMoisture < CurrentConsumeMoisture ? FieldMoisture : CurrentConsumeMoisture;
 
 					MoistureComp->AddMoisture(CurrentConsumeMoisture);
@@ -451,11 +473,4 @@ void ACBase_Crop::SetCropDatas()
 	}
 }
 
-void ACBase_Crop::ShowCropWidget()
-{
-	if (CachedPlayerController)
-	{
-		CachedPlayerController->ShowCropWidget(this);
-	}
-}
 

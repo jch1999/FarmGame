@@ -10,32 +10,26 @@ void UCHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CurrentHealth = MaxHealth;
+	CurrentValue = MaxValue;
 }
 
 void UCHealthComponent::SetMaxHealth(float InMaxHealth, bool bResetCurrentHealth)
 {
-	MaxHealth = InMaxHealth;
+	MaxValue = InMaxHealth;
 
 	CheckFalse(bResetCurrentHealth);
-	float PrevHealth = CurrentHealth;
-	CurrentHealth = MaxHealth;
+	float PrevHealth = CurrentValue;
+	CurrentValue = MaxValue;
 
-	OnHealthChanged.Broadcast(PrevHealth,CurrentHealth,MaxHealth);
+	OnStateValueChanged.Broadcast(PrevHealth, CurrentValue, MaxValue);
 }
 
 void UCHealthComponent::IncreaseHealth(float InAmount)
 {
-	float PrevHealth = CurrentHealth;
-	CurrentHealth = FMath::Clamp(CurrentHealth + InAmount, 0, MaxHealth);
-
-	OnHealthChanged.Broadcast(PrevHealth, CurrentHealth, MaxHealth);
+	Super::AddValue(InAmount);
 }
 
 void UCHealthComponent::DecreaseHealth(float InAmount)
 {
-	float PrevHealth = CurrentHealth;
-	CurrentHealth = FMath::Clamp(CurrentHealth - InAmount, 0, MaxHealth);
-
-	OnHealthChanged.Broadcast(PrevHealth, CurrentHealth, MaxHealth);
+	Super::ReduceValue(InAmount);
 }

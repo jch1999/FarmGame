@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/CMoistureComponent.h"
+#include "Components/CNutritionComponent.h"
 #include "CFarmFieldWidget.generated.h"
 
 class ACFarmField;
@@ -24,7 +26,7 @@ public:
 	void SetFarmField(ACFarmField* InFarmField);
 
 	UFUNCTION(BlueprintNativeEvent)
-	void ResetFarmField();
+	void ResetFarmField(float CameraDelayTime);
 
 	UFUNCTION(BlueprintNativeEvent)
 	void UpdateCultivation(float OldValue, float NewValue, float MaxValue);
@@ -35,11 +37,17 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void UpdateMoisture(float OldValue, float NewValue, float MaxValue);
 
+	UFUNCTION(BlueprintNativeEvent)
+	void OnNutritionStateChanged(ENutritionState InState);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnMoistureStateChanged(EMoistureState InState);
+
 	UFUNCTION()
 	void CheckPlantBtnActive(int32 InIndex);
 
 	void PositionStateDisplays();
-	void DrawConnectionLines();
+	//void DrawConnectionLines();
 
 	UButton* GetPlantBtn() { return PlantBtn; }
 
@@ -64,12 +72,12 @@ protected:
 	UCStateDisplayWidget* MoistureState;
 
 	// Under Lines
-	UPROPERTY(meta = (BindWidget))
+	/*UPROPERTY(meta = (BindWidget))
 	UImage* Line_Cultivate;
 	UPROPERTY(meta = (BindWidget))
 	UImage* Line_Nutrition;
 	UPROPERTY(meta = (BindWidget))
-	UImage* Line_Moisture;
+	UImage* Line_Moisture;*/
 
 	UPROPERTY(meta = (BindWidget))
 	UButton* PlantBtn;

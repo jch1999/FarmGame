@@ -15,6 +15,41 @@
 #include "UI/CQuickSlotBarWidget.h"
 #include "UI/CQuickSlotWidget.h"
 #include "Characters/CPlayer.h"
+#include "Global.h"
+
+void UCFarmFieldWidget::NativeOnInitialized()
+{
+	Super::NativeOnInitialized();
+	if (CultivateState)
+	{
+		UTexture2D* CultivateIcon;
+		CHelpers::GetAssetDynamic(&CultivateIcon, "/Game/ThirdParty/Icon/Icon_Agriculture");
+		CultivateState->SetStateIconTexture(CultivateIcon);
+		CultivateState->SetStateIconColor(FLinearColor(150.0f, 75.0f, 0.0f));
+	}
+
+	if (NutritionState)
+	{
+		UTexture2D* NutritionIcon;
+		CHelpers::GetAssetDynamic(&NutritionIcon, "/Game/ThirdParty/Icon/Icon_Nutition");
+		NutritionState->SetStateIconTexture(NutritionIcon);
+		NutritionState->SetStateIconColor(FLinearColor::Red);
+	}
+	
+	if (MoistureState)
+	{
+		UTexture2D* MoistureIcon;
+		CHelpers::GetAssetDynamic(&MoistureIcon, "/Game/ThirdParty/Icon/Icon_Humidity_Mid");
+		MoistureState->SetStateIconTexture(MoistureIcon);
+		MoistureState->SetStateIconColor(FLinearColor::Red);
+	}
+
+	if (PlantBtn)
+	{
+		PlantBtn->SetIsEnabled(false);
+		PlantBtn->OnClicked.AddDynamic(this, &UCFarmFieldWidget::OnPlantClicked);
+	}
+}
 
 void UCFarmFieldWidget::SetFarmField_Implementation(ACFarmField* InFarmField)
 {
@@ -23,36 +58,58 @@ void UCFarmFieldWidget::SetFarmField_Implementation(ACFarmField* InFarmField)
 	UCCultivationComponent* CultivationComp = FarmField->GetCultivationComp();
 	if (CultivationComp)
 	{
-		CultivationComp->OnCultivationChanged.AddDynamic(this, &UCFarmFieldWidget::UpdateCultivation);
-		UpdateCultivation(0.0f, CultivationComp->GetCurrentCultivation(), CultivationComp->GetMaxCultivation());
+		CultivationComp->OnStateValueChanged.AddDynamic(this, &UCFarmFieldWidget::UpdateCultivation);
+		UpdateCultivation(0.0f, CultivationComp->GetCurrentValue(), CultivationComp->GetMaxValue());
+		UE_LOG(LogTemp, Warning, TEXT("Cultivation"));
 	}
 
 	UCNutritionComponent* NutritionComp= FarmField->GetNutritionComp();
 	if (NutritionComp)
 	{
-		NutritionComp->OnNutritionChanged.AddDynamic(this, &UCFarmFieldWidget::UpdateNutrition);
-		UpdateNutrition(0.0f, NutritionComp->GetCurrentNutrition(), NutritionComp->GetMaxNutrition());
+		NutritionComp->OnStateValueChanged.AddDynamic(this, &UCFarmFieldWidget::UpdateNutrition);
+		NutritionComp->OnNutritionStateChanged.AddDynamic(this, &UCFarmFieldWidget::OnNutritionStateChanged);
+		UpdateNutrition(0.0f, NutritionComp->GetCurrentValue(), NutritionComp->GetMaxValue());
+		OnNutritionStateChanged(NutritionComp->GetCurrentState());
+		UE_LOG(LogTemp, Warning, TEXT("Nutrition"));
 	}
 
 	UCMoistureComponent* MoistureComp = FarmField->GetMoistureComp();
 	if (MoistureComp)
 	{
-		MoistureComp->OnMoistureChanged.AddDynamic(this, &UCFarmFieldWidget::UpdateMoisture);
-		UpdateMoisture(0.0f, MoistureComp->GetCurrentMoisture(), MoistureComp->GetMaxMoisture());
+		MoistureComp->OnStateValueChanged.AddDynamic(this, &UCFarmFieldWidget::UpdateMoisture);
+		MoistureComp->OnMoistureStateChanged.AddDynamic(this, &UCFarmFieldWidget::OnMoistureStateChanged);
+		UpdateMoisture(0.0f, MoistureComp->GetCurrentValue(), MoistureComp->GetMaxValue());
+		OnMoistureStateChanged(MoistureComp->GetCurrentState());
+		UE_LOG(LogTemp, Warning, TEXT("Moisture"));
 	}
 	Offset=FVector2D(100.0f, 80.0f);
 
 	//PositionStateDisplays();
 }
 
-void UCFarmFieldWidget::ResetFarmField_Implementation()
+void UCFarmFieldWidget::ResetFarmField_Implementation(float CameraDelayTime)
 {
 	if (FarmField)
 	{
-		FarmField->GetCultivationComp()->OnCultivationChanged.RemoveDynamic(this, &UCFarmFieldWidget::UpdateCultivation);
-		FarmField->GetNutritionComp()->OnNutritionChanged.RemoveDynamic(this, &UCFarmFieldWidget::UpdateNutrition);
-		FarmField->GetMoistureComp()->OnMoistureChanged.RemoveDynamic(this, &UCFarmFieldWidget::UpdateMoisture);
+		UCCultivationComponent* CultivationComp = FarmField->GetCultivationComp();
+		if (CultivationComp)
+		{
+			CultivationComp->OnStateValueChanged.RemoveDynamic(this, &UCFarmFieldWidget::UpdateCultivation);
+		}
 
+		UCNutritionComponent* NutritionComp = FarmField->GetNutritionComp();
+		if (NutritionComp)
+		{
+			NutritionComp->OnStateValueChanged.RemoveDynamic(this, &UCFarmFieldWidget::UpdateNutrition);
+			NutritionComp->OnNutritionStateChanged.RemoveDynamic(this, &UCFarmFieldWidget::OnNutritionStateChanged);
+		}
+		UCMoistureComponent* MoistureComp = FarmField->GetMoistureComp();
+		if (MoistureComp)
+		{
+			MoistureComp->OnStateValueChanged.RemoveDynamic(this, &UCFarmFieldWidget::UpdateMoisture);
+			MoistureComp->OnMoistureStateChanged.RemoveDynamic(this, &UCFarmFieldWidget::OnMoistureStateChanged);
+		}
+		FarmField->SetDelayedInteractable(CameraDelayTime);
 		FarmField = nullptr;
 	}
 }
@@ -63,6 +120,8 @@ void UCFarmFieldWidget::UpdateCultivation_Implementation(float OldValue, float N
 	{
 		CultivateState->UpdateStateDisplay(NewValue, MaxValue);
 	}
+	UCGenericStateComponent* CultivationComp = FarmField->GetCultivationComp();
+	UE_LOG(LogTemp, Warning, TEXT("Cultivation: %.1f / %.1f"), CultivationComp->GetCurrentValue(), CultivationComp->GetMaxValue());
 }
 
 void UCFarmFieldWidget::UpdateNutrition_Implementation(float OldValue, float NewValue, float MaxValue)
@@ -71,6 +130,8 @@ void UCFarmFieldWidget::UpdateNutrition_Implementation(float OldValue, float New
 	{
 		NutritionState->UpdateStateDisplay(NewValue, MaxValue);
 	}
+	UCGenericStateComponent* NutritionComp = FarmField->GetNutritionComp();
+	UE_LOG(LogTemp, Warning, TEXT("Nutrition: %.1f / %.1f"), NutritionComp->GetCurrentValue(), NutritionComp->GetMaxValue());
 }
 
 void UCFarmFieldWidget::UpdateMoisture_Implementation(float OldValue, float NewValue, float MaxValue)
@@ -79,21 +140,62 @@ void UCFarmFieldWidget::UpdateMoisture_Implementation(float OldValue, float NewV
 	{
 		MoistureState->UpdateStateDisplay(NewValue, MaxValue);
 	}
+	UCGenericStateComponent* MoistureComp = FarmField->GetMoistureComp();
+	UE_LOG(LogTemp, Warning, TEXT("Moisture: %.1f / %.1f"), MoistureComp->GetCurrentValue(), MoistureComp->GetMaxValue());
 }
 
-void UCFarmFieldWidget::NativeOnInitialized()
-{
-	Super::NativeOnInitialized();
 
-	if (PlantBtn)
+void UCFarmFieldWidget::OnNutritionStateChanged_Implementation(ENutritionState InState)
+{
+	switch (InState)
 	{
-		PlantBtn->OnClicked.AddDynamic(this, &UCFarmFieldWidget::OnPlantClicked);
+		case ENutritionState::Famine: 
+		{
+			NutritionState->SetStateIconColor(FLinearColor::Red);
+		}
+		break;
+		case ENutritionState::Enough:
+		{
+			NutritionState->SetStateIconColor(FLinearColor::Yellow);
+		}
+		break;
+		case ENutritionState::Over:
+		{
+			NutritionState->SetStateIconColor(FLinearColor::Red);
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void UCFarmFieldWidget::OnMoistureStateChanged_Implementation(EMoistureState InState)
+{
+	switch (InState)
+	{
+		case EMoistureState::Dry:
+		{
+			MoistureState->SetStateIconColor(FLinearColor::Red);
+		}
+		break;
+		case EMoistureState::Enough:
+		{
+			MoistureState->SetStateIconColor(FLinearColor::Blue);
+		}
+		break;
+		case EMoistureState::Humid:
+		{
+			MoistureState->SetStateIconColor(FLinearColor::Red);
+		}
+		break;
+	default:
+		break;
 	}
 }
 
 void UCFarmFieldWidget::CheckPlantBtnActive(int32 InIndex)
 {
-	if (FarmField->GetCrop())
+	if (IsValid(FarmField->GetCrop()))
 	{
 		PlantBtn->SetIsEnabled(false);
 		return;
@@ -144,7 +246,7 @@ void UCFarmFieldWidget::PositionStateDisplays()
 		{
 			PlantBtnSlot->SetPosition(CenterPosition);
 		}
-		if (UCanvasPanelSlot* CultivateSlot = Cast<UCanvasPanelSlot>(CultivateState->Slot))
+		/*if (UCanvasPanelSlot* CultivateSlot = Cast<UCanvasPanelSlot>(CultivateState->Slot))
 		{
 			CultivateSlot->SetPosition(CenterPosition + FVector2D(-Offset.X, -Offset.Y));
 		}
@@ -157,59 +259,59 @@ void UCFarmFieldWidget::PositionStateDisplays()
 		if (UCanvasPanelSlot* MoistureSlot = Cast<UCanvasPanelSlot>(MoistureState->Slot))
 		{
 			MoistureSlot->SetPosition(CenterPosition + FVector2D(0, Offset.Y));
-		}
+		}*/
 
 		// 선도 갱신
-		DrawConnectionLines();
+		//DrawConnectionLines();
 	}
 }
 
-void UCFarmFieldWidget::DrawConnectionLines()
-{
-	if (!FarmField || !Line_Cultivate || !Line_Nutrition || !Line_Moisture) return;
-
-	FVector2D CenterPosition;
-	APlayerController* PC = GetOwningPlayer();
-	if (PC && PC->ProjectWorldLocationToScreen(FarmField->GetActorLocation(), CenterPosition))
-	{
-		FVector2D CultivatePos, NutritionPos, MoisturePos, dummy;
-		auto geometry = CultivateState->GetCachedGeometry();
-		USlateBlueprintLibrary::AbsoluteToViewport(GetWorld(), geometry.GetAbsolutePosition(), dummy, CultivatePos); 
-		geometry = NutritionState->GetCachedGeometry();
-		USlateBlueprintLibrary::AbsoluteToViewport(GetWorld(), geometry.GetAbsolutePosition(), dummy, NutritionPos);
-		geometry = MoistureState->GetCachedGeometry();
-		USlateBlueprintLibrary::AbsoluteToViewport(GetWorld(), geometry.GetAbsolutePosition(), dummy, MoisturePos);
-
-		FVector2D LineSize(100.0f, 2.0f);
-
-		if (UCanvasPanelSlot* CultivateLineSlot = Cast<UCanvasPanelSlot>(Line_Cultivate->Slot))
-		{
-			CultivateLineSlot->SetSize(LineSize);
-			CultivateLineSlot->SetPosition((CenterPosition + CultivatePos) * 0.5f); // 중앙 위치
-			FWidgetTransform Transform;
-			Transform.Angle = FMath::Atan2(CultivatePos.Y - CenterPosition.Y, CultivatePos.X - CenterPosition.X) * (180.0f / PI);
-			Line_Cultivate->SetRenderTransform(Transform);
-		}
-
-		if (UCanvasPanelSlot* NutritionLineSlot = Cast<UCanvasPanelSlot>(Line_Nutrition->Slot))
-		{
-			NutritionLineSlot->SetSize(LineSize);
-			NutritionLineSlot->SetPosition((CenterPosition + NutritionPos) * 0.5f);
-			FWidgetTransform Transform;
-			Transform.Angle = FMath::Atan2(NutritionPos.Y - CenterPosition.Y, NutritionPos.X - CenterPosition.X) * (180.0f / PI);
-			Line_Nutrition->SetRenderTransform(Transform);
-		}
-
-		if (UCanvasPanelSlot* MoistureLineSlot = Cast<UCanvasPanelSlot>(Line_Moisture->Slot))
-		{
-			MoistureLineSlot->SetSize(LineSize);
-			MoistureLineSlot->SetPosition((CenterPosition + MoisturePos) * 0.5f);
-			FWidgetTransform Transform;
-			Transform.Angle = FMath::Atan2(MoisturePos.Y - CenterPosition.Y, MoisturePos.X - CenterPosition.X) * (180.0f / PI);
-			Line_Moisture->SetRenderTransform(Transform);
-		}
-	}
-}
+//void UCFarmFieldWidget::DrawConnectionLines()
+//{
+//	if (!FarmField || !Line_Cultivate || !Line_Nutrition || !Line_Moisture) return;
+//
+//	FVector2D CenterPosition;
+//	APlayerController* PC = GetOwningPlayer();
+//	if (PC && PC->ProjectWorldLocationToScreen(FarmField->GetActorLocation(), CenterPosition))
+//	{
+//		FVector2D CultivatePos, NutritionPos, MoisturePos, dummy;
+//		auto geometry = CultivateState->GetCachedGeometry();
+//		USlateBlueprintLibrary::AbsoluteToViewport(GetWorld(), geometry.GetAbsolutePosition(), dummy, CultivatePos); 
+//		geometry = NutritionState->GetCachedGeometry();
+//		USlateBlueprintLibrary::AbsoluteToViewport(GetWorld(), geometry.GetAbsolutePosition(), dummy, NutritionPos);
+//		geometry = MoistureState->GetCachedGeometry();
+//		USlateBlueprintLibrary::AbsoluteToViewport(GetWorld(), geometry.GetAbsolutePosition(), dummy, MoisturePos);
+//
+//		FVector2D LineSize(100.0f, 2.0f);
+//
+//		if (UCanvasPanelSlot* CultivateLineSlot = Cast<UCanvasPanelSlot>(Line_Cultivate->Slot))
+//		{
+//			CultivateLineSlot->SetSize(LineSize);
+//			CultivateLineSlot->SetPosition((CenterPosition + CultivatePos) * 0.5f); // 중앙 위치
+//			FWidgetTransform Transform;
+//			Transform.Angle = FMath::Atan2(CultivatePos.Y - CenterPosition.Y, CultivatePos.X - CenterPosition.X) * (180.0f / PI);
+//			Line_Cultivate->SetRenderTransform(Transform);
+//		}
+//
+//		if (UCanvasPanelSlot* NutritionLineSlot = Cast<UCanvasPanelSlot>(Line_Nutrition->Slot))
+//		{
+//			NutritionLineSlot->SetSize(LineSize);
+//			NutritionLineSlot->SetPosition((CenterPosition + NutritionPos) * 0.5f);
+//			FWidgetTransform Transform;
+//			Transform.Angle = FMath::Atan2(NutritionPos.Y - CenterPosition.Y, NutritionPos.X - CenterPosition.X) * (180.0f / PI);
+//			Line_Nutrition->SetRenderTransform(Transform);
+//		}
+//
+//		if (UCanvasPanelSlot* MoistureLineSlot = Cast<UCanvasPanelSlot>(Line_Moisture->Slot))
+//		{
+//			MoistureLineSlot->SetSize(LineSize);
+//			MoistureLineSlot->SetPosition((CenterPosition + MoisturePos) * 0.5f);
+//			FWidgetTransform Transform;
+//			Transform.Angle = FMath::Atan2(MoisturePos.Y - CenterPosition.Y, MoisturePos.X - CenterPosition.X) * (180.0f / PI);
+//			Line_Moisture->SetRenderTransform(Transform);
+//		}
+//	}
+//}
 
 void UCFarmFieldWidget::OnPlantClicked()
 {

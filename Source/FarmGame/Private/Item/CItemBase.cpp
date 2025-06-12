@@ -74,6 +74,24 @@ void ACItemBase::SetUnInteractable()
 	bInteractable = false;
 }
 
+void ACItemBase::SetDelayedInteractable(float DelayTime)
+{
+	if (GetWorld()->GetTimerManager().TimerExists(InteractTimer))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(InteractTimer);
+	}
+	GetWorld()->GetTimerManager().SetTimer(InteractTimer, this, &ACItemBase::SetInteractable, DelayTime, false);
+}
+
+void ACItemBase::SetDelayedUninteractable(float DelayTime)
+{
+	if (GetWorld()->GetTimerManager().TimerExists(InteractTimer))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(InteractTimer);
+	}
+	GetWorld()->GetTimerManager().SetTimer(InteractTimer, this, &ACItemBase::SetUnInteractable, DelayTime, false);
+}
+
 FName ACItemBase::GetInteractName()
 {
 	FString ItemFullName = UEnum::GetValueAsString(ItemID);

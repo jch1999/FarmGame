@@ -51,20 +51,22 @@ void ACFarmField::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	MoistureComp->SetSafeRange(FVector2D(0.0f, 100.0f));
 	MoistureComp->AddMoisture(30.0f);
 	MoistureComp->SetAutoReduceAmount(0.1f);
 	MoistureComp->SetAutoReduceTimer(1.0f, true, 1.0f);
-	MoistureComp->SetSafeRange(FVector2D(0.0f, 100.0f));
+	UE_LOG(LogTemp, Warning, TEXT("[BeginPlay] Moisture After Add: %.1f"), MoistureComp->GetCurrentValue());
 
+	NutritionComp->SetSafeRange(FVector2D(0.0f, 100.0f));
 	NutritionComp->AddNutrition(50.0f);
 	NutritionComp->SetAutoReduceAmount(0.0f);
 	NutritionComp->SetAutoReduceTimer(1.0f, true, 1.0f);
-	NutritionComp->SetSafeRange(FVector2D(0.0f, 100.0f));
+	UE_LOG(LogTemp, Warning, TEXT("[BeginPlay] Nutrition After Add: %.1f"), NutritionComp->GetCurrentValue());
 
-	CultivationComp->AddCultivation(25.0f);
-	CultivationComp->SetAutoReduceAmount(0.5f);
+	CultivationComp->AddCultivation(50.0f);
+	CultivationComp->SetAutoReduceAmount(0.1f);
 	CultivationComp->SetAutoReduceTimer(1.0f, true, 1.0f);
-
+	UE_LOG(LogTemp, Warning, TEXT("[BeginPlay] Cultivation After Add: %.1f"), CultivationComp->GetCurrentValue());
 	// Interact
 	SetInteractable();
 
@@ -82,6 +84,29 @@ void ACFarmField::SetUnInteractable()
 	bInteractable = false;
 }
 
+void ACFarmField::SetDelayedInteractable(float DelayTime)
+{
+	if (GetWorld()->GetTimerManager().TimerExists(InteractTimer))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(InteractTimer);
+	}
+	if (IsValid(Crop) && Crop->IsHarvestable())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Crop is harvestable. FarmField shouldn't be interacted."));
+		return;
+	}
+	GetWorld()->GetTimerManager().SetTimer(InteractTimer, this, &ACFarmField::SetInteractable, DelayTime, false);
+}
+
+void ACFarmField::SetDelayedUninteractable(float DelayTime)
+{
+	if (GetWorld()->GetTimerManager().TimerExists(InteractTimer))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(InteractTimer);
+	}
+	GetWorld()->GetTimerManager().SetTimer(InteractTimer, this, &ACFarmField::SetUnInteractable, DelayTime, false);
+}
+
 
 void ACFarmField::SetType(EInteractObjectType InNewType)
 {
@@ -90,6 +115,8 @@ void ACFarmField::SetType(EInteractObjectType InNewType)
 
 void ACFarmField::Interact(AActor* OtherActor)
 {
+	if (!IsInteractable()) return;
+
 	if (ACPlayer* Player = Cast<ACPlayer>(OtherActor))
 	{
 		float WidgetDelay = 0.0f;
@@ -118,13 +145,14 @@ bool ACFarmField::PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, const FVector&
 	ACBase_Crop* NewCrop = GetWorld()->SpawnActorDeferred<ACBase_Crop>(InCropClass, CropTM, this, nullptr);
 	if (!NewCrop) return false;
 
-	NewCrop->FinishSpawning(CropTM); 
 	NewCrop->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
+	NewCrop->SetActorRelativeLocation(RelativeOffset);
 	NewCrop->SetOwner(this);
 	NewCrop->SetFarmField(this);
 	Crop = NewCrop;
+	NewCrop->FinishSpawning(CropTM); 
 
-	SetUnInteractable();
+	//SetUnInteractable();
 
 	return true;
 }
@@ -145,7 +173,7 @@ void ACFarmField::ShowFarmFieldWidget()
 {
 	if (CachedPlayerController)
 	{
-		CachedPlayerController->ShowFarmFieldWidget(this);
+		CachedPlayerController->ShowFarmWidget(this);
 	}
 }
 

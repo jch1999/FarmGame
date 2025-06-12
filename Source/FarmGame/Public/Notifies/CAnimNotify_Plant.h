@@ -12,5 +12,5 @@ class FARMGAME_API UCAnimNotify_Plant : public UAnimNotify
 
 public:
 	FString GetNotifyName_Implementation() const override;
-	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
+	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
 };

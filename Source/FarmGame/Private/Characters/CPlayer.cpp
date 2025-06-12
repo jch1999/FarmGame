@@ -9,6 +9,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/CInteractComponent.h"
 #include "Components/CInventoryComponent.h"
+#include "Components/PostProcessComponent.h"
 #include "Interfaces/CItemInterface.h"
 #include "CHUD.h"
 #include "UI/CHUDWidget.h"
@@ -38,20 +39,22 @@ ACPlayer::ACPlayer()
 	GetMesh()->SetSkeletalMesh(MeshAsset);
 	GetMesh()->SetRelativeLocation(FVector(0, 0, -88));
 	GetMesh()->SetRelativeRotation(FRotator(0, -90, 0));
-
+	
+	GetMesh()->SetRenderCustomDepth(true);
+	GetMesh()->SetCustomDepthStencilValue(10);
 	// Animation
 	TSubclassOf<UAnimInstance> AnimClass;
 	CHelpers::GetClass(&AnimClass, "/Game/Player/ABP_CPlayer");
 	GetMesh()->SetAnimInstanceClass(AnimClass);
 
 	// State Comp
-	CHelpers::CreateActorComponent(this, &StateComp, "StateComp");
+	//CHelpers::CreateActorComponent(this, &StateComp, "StateComp");
 
 	// Attribute Comp
 	CHelpers::CreateActorComponent(this, &AttributeComp, "AttributeComp");
 
 	// Option Comp
-	CHelpers::CreateActorComponent(this, &OptionComp, "OptionComp");
+	//CHelpers::CreateActorComponent(this, &OptionComp, "OptionComp");
 
 	// Interact Comp
 	CHelpers::CreateActorComponent(this, &InteractComp, "InteractComp");
@@ -64,6 +67,11 @@ ACPlayer::ACPlayer()
 	GetCharacterMovement()->RotationRate = FRotator(0, 720, 0);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
+
+	// Post Process Comp
+	/*CHelpers::CreateSceneComponent(this, &PostProcessComp, "PostProcessComp", GetMesh());
+	PostProcessComp->bUnbound = true;
+	PostProcessComp->BlendWeight = 1.0f;*/
 }
 
 void ACPlayer::BeginPlay()
@@ -71,6 +79,24 @@ void ACPlayer::BeginPlay()
 	Super::BeginPlay();
 	
 	SetInteractable();
+
+	// Fade
+	UMaterialInterface* Mat;
+	CHelpers::GetAssetDynamic(&Mat, "/Game/ThirdParty/3D_LOW_POLY_FarmerPack/Material/M_farm1_Inst");
+	if (Mat)
+	{
+		FadeMaterialInstance = UMaterialInstanceDynamic::Create(Mat, this);
+		if (FadeMaterialInstance)
+		{
+			GetMesh()->SetMaterial(0, FadeMaterialInstance);
+			//PostProcessComp->Settings.WeightedBlendables.Array.Add(FWeightedBlendable(1.0f, FadeMaterialInstance));
+		}
+	}
+	TargetOpacity = 1.0f;
+	CurrentOpacity = 1.0f;
+	FadeLerpDuration = 0.5f;
+	FadeLerpElapsed = 0.0f;
+	bFadingOut = false;
 }
 
 void ACPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -109,6 +135,11 @@ void ACPlayer::ActionInteract()
 	InteractComp->DoActionInteract();
 }
 
+ACItemBase* ACPlayer::GetCurretnEquippedItem()
+{
+	return CurrentEquippedItem;
+}
+
 void ACPlayer::StartPlantingAnimation()
 {
 	if (PlantAnim)
@@ -118,6 +149,7 @@ void ACPlayer::StartPlantingAnimation()
 		if (ACPlayerController* MyController = Cast<ACPlayerController>(GetController()))
 		{
 			MyController->SetUnSlotChangable();
+			MyController->GetStateComponent()->SetActionMode();
 		}
 		/*float MontageDuration = PlantAnim->GetPlayLength();
 		FTimerHandle PlantingAnimTimerHandle;
@@ -138,6 +170,7 @@ void ACPlayer::OnPlantingAnimationFinished()
 			const FInventorySlot& SlotData = GetQuickSlotBar()->GetCurrentSlotData();
 			UCGameInstance* MyGI = Cast<UCGameInstance>(GetGameInstance());
 			FarmField->PlantCrop(Seed->CropClass, Seed->PlantLocation);
+			Seed->UseItem();
 			UE_LOG(LogTemp, Warning, TEXT("Plant Crop"));
 		}
 	}
@@ -146,6 +179,7 @@ void ACPlayer::OnPlantingAnimationFinished()
 	if (ACPlayerController* MyController = Cast<ACPlayerController>(GetController()))
 	{
 		MyController->SetSlotChangable();
+		MyController->GetStateComponent()->SetIdleMode();
 	}
 }
 
@@ -204,6 +238,9 @@ void ACPlayer::EquipItemFromQuickSlot(int32 QuickSlotIndex)
 						CurrentEquippedItem->SetActorRelativeRotation(AttachData.Rotation);
 						CurrentEquippedItem->SetActorRelativeScale3D(AttachData.Scale);
 						CurrentEquippedItem->SetCollision(false);
+						UE_LOG(LogTemp, Warning, TEXT("AttachData.SocketName: %s"), *AttachData.SocketName.ToString());
+						UE_LOG(LogTemp, Warning, TEXT("AttachData.Location: %s"), *AttachData.Location.ToString());
+						UE_LOG(LogTemp, Warning, TEXT("AttachData.Rotation: %s"), *AttachData.Rotation.ToString());
 					}
 				}
 			}
@@ -211,6 +248,54 @@ void ACPlayer::EquipItemFromQuickSlot(int32 QuickSlotIndex)
 	}
 }
 
+void ACPlayer::StartFade(bool bToTransparent)
+{
+	bFadingOut = bToTransparent;
+	TargetOpacity = bToTransparent ? 0.3f : 1.0f;
+	FadeLerpElapsed = 0.0f;
+
+	UE_LOG(LogTemp, Warning, TEXT("Target Opacity : %f"), TargetOpacity);
+	GetWorld()->GetTimerManager().SetTimer(OpacityTimerHandle, this, &ACPlayer::UpdateFade, 0.01f, true);
+}
+
+void ACPlayer::UpdateFade()
+{
+	FadeLerpElapsed += 0.01f;
+	float Alpha = FMath::Clamp(FadeLerpElapsed / FadeLerpDuration, 0.0f, 1.0f);
+	float NewOpacity = FMath::Lerp(CurrentOpacity, TargetOpacity, Alpha);
+
+	if (FadeMaterialInstance)
+	{
+		FadeMaterialInstance->SetScalarParameterValue("FadeAlpha", NewOpacity);
+		float Value = 0.0f;
+		FadeMaterialInstance->GetScalarParameterValue(FName("FadeAlpha"), Value);
+		UE_LOG(LogTemp, Warning, TEXT("Now FadeAlpha : %f"), Value);
+	}
+
+	if (Alpha >= 1.0f)
+	{
+		CurrentOpacity = TargetOpacity;
+		GetWorld()->GetTimerManager().ClearTimer(OpacityTimerHandle);
+	}
+}
+
+void ACPlayer::SetDelayedInteractable(float DelayTime)
+{
+	if (GetWorld()->GetTimerManager().TimerExists(InteractTimer))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(InteractTimer);
+	}
+	GetWorld()->GetTimerManager().SetTimer(InteractTimer, this, &ACPlayer::SetInteractable, DelayTime, false);
+}
+
+void ACPlayer::SetDelayedUninteractable(float DelayTime)
+{
+	if (GetWorld()->GetTimerManager().TimerExists(InteractTimer))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(InteractTimer);
+	}
+	GetWorld()->GetTimerManager().SetTimer(InteractTimer, this, &ACPlayer::SetUnInteractable, DelayTime, false);
+}
 
 bool ACPlayer::OnHovered()
 {

@@ -2,16 +2,15 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Components/CGenericStateComponent.h"
 #include "CHealthComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FHealthChanged, float, CurrentHealth, float, PrevHealth, float, MaxHealth);
-
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class FARMGAME_API UCHealthComponent : public UActorComponent
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class FARMGAME_API UCHealthComponent : public UCGenericStateComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	UCHealthComponent();
 
 protected:
@@ -19,29 +18,14 @@ protected:
 
 public:
 	UFUNCTION(BlueprintPure)
-	FORCEINLINE float GetCurrentHealth() { return CurrentHealth; }
+	FORCEINLINE float GetCurrentHealth() { return GetCurrentValue(); }
 
 	UFUNCTION(BlueprintPure)
-	FORCEINLINE float GetMaxHealth() { return MaxHealth; }
-	
-	UFUNCTION(BlueprintPure)
-	FORCEINLINE float GetCurrentRate() { return CurrentHealth / MaxHealth; }
+	FORCEINLINE float GetMaxHealth() { return GetMaxValue(); }
 
 
 	void SetMaxHealth(float InMaxHealth, bool bResetCurrentHealth = false);
 
 	void IncreaseHealth(float InAmount);
 	void DecreaseHealth(float InAmount);
-
-public:
-	UPROPERTY(BlueprintAssignable)
-	FHealthChanged OnHealthChanged;
-
-protected:
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Health")
-	float MaxHealth;
-
-private:
-	float CurrentHealth;
-		
 };

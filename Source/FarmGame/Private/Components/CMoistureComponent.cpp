@@ -3,7 +3,6 @@
 
 UCMoistureComponent::UCMoistureComponent()
 {
-	MaxMoisture = 100.0f;
 }
 
 
@@ -14,37 +13,25 @@ void UCMoistureComponent::BeginPlay()
 
 void UCMoistureComponent::AddMoisture(float Amount)
 {
-	float PrevValue = CurrentMoisture;
-	CurrentMoisture += Amount;
-	CurrentMoisture = FMath::Clamp(CurrentMoisture, 0, CurrentMoisture > MoistureSafeRange.Y ? CurrentMoisture : MoistureSafeRange.Y);
-
-	OnMoistureChanged.Broadcast(PrevValue, CurrentMoisture, GetMaxMoisture());
+	Super::AddValue(Amount);
 
 	CheckState();
 }
 
 void UCMoistureComponent::ReduceMoisture(float Amount)
 {
-	float PrevValue = CurrentMoisture;
-	CurrentMoisture -= Amount;
-	CurrentMoisture = FMath::Clamp(CurrentMoisture, 0, CurrentMoisture > MoistureSafeRange.Y ? CurrentMoisture : MoistureSafeRange.Y);
-	
-	OnMoistureChanged.Broadcast(PrevValue, CurrentMoisture, GetMaxMoisture());
+	Super::ReduceValue(Amount);
 
 	CheckState();
 }
 
-void UCMoistureComponent::SetSafeRange(FVector2D NewRange)
+void UCMoistureComponent::SetSafeRange(FVector2D InNewRange)
 {
-	MoistureSafeRange = NewRange;
+	Super::SetSafeRange(InNewRange);
 	
 	CheckState();
 }
 
-void UCMoistureComponent::SetAutoReduceAmount(float InReduceAmount)
-{
-	AutoReduceAmount = InReduceAmount;
-}
 
 void UCMoistureComponent::SetDryState()
 {
@@ -63,26 +50,21 @@ void UCMoistureComponent::SetHumidState()
 	ChangeState(EMoistureState::Humid);
 }
 
-void UCMoistureComponent::SetAutoReduceTimer(float InFirstDelay, bool InbLoop, float InLoopDelay)
+void UCMoistureComponent::AutoReduceValue()
 {
-	GetWorld()->GetTimerManager().ClearTimer(MoistureReduceTimer);
+	Super::AutoReduceValue();
 
-	GetWorld()->GetTimerManager().SetTimer(MoistureReduceTimer, this, &UCMoistureComponent::AutoReduceMoisture, InLoopDelay, InbLoop, InFirstDelay);
-}
-
-void UCMoistureComponent::AutoReduceMoisture()
-{
-	ReduceMoisture(AutoReduceAmount);
+	CheckState();
 }
 
 void UCMoistureComponent::CheckState()
 {
-	if (CurrentMoisture < MoistureSafeRange.X)
+	if (CurrentValue < SafeRange.X)
 	{
 		SetDryState();
 		return;
 	}
-	else if (CurrentMoisture > MoistureSafeRange.Y)
+	else if (CurrentValue > SafeRange.Y)
 	{
 		SetHumidState();
 		return;

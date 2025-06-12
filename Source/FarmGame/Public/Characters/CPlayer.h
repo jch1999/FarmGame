@@ -16,6 +16,9 @@ class UCInteractComponent;
 class ICItemInterface;
 class UAnimMontage;
 class UCQuickSlotBarWidget;
+class ACItemBase;
+class UMaterialInstanceDynamic;
+class UPostProcessComponent;
 
 UCLASS()
 class FARMGAME_API ACPlayer : public ACharacter, public ICInterface_Interactable
@@ -40,6 +43,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	void SetUnInteractable() override;
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
+	virtual void SetDelayedInteractable(float DelayTime) override;
+
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
+	virtual void SetDelayedUninteractable(float DelayTime) override;
+
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	EInteractObjectType GetType() override { return InteractType; }
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	virtual FName GetInteractName() override { return "Player"; }
@@ -55,9 +64,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface|Custom")
 	void ActionInteract();
 
+	ACItemBase* GetCurretnEquippedItem();
+
 	// Get Components
 	FORCEINLINE UCameraComponent* GetCameraComponent() const { return CameraComp; }
-	FORCEINLINE UCOptionComponent* GetOptionComponent() const { return OptionComp; }
+	//FORCEINLINE UCOptionComponent* GetOptionComponent() const { return OptionComp; }
 	FORCEINLINE UCInteractComponent* GetInteractComponent() const { return InteractComp; }
 	FORCEINLINE UCInventoryComponent* GetInventoryComponent() const { return InventoryComp; }
 
@@ -69,6 +80,12 @@ public:
 	UCQuickSlotBarWidget* GetQuickSlotBar();
 	void EquipItemFromQuickSlot(int32 QuickSlotIndex);
 
+	// Fade
+	void StartFade(bool bToTransparent);
+
+private:
+	void UpdateFade();
+
 protected:
 	// Components
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
@@ -77,25 +94,39 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UCameraComponent* CameraComp;
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
-	UCStateComponent* StateComp;
+	//UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	//UCStateComponent* StateComp;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UCAttributeComponent* AttributeComp;
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
-	UCOptionComponent* OptionComp;
+	//UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	//UCOptionComponent* OptionComp;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UCInteractComponent* InteractComp;
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UCInventoryComponent* InventoryComp;
 
+	//UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	//UPostProcessComponent* PostProcessComp;
+
 	// Interact Interface
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
 	bool bInteractable;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
 	EInteractObjectType InteractType;
+
+	// Fade
+	UPROPERTY()
+	UMaterialInstanceDynamic* FadeMaterialInstance;
+
+	FTimerHandle OpacityTimerHandle;
+	float TargetOpacity;
+	float CurrentOpacity;
+	float FadeLerpDuration;
+	float FadeLerpElapsed;
+	bool bFadingOut;
 
 private:
 	// Animation
@@ -105,4 +136,6 @@ private:
 	// EuqipedItem
 	UPROPERTY(VisibleAnywhere, Category="Item")
 	ACItemBase* CurrentEquippedItem;
+
+	FTimerHandle InteractTimer;
 };

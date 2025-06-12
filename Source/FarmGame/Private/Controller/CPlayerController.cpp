@@ -8,9 +8,11 @@
 #include "Components/COptionComponent.h"
 #include "Components/CInteractComponent.h"
 #include "Components/CInventoryComponent.h"
+#include "Components/CStateComponent.h"
 #include "UI/CHUDWidget.h"
 #include "UI/CWarningWidget.h"
 #include "UI/CDragIconWidget.h"
+#include "UI/CFarmInteractionContainerWidget.h"
 #include "UI/CFarmFieldWidget.h"
 #include "UI/CCropWidget.h"
 #include "UI/CQuickSlotBarWidget.h"
@@ -19,6 +21,10 @@
 
 ACPlayerController::ACPlayerController()
 {
+	// Component
+	CHelpers::CreateActorComponent(this, &StateComp, "StateComp");
+	CHelpers::CreateActorComponent(this, &OptionComp, "OptionComp");
+
 	// Input Setting
 	// Default
 	CHelpers::GetAsset(&DefaultContext, "/Game/Input/IMC_Player");
@@ -56,15 +62,10 @@ ACPlayerController::ACPlayerController()
 	{
 		CHelpers::GetClass(&DragIconWidgetClass, "/Game/UI/WB_DragIcon");
 	}
-	if (!FarmFieldWidgetClass)
+	if (!FarmWidgetClass)
 	{
-		CHelpers::GetClass<UCFarmFieldWidget>(&FarmFieldWidgetClass, "/Game/UI/WB_FarmFieldWidget");
+		CHelpers::GetClass(&FarmWidgetClass, "/Game/UI/WB_FarmInteractionContainer");
 	}
-	if (!CropWidgetClass)
-	{
-		CHelpers::GetClass<UCCropWidget>(&CropWidgetClass, "/Game/UI/WB_CropWidget");
-	}
-
 	CameraMoveTime = 1.5f;
 }
 
@@ -157,6 +158,8 @@ void ACPlayerController::SetupInputComponent()
 
 void ACPlayerController::Move(const FInputActionValue& Value)
 {
+	if (!(GetStateComponent()->IsIdleMode())) return;
+
 	ACPlayer* MyPlayer = Cast<ACPlayer>(GetPawn());
 	if (!MyPlayer) return;
 
@@ -172,12 +175,11 @@ void ACPlayerController::Move(const FInputActionValue& Value)
 
 void ACPlayerController::Look(const FInputActionValue& Value)
 {
-	ACPlayer* MyPlayer = Cast<ACPlayer>(GetPawn());
-	if (!MyPlayer) return;
+	if (!(GetStateComponent()->IsIdleMode())) return;
 
 	FVector2D InputValue = Value.Get<FVector2D>();
-	InputValue.X *= MyPlayer->GetOptionComponent()->GetMouseXSpeed() * GetWorld()->GetDeltaSeconds();
-	InputValue.Y *= MyPlayer->GetOptionComponent()->GetMouseYSpeed() * GetWorld()->GetDeltaSeconds();
+	InputValue.X *= GetOptionComponent()->GetMouseXSpeed() * GetWorld()->GetDeltaSeconds();
+	InputValue.Y *= GetOptionComponent()->GetMouseYSpeed() * GetWorld()->GetDeltaSeconds();
 
 	AddYawInput(InputValue.X);
 	AddPitchInput(-InputValue.Y);
@@ -466,82 +468,73 @@ void ACPlayerController::HideWarningWidget()
 	}
 }
 
-void ACPlayerController::ShowFarmFieldWidget(ACFarmField* TargetField)
+void ACPlayerController::ShowFarmWidget(ACFarmField* TargetField)
 {
-	if (FarmFieldWidgetClass && !FarmFieldWidget)
+	if (FarmWidgetClass)
 	{
-		FarmFieldWidget = CreateWidget<UCFarmFieldWidget>(this, FarmFieldWidgetClass);
-		if (FarmFieldWidget)
+		if (!FarmWidget)
 		{
-			FarmFieldWidget->AddToViewport();
+			FarmWidget = CreateWidget<UCFarmInteractionContainerWidget>(this, FarmWidgetClass);
+			FarmWidget->AddToViewport();
+			UE_LOG(LogTemp, Warning, TEXT("Create UCFarmInteractionContainerWidget."));
 		}
-	}
 
-	if (FarmFieldWidget)
-	{
-		FarmFieldWidget->SetFarmField_Implementation(TargetField);
-		FarmFieldWidget->GetPlantBtn()->OnClicked.AddDynamic(this, &ACPlayerController::HideFarmFieldWidget);
-		FarmFieldWidget->PositionStateDisplays();
-		OnQuickSlotSelectedDelegate.AddDynamic(FarmFieldWidget, &UCFarmFieldWidget::CheckPlantBtnActive);
-		if (AHUD* HUD = GetHUD())
+		FarmWidget->SetFarmField(TargetField);
+		FarmWidget->GetCloseBtn()->OnClicked.AddDynamic(this, &ACPlayerController::HideFarmWidget);
+		if (UCFarmFieldWidget* FarmFieldWidget = FarmWidget->GetFarmFieldWidget())
 		{
-			if (ACHUD* MyHud = Cast<ACHUD>(HUD))
+			FarmFieldWidget->GetPlantBtn()->OnClicked.AddDynamic(this, &ACPlayerController::HideFarmWidget);
+			//FarmFieldWidget->PositionStateDisplays();
+			OnQuickSlotSelectedDelegate.AddDynamic(FarmFieldWidget, &UCFarmFieldWidget::CheckPlantBtnActive);
+			UE_LOG(LogTemp, Warning, TEXT("Bind CheckPlantBtnActive."));
+			if (AHUD* HUD = GetHUD())
 			{
-				if (UCHUDWidget* HudWidget = MyHud->GetHUD())
+				if (ACHUD* MyHud = Cast<ACHUD>(HUD))
 				{
-					if (UCQuickSlotBarWidget* QuickSlotBar = HudWidget->GetQuickSlotBar())
+					if (UCHUDWidget* HudWidget = MyHud->GetHUD())
 					{
-						FarmFieldWidget->CheckPlantBtnActive(QuickSlotBar->CurrentIndex);
+						if (UCQuickSlotBarWidget* QuickSlotBar = HudWidget->GetQuickSlotBar())
+						{
+							FarmFieldWidget->CheckPlantBtnActive(QuickSlotBar->CurrentIndex);
+						}
 					}
 				}
 			}
 		}
-		ShowWidget(FarmFieldWidget);
-	}
-}
+		ShowWidget(FarmWidget);
 
-void ACPlayerController::HideFarmFieldWidget()
-{
-	if (FarmFieldWidget)
-	{
-		FarmFieldWidget->ResetFarmField_Implementation();
-		OnQuickSlotSelectedDelegate.RemoveDynamic(FarmFieldWidget, &UCFarmFieldWidget::CheckPlantBtnActive);
-		HideWidget(FarmFieldWidget);
-		ResetCamera();
-	}
-}
-
-void ACPlayerController::ShowCropWidget(ACBase_Crop* TargetCrop)
-{
-	if (CropWidgetClass && !CropWidget)
-	{
-		CropWidget = CreateWidget<UCCropWidget>(this, CropWidgetClass);
-		if (CropWidget)
+		if (ACPlayer* CurrentPlayer = Cast<ACPlayer>(GetPawn()))
 		{
-			CropWidget->AddToViewport();
+			CurrentPlayer->StartFade(true);
 		}
 	}
-
-	if (CropWidget)
+	else
 	{
-		CropWidget->SetCrop_Implementation(TargetCrop);
-		CropWidget->GetHarvestBtn()->OnClicked.AddDynamic(this, &ACPlayerController::HideCropWidget);
-		// CropWidget->PositionStateDisplays();
-
-		ShowWidget(CropWidget);
+		UE_LOG(LogTemp, Error, TEXT("UCFarmInteractionContainerWidgetClass Missig!"));
 	}
 }
 
-void ACPlayerController::HideCropWidget()
+void ACPlayerController::HideFarmWidget()
 {
-	if (CropWidget)
+	if (FarmWidget)
 	{
-		CropWidget->ResetCrop_Implementation();
-		HideWidget(CropWidget);
+		FarmWidget->GetCloseBtn()->OnClicked.RemoveDynamic(this, &ACPlayerController::HideFarmWidget);
+		if (UCFarmFieldWidget* FarmFieldWidget = FarmWidget->GetFarmFieldWidget())
+		{
+			FarmFieldWidget->GetPlantBtn()->OnClicked.RemoveDynamic(this, &ACPlayerController::HideFarmWidget);
+			//FarmFieldWidget->ResetFarmField(CameraMoveTime);
+			OnQuickSlotSelectedDelegate.RemoveDynamic(FarmFieldWidget, &UCFarmFieldWidget::CheckPlantBtnActive);
+		}
+		FarmWidget->ResetFarmField(CameraMoveTime);
+		HideWidget(FarmWidget);
 		ResetCamera();
+
+		if (ACPlayer* CurrentPlayer = Cast<ACPlayer>(GetPawn()))
+		{
+			CurrentPlayer->StartFade(false);
+		}
 	}
 }
-
 
 
 void ACPlayerController::ShowWidget(UUserWidget* InWidget)

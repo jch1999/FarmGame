@@ -21,4 +21,4 @@ Seed_Carrot,Seed_Carrot,/Game/Item/Consumable/Seeds/Seed_Carrot.Seed_Carrot_C,/G
 Usage: Interact with tilled ground to plant. The ground must be empty of other crops, and these seeds must be in your active quickslot. Press the plant button to consume the seeds and grow carrots.
 
 Seeds of the carrot, a root vegetable. They have a similar growth time to tomatoes and offer a unique texture and nutrients."
-WaterCan,WaterCan,,,,,
+WaterCan,WaterCan,/Game/Item/Tools/BP_CItem_WateringCan.BP_CItem_WateringCan_C,/Game/Item/Icons/WateringCanIcon,,,A tool for tending to your crops. Interact with FarmFields to apply water and increase their Moisture.

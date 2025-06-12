@@ -14,6 +14,9 @@ class UCWarningWidget;
 class UCDragIconWidget;
 class UCFarmFieldWidget;
 class UCCropWidget;
+class UCStateComponent;
+class UCOptionComponent;
+class UCFarmInteractionContainerWidget;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuickSlotSelected, int32, QuickSlotIndex);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDragIconShowing, bool, IsOn);
@@ -68,19 +71,18 @@ public:
 	void UpdateDragIconPosition(FVector2D NewPosition);
 
 	// Widget - FarmField
-	void ShowFarmFieldWidget(ACFarmField* TargetField);
+	void ShowFarmWidget(ACFarmField* TargetField);
 	UFUNCTION()
-	void HideFarmFieldWidget();
-
-	// Widget - Crop
-	void ShowCropWidget(ACBase_Crop* TargetField);
-	UFUNCTION()
-	void HideCropWidget();
+	void HideFarmWidget();
 
 	// Switch Camera
 	void SwitchCamera(AActor* TargetCamera);
 	void ResetCamera();
 	float GetCameraMoveTime() { return CameraMoveTime; }
+
+	// Components
+	FORCEINLINE UCStateComponent* GetStateComponent() const { return StateComp; }
+	FORCEINLINE UCOptionComponent* GetOptionComponent() const { return OptionComp; }
 
 private:
 	void RebindAction();
@@ -99,6 +101,12 @@ public:
 	FDragIconShowing OnDragIconShowing;
 
 protected:
+	// Component
+	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	UCStateComponent* StateComp;
+	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	UCOptionComponent* OptionComp;
+
 	// Input
 	// For IMc Check
 	UPROPERTY(EditDefaultsOnly, Category = "Input|Context")
@@ -158,19 +166,11 @@ protected:
 	UCDragIconWidget* DragIconWidget;
 	bool IsDragging;
 
-	// Widget - FarmField
-	UPROPERTY(VisibleAnywhere, Category = "Widget|FarmField")
-	TSubclassOf<UCFarmFieldWidget> FarmFieldWidgetClass;
-
-	UPROPERTY(VisibleAnywhere, Category = "Widget|FarmField")
-	UCFarmFieldWidget* FarmFieldWidget;
-
-	// Widget - Crop
-	UPROPERTY(VisibleAnywhere, Category = "Widget|Crop")
-	TSubclassOf<UCCropWidget> CropWidgetClass;
-
-	UPROPERTY(VisibleAnywhere, Category = "Widget|Crop")
-	UCCropWidget* CropWidget;
+	// Widget - FarmField & Crop
+	UPROPERTY(VisibleAnywhere, Category = "Widget|Farm")
+	TSubclassOf<UCFarmInteractionContainerWidget> FarmWidgetClass;
+	UPROPERTY(VisibleAnywhere, Category = "Widget|Farm")
+	UCFarmInteractionContainerWidget* FarmWidget;
 
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
 	float CameraMoveTime;

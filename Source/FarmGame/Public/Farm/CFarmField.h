@@ -38,6 +38,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	void SetUnInteractable() override;
 
+
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
+	virtual void SetDelayedInteractable(float DelayTime) override;
+
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
+	virtual void SetDelayedUninteractable(float DelayTime) override;
+
 	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
 	void SetType(EInteractObjectType InNewType) override;
 
@@ -110,4 +117,6 @@ private:
 
 	UPROPERTY()
 	ACPlayerController* CachedPlayerController;
+
+	FTimerHandle InteractTimer;
 };

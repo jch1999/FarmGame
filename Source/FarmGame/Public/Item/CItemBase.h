@@ -35,6 +35,13 @@ public:
 	virtual bool IsInteractable() override { return bInteractable; }
 	virtual void SetInteractable() override;
 	virtual void SetUnInteractable() override;
+
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
+	virtual void SetDelayedInteractable(float DelayTime) override;
+	
+	UFUNCTION(BlueprintCallable, Category = "InteracteInterface")
+	virtual void SetDelayedUninteractable(float DelayTime) override;
+
 	virtual EInteractObjectType GetType() override { return InteractType; }
 	virtual FName GetInteractName() override;
 	virtual void SetType(EInteractObjectType InNewType) override;
@@ -84,4 +91,7 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
 	EInteractObjectType InteractType;
+
+private:
+	FTimerHandle InteractTimer;
 };

@@ -10,22 +10,38 @@ void UCStateDisplayWidget::SetAmountText(int32 InAmount)
 	AmountText->SetText(FText::FromString(FString::FromInt(InAmount)));
 }
 
-void UCStateDisplayWidget::SetStateIcon(UTexture2D* InTexture, const FLinearColor& InColor)
+void UCStateDisplayWidget::SetStateIconTexture(UTexture2D* InTexture)
+{
+	if (!IconImage || !InTexture) return;
+
+	IconImage->SetBrushFromTexture(InTexture);
+}
+
+void UCStateDisplayWidget::SetStateIconColor(const FLinearColor& InColor)
 {
 	if (!IconImage) return;
 
-	FSlateBrush Brush;
-	Brush.SetResourceObject(InTexture);
+	FSlateBrush Brush = IconImage->GetBrush();
 	Brush.TintColor = FSlateColor(InColor);
-
 	IconImage->SetBrush(Brush);
 }
+
+//void UCStateDisplayWidget::SetStateIcon(UTexture2D* InTexture, const FLinearColor& InColor)
+//{
+//	if (!IconImage) return;
+//
+//	FSlateBrush Brush;
+//	Brush.SetResourceObject(InTexture);
+//	Brush.TintColor = FSlateColor(InColor);
+//
+//	IconImage->SetBrush(Brush);
+//}
 
 void UCStateDisplayWidget::UpdateStateDisplay(float Value, float MaxValue)
 {
 	if (!StateProgressBar) return;
 
-	float Percent = (MaxValue > 0) ? (Value / MaxValue) : 0;
+	const float Percent = (MaxValue > 0) ? (Value / MaxValue) : 0;
 	StateProgressBar->SetPercent(Percent);
 
 	if (AmountText)

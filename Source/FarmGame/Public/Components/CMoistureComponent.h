@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Components/CGenericStateComponent.h"
 #include "CMoistureComponent.generated.h"
 
 
@@ -14,11 +15,10 @@ enum class EMoistureState :uint8
 
 // Delegate
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMoisutreStateChanged, EMoistureState, InNewState);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FMoistureChanged, float, OldValue, float, NewValue, float, MaxValue);
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class FARMGAME_API UCMoistureComponent : public UActorComponent
+class FARMGAME_API UCMoistureComponent : public UCGenericStateComponent
 {
 	GENERATED_BODY()
 
@@ -33,32 +33,19 @@ public:
 	FORCEINLINE bool IsDry() { return MoistureState==EMoistureState::Dry; }
 	FORCEINLINE bool ISHumid() { return MoistureState == EMoistureState::Humid;}
 
-	UFUNCTION(BlueprintPure)
-	FORCEINLINE FVector2D GetSafeRange() { return MoistureSafeRange; }
-
-	UFUNCTION(BlueprintPure)
-	FORCEINLINE float GetMaxMoisture() { return MaxMoisture; }
-	
-	UFUNCTION(BlueprintPure)
-	FORCEINLINE float GetCurrentMoisture() { return CurrentMoisture; }
-
-	UFUNCTION(BlueprintPure)
-	FORCEINLINE float GetCurrentRate() { return CurrentMoisture /MaxMoisture; }
-
-	void AddMoisture(float Amount);
-	void ReduceMoisture(float Amount);
-	void SetSafeRange(FVector2D NewRange);
-	void SetAutoReduceAmount(float InReduceAmount);
-
 	void SetDryState();
 	void SetEnoughState();
 	void SetHumidState();
 
-	UFUNCTION(BlueprintCallable)
-	void SetAutoReduceTimer(float InFirstDelay, bool InbLoop = false, float InLoopDelay = 0.0f);
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE EMoistureState GetCurrentState() { return MoistureState; }
 
+	void AddMoisture(float Amount);
+	void ReduceMoisture(float Amount);
+	virtual void SetSafeRange(FVector2D InNewRange) override;
+	
 private:
-	void AutoReduceMoisture();
+	virtual void AutoReduceValue() override;
 	
 	void CheckState();
 	void ChangeState(EMoistureState state);
@@ -66,24 +53,7 @@ private:
 public:
 	UPROPERTY(BlueprintAssignable)
 	FMoisutreStateChanged OnMoistureStateChanged;
-
-	UPROPERTY(BlueprintAssignable)
-	FMoistureChanged OnMoistureChanged;
 	
-protected:
-	UPROPERTY(EditAnywhere, Category="Moisture")
-	float CurrentMoisture;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Moisture")
-	float MaxMoisture;
-
-	UPROPERTY(EditAnywhere, Category = "Moisture")
-	float AutoReduceAmount;
-
-	UPROPERTY(EditAnywhere, Category = "Moisture")
-	FVector2D MoistureSafeRange;
-
 private:
-	FTimerHandle MoistureReduceTimer;
 	EMoistureState MoistureState;
 };

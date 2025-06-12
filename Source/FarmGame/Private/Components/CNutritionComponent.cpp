@@ -3,7 +3,6 @@
 
 UCNutritionComponent::UCNutritionComponent()
 {
-	MaxNutrition = 100.0f;
 }
 
 
@@ -31,58 +30,41 @@ void UCNutritionComponent::SetOverState()
 
 void UCNutritionComponent::AddNutrition(float Amount)
 {
-	float PrevValue = CurrentNutrition;
-	CurrentNutrition += Amount;
-	CurrentNutrition =FMath::Clamp(CurrentNutrition, 0, NutritionSafeRange.Y);
-
-	OnNutritionChanged.Broadcast(PrevValue,CurrentNutrition, GetMaxNutrition());
-
+	Super::AddValue(Amount);
+	
 	CheckState();
 }
 
 void UCNutritionComponent::ReduceNutrition(float Amount)
 {
-	float PrevValue = CurrentNutrition;
-	CurrentNutrition -= Amount;
-	CurrentNutrition = FMath::Clamp(CurrentNutrition, 0, NutritionSafeRange.Y);
-
-	OnNutritionChanged.Broadcast(PrevValue, CurrentNutrition, GetMaxNutrition());
+	Super::ReduceValue(Amount);
 
 	CheckState();
 }
 
-void UCNutritionComponent::SetSafeRange(FVector2D NewRange)
+void UCNutritionComponent::SetSafeRange(FVector2D InNewRange)
 {
-	NutritionSafeRange = NewRange;
+	Super::SetSafeRange(InNewRange);
+
+	CheckState();
 }
 
-void UCNutritionComponent::SetAutoReduceAmount(float InReduceAmount)
-{
-	AutoReduceAmount = InReduceAmount;
-}
 
-void UCNutritionComponent::SetAutoReduceTimer(float InFirstDelay, bool InbLoop, float InLoopDelay)
+void UCNutritionComponent::AutoReduceValue()
 {
-	if (GetWorld()->GetTimerManager().TimerExists(NutritionReduceTimer))
-	{
-		GetWorld()->GetTimerManager().ClearTimer(NutritionReduceTimer);
-	}
-	GetWorld()->GetTimerManager().SetTimer(NutritionReduceTimer, this, &UCNutritionComponent::AutoReduceNutirition, InLoopDelay, InbLoop, InFirstDelay);
-}
+	Super::AutoReduceValue();
 
-void UCNutritionComponent::AutoReduceNutirition()
-{
-	ReduceNutrition(AutoReduceAmount);
+	CheckState();
 }
 
 void UCNutritionComponent::CheckState()
 {
-	if (CurrentNutrition < NutritionSafeRange.X)
+	if (CurrentValue < SafeRange.X)
 	{
 		SetFamineState();
 		return;
 	}
-	else if (CurrentNutrition > NutritionSafeRange.Y)
+	else if (CurrentValue > SafeRange.Y)
 	{
 		SetOverState();
 		return;

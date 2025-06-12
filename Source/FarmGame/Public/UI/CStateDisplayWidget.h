@@ -18,7 +18,11 @@ public:
 	void SetAmountText(int32 InAmount);
 
 	UFUNCTION(BlueprintCallable)
-	void SetStateIcon(UTexture2D* InTexture, const FLinearColor& InColor);
+	void SetStateIconTexture(UTexture2D* InTexture);
+
+	UFUNCTION(BlueprintCallable)
+	void SetStateIconColor(const FLinearColor& InColor);
+	//void SetStateIcon(UTexture2D* InTexture, const FLinearColor& InColor);
 	
 	UFUNCTION(BlueprintCallable)
 	void UpdateStateDisplay(float Value, float MaxValue);

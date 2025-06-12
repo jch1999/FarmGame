@@ -8,7 +8,7 @@
 UENUM(BlueprintType)
 enum class EInteractObjectType :uint8
 {
-	None, Player, Crop, NPC, FarmField, Item, Max
+	None, Player, Crop, NPC, FarmField, Item, Tool, Max
 };
 
 USTRUCT(BlueprintType)
@@ -40,6 +40,8 @@ public:
 	virtual bool IsInteractable() = 0;
 	virtual void SetInteractable() = 0;
 	virtual void SetUnInteractable() = 0;
+	virtual void SetDelayedInteractable(float DelayTime) = 0;
+	virtual void SetDelayedUninteractable(float DelayTime) = 0;
 	virtual EInteractObjectType GetType() = 0;
 	virtual FName GetInteractName() = 0;
 	virtual void SetType(EInteractObjectType InNewType) = 0;

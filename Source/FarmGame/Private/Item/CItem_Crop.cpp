@@ -5,6 +5,7 @@
 ACItem_Crop::ACItem_Crop()
 {
 	SetUnusable();
+	SetType(EInteractObjectType::Crop);
 }
 
 bool ACItem_Crop::UseItem()

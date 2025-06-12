@@ -14,21 +14,21 @@ void UCCropWidget::SetCrop_Implementation(ACBase_Crop* InCrop)
 	UCNutritionComponent* NutritionComp = Crop->GetNutritionComp();
 	if (NutritionComp)
 	{
-		NutritionComp->OnNutritionChanged.AddDynamic(this, &UCCropWidget::UpdateNutrition);
-		UpdateNutrition(0.0f, NutritionComp->GetCurrentNutrition(), NutritionComp->GetMaxNutrition());
+		NutritionComp->OnStateValueChanged.AddDynamic(this, &UCCropWidget::UpdateNutrition);
+		UpdateNutrition(0.0f, NutritionComp->GetCurrentValue(), NutritionComp->GetMaxValue());
 	}
 
 	UCMoistureComponent* MoistureComp = Crop->GetMoistureComp();
 	if (MoistureComp)
 	{
-		MoistureComp->OnMoistureChanged.AddDynamic(this, &UCCropWidget::UpdateMoisture);
-		UpdateMoisture(0.0f, MoistureComp->GetCurrentMoisture(), MoistureComp->GetMaxMoisture());
+		MoistureComp->OnStateValueChanged.AddDynamic(this, &UCCropWidget::UpdateMoisture);
+		UpdateMoisture(0.0f, MoistureComp->GetCurrentValue(), MoistureComp->GetMaxValue());
 	}
 
 	UCHealthComponent* HealthComp = Crop->GetHealthComp();
 	if (HealthComp)
 	{
-		HealthComp->OnHealthChanged.AddDynamic(this, &UCCropWidget::UpdateHealth);
+		HealthComp->OnStateValueChanged.AddDynamic(this, &UCCropWidget::UpdateHealth);
 		UpdateHealth(0.0f, HealthComp->GetCurrentHealth(), HealthComp->GetMaxHealth());
 	}
 	if (Crop)
@@ -42,9 +42,9 @@ void UCCropWidget::ResetCrop_Implementation()
 {
 	if (Crop)
 	{
-		Crop->GetNutritionComp()->OnNutritionChanged.RemoveDynamic(this, &UCCropWidget::UpdateNutrition);
-		Crop->GetMoistureComp()->OnMoistureChanged.RemoveDynamic(this, &UCCropWidget::UpdateMoisture);
-		Crop->GetHealthComp()->OnHealthChanged.RemoveDynamic(this, &UCCropWidget::UpdateHealth);
+		Crop->GetNutritionComp()->OnStateValueChanged.RemoveDynamic(this, &UCCropWidget::UpdateNutrition);
+		Crop->GetMoistureComp()->OnStateValueChanged.RemoveDynamic(this, &UCCropWidget::UpdateMoisture);
+		Crop->GetHealthComp()->OnStateValueChanged.RemoveDynamic(this, &UCCropWidget::UpdateHealth);
 
 		Crop = nullptr;
 	}
