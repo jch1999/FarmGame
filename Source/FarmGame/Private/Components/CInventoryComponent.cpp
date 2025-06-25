@@ -127,6 +127,48 @@ bool UCInventoryComponent::AddItem(ACItemBase* InItemActor)
 	return false;
 }
 
+bool UCInventoryComponent::ReduceItemStack(int InIndex)
+{
+	if (InventorySlots.IsValidIndex(InIndex))
+	{
+		if ((--InventorySlots[InIndex].CurrentStack) == 0)
+		{
+			ClearSlot(InIndex);
+		}
+		else
+		{
+			TArray<int32> ChangedIndexes;
+			ChangedIndexes.Add(InIndex);
+			OnInventorySlotDataUpdated.Broadcast(ChangedIndexes);
+		}
+		return true;
+	}
+	return false;
+}
+
+bool UCInventoryComponent::ReduceItemDurability(int InIndex, float ConsumedDurability)
+{
+	if (InventorySlots.IsValidIndex(InIndex))
+	{
+		if (InventorySlots[InIndex].CurrentDurability >= ConsumedDurability)
+		{
+			InventorySlots[InIndex].CurrentDurability -= ConsumedDurability;
+			if (InventorySlots[InIndex].CurrentDurability > 0.0f)
+			{
+				TArray<int32> ChangedIndexes;
+				ChangedIndexes.Add(InIndex);
+				OnInventorySlotDataUpdated.Broadcast(ChangedIndexes);
+			}
+			else
+			{
+				ClearSlot(InIndex);
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
 bool UCInventoryComponent::CreateInventoryWidget()
 {
 	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
@@ -318,6 +360,7 @@ void UCInventoryComponent::SwapSlot(int32& SlotIndex1, int32& SlotIndex2)
 
 void UCInventoryComponent::UseItem(int32& SlotIndex)
 {
+
 }
 
 void UCInventoryComponent::DropItem(int32 InIndex)

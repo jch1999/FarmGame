@@ -29,8 +29,9 @@ public:
 	virtual void AddAvailableCount(int32 InAmount = 1) override;
 	virtual void ReduceAvailableCount(int32 InAmount = 1) override;
 	virtual int32 GetAvailableCount() const override { return AvailableCount; }
-
-
+	virtual void SetTargetSlotIndex(int Index) override;
+	virtual	int GetTargetSlotIndex() override { return SlotIndex; }
+	
 	// Inherited from ICInterface_Interactable
 	virtual bool IsInteractable() override { return bInteractable; }
 	virtual void SetInteractable() override;
@@ -59,6 +60,9 @@ public:
 	float GetCurrentDruability() { return CurrentDurability; }
 
 	void SetCollision(bool bEnabled);
+	
+	void SetOwnerCharacter(ACharacter* InOwnerCharacter);
+	ACharacter* GetOwnerCharacter() { return OwnerCharacter; }
 
 protected:
 	// Components
@@ -94,4 +98,9 @@ protected:
 
 private:
 	FTimerHandle InteractTimer;
+
+	UPROPERTY(EditInstanceOnly,Category="Item|InventorySlotIndex")
+	int SlotIndex;
+	UPROPERTY(VisibleAnywhere,Category="Item|Owner")
+	ACharacter* OwnerCharacter;
 };

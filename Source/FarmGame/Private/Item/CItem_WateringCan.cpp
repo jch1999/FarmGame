@@ -6,21 +6,33 @@
 
 bool ACItem_WateringCan::UseItem()
 {
-	if (UCInteractComponent* InteractComp= GetOwnerPlayer()->GetInteractComponent())
+	Super::UseItem();
+	if (ACPlayer* Player = Cast<ACPlayer>(GetOwnerCharacter()))
 	{
-		if (ACFarmField* Field = Cast<ACFarmField>(InteractComp->GetActionInteractTarget()))
+		if (UCInteractComponent* InteractComp = Player->GetInteractComponent())
 		{
-			Field->GetMoistureComp()->AddMoisture(FMath::Min(CurrentAmount,UseAmount));
-			if (CurrentAmount < UseAmount)
+			if (ACFarmField* Field = Cast<ACFarmField>(InteractComp->GetActionInteractTarget()))
 			{
-				CurrentAmount = 0.0f;
+				Player->StartWateringAnimation();
+				UseEffect->Activate();
+				Field->GetMoistureComp()->AddMoisture(FMath::Min(CurrentAmount, UseAmount));
+				if (CurrentAmount < UseAmount)
+				{
+					CurrentAmount = 0.0f;
+				}
+				else
+				{
+					CurrentAmount -= UseAmount;
+				}
+				return true;
 			}
-			else
-			{
-				CurrentAmount -= UseAmount;
-			}
-			CurrentDurability--;
 		}
 	}
 	return false;
+}
+
+void ACItem_WateringCan::EndUse()
+{
+	Super::EndUse();
+	UseEffect->Deactivate();
 }

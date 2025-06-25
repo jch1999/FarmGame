@@ -11,6 +11,7 @@ class FARMGAME_API ACItem_WateringCan : public ACItem_Tool
 	
 public:
 	virtual bool UseItem() override;
+	virtual void EndUse() override;
 
 public:
 	UPROPERTY(EditAnywhere,Category="Watering")

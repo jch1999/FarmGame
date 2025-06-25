@@ -6,6 +6,44 @@
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "UI/CStateDisplayWidget.h"
+#include "Global.h"
+
+void UCCropWidget::NativeOnInitialized()
+{
+	Super::NativeOnInitialized();
+	
+	if (NutritionState)
+	{
+		UTexture2D* NutritionIcon;
+		CHelpers::GetAssetDynamic(&NutritionIcon, "/Game/ThirdParty/Icon/Icon_Nutition");
+		NutritionState->SetStateIconTexture(NutritionIcon);
+		NutritionState->SetStateIconColor(FLinearColor::Red);
+	}
+
+	if (MoistureState)
+	{
+		UTexture2D* MoistureIcon;
+		CHelpers::GetAssetDynamic(&MoistureIcon, "/Game/ThirdParty/Icon/Icon_Humidity_Mid");
+		MoistureState->SetStateIconTexture(MoistureIcon);
+		MoistureState->SetStateIconColor(FLinearColor::Red);
+	}
+
+	if (HealthState)
+	{
+		UTexture2D* CultivateIcon;
+		CHelpers::GetAssetDynamic(&CultivateIcon, "/Game/ThirdParty/Icon/Icon_Health");
+		HealthState->SetStateIconTexture(CultivateIcon);
+		HealthState->SetStateIconColor(FLinearColor(150.0f, 75.0f, 0.0f));
+	}
+
+	if (GrowthState)
+	{
+		UTexture2D* CultivateIcon;
+		CHelpers::GetAssetDynamic(&CultivateIcon, "/Game/ThirdParty/Icon/Icon_Growth");
+		GrowthState->SetStateIconTexture(CultivateIcon);
+		GrowthState->SetStateIconColor(FLinearColor(150.0f, 75.0f, 0.0f));
+	}
+}
 
 void UCCropWidget::SetCrop_Implementation(ACBase_Crop* InCrop)
 {
@@ -15,14 +53,18 @@ void UCCropWidget::SetCrop_Implementation(ACBase_Crop* InCrop)
 	if (NutritionComp)
 	{
 		NutritionComp->OnStateValueChanged.AddDynamic(this, &UCCropWidget::UpdateNutrition);
+		NutritionComp->OnNutritionStateChanged.AddDynamic(this, &UCCropWidget::OnNutritionStateChanged);
 		UpdateNutrition(0.0f, NutritionComp->GetCurrentValue(), NutritionComp->GetMaxValue());
+		OnNutritionStateChanged(NutritionComp->GetCurrentState());
 	}
 
 	UCMoistureComponent* MoistureComp = Crop->GetMoistureComp();
 	if (MoistureComp)
 	{
-		MoistureComp->OnStateValueChanged.AddDynamic(this, &UCCropWidget::UpdateMoisture);
+		MoistureComp->OnStateValueChanged.AddDynamic(this, &UCCropWidget::UpdateMoisture); 
+		MoistureComp->OnMoistureStateChanged.AddDynamic(this, &UCCropWidget::OnMoistureStateChanged);
 		UpdateMoisture(0.0f, MoistureComp->GetCurrentValue(), MoistureComp->GetMaxValue());
+		OnMoistureStateChanged(MoistureComp->GetCurrentState());
 	}
 
 	UCHealthComponent* HealthComp = Crop->GetHealthComp();
@@ -42,10 +84,25 @@ void UCCropWidget::ResetCrop_Implementation()
 {
 	if (Crop)
 	{
-		Crop->GetNutritionComp()->OnStateValueChanged.RemoveDynamic(this, &UCCropWidget::UpdateNutrition);
-		Crop->GetMoistureComp()->OnStateValueChanged.RemoveDynamic(this, &UCCropWidget::UpdateMoisture);
-		Crop->GetHealthComp()->OnStateValueChanged.RemoveDynamic(this, &UCCropWidget::UpdateHealth);
+		UCNutritionComponent* NutritionComp = Crop->GetNutritionComp();
+		if (NutritionComp)
+		{
+			NutritionComp->OnStateValueChanged.RemoveDynamic(this, &UCCropWidget::UpdateNutrition);
+			NutritionComp->OnNutritionStateChanged.RemoveDynamic(this, &UCCropWidget::OnNutritionStateChanged);
+		}
+		
+		UCMoistureComponent* MoistureComp = Crop->GetMoistureComp();
+		if (MoistureComp)
+		{
+			Crop->GetMoistureComp()->OnStateValueChanged.RemoveDynamic(this, &UCCropWidget::UpdateMoisture);
+			Crop->GetMoistureComp()->OnMoistureStateChanged.RemoveDynamic(this, &UCCropWidget::OnMoistureStateChanged);
+		}
 
+		UCHealthComponent* HealthComp = Crop->GetHealthComp();
+		if (HealthComp)
+		{
+			Crop->GetHealthComp()->OnStateValueChanged.RemoveDynamic(this, &UCCropWidget::UpdateHealth);
+		}
 		Crop = nullptr;
 	}
 }
@@ -79,5 +136,53 @@ void UCCropWidget::UpdateGrowth_Implementation(float OldValue, float NewValue, f
 	if (GrowthState)
 	{
 		GrowthState->UpdateStateDisplay(NewValue, MaxValue);
+	}
+}
+
+void UCCropWidget::OnNutritionStateChanged_Implementation(ENutritionState InState)
+{
+	switch (InState)
+	{
+	case ENutritionState::Famine:
+	{
+		NutritionState->SetStateIconColor(FLinearColor::Red);
+	}
+	break;
+	case ENutritionState::Enough:
+	{
+		NutritionState->SetStateIconColor(FLinearColor::Yellow);
+	}
+	break;
+	case ENutritionState::Over:
+	{
+		NutritionState->SetStateIconColor(FLinearColor::Red);
+	}
+	break;
+	default:
+		break;
+	}
+}
+
+void UCCropWidget::OnMoistureStateChanged_Implementation(EMoistureState InState)
+{
+	switch (InState)
+	{
+	case EMoistureState::Dry:
+	{
+		MoistureState->SetStateIconColor(FLinearColor::Red);
+	}
+	break;
+	case EMoistureState::Enough:
+	{
+		MoistureState->SetStateIconColor(FLinearColor::Blue);
+	}
+	break;
+	case EMoistureState::Humid:
+	{
+		MoistureState->SetStateIconColor(FLinearColor::Red);
+	}
+	break;
+	default:
+		break;
 	}
 }

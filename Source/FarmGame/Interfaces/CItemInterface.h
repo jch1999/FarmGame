@@ -146,4 +146,6 @@ public:
 	virtual void AddAvailableCount(int32 InAmount = 1) = 0;
 	virtual void ReduceAvailableCount(int32 InAmount = 1) = 0;
 	virtual int32 GetAvailableCount() const = 0;
+	virtual	void SetTargetSlotIndex(int Index) = 0;
+	virtual	int GetTargetSlotIndex() = 0;
 };

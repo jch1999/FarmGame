@@ -15,6 +15,10 @@ public:
 
     UFUNCTION()
     void DragStart(UDragDropOperation* InOperation);
+
+    UFUNCTION()
+    void DragCancel(UDragDropOperation* InOperation);
+    
     UFUNCTION()
     void DragEnd(UDragDropOperation* InOperation);
 

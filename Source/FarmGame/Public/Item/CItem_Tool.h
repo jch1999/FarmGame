@@ -2,9 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "Item/CItemBase.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 #include "CItem_Tool.generated.h"
 
-class UNiagaraComponent;
 class ACPlayer;
 
 UCLASS()
@@ -17,15 +18,14 @@ public:
 
 public:
 	// From Interface
-	virtual bool UseItem() override;;
-
-	void SetOwnerPlayer(ACPlayer* InPlayer);
-	const ACPlayer* GetOwnerPlayer();
+	virtual bool UseItem() override;
+	virtual void EndUse();
 
 public:
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "FX")
 	UNiagaraComponent* UseEffect;
 
-private:
-	ACPlayer* OwnerPlayer;
+protected:
+	UPROPERTY(EditDefaultsOnly,Category="Tool|Paramter")
+	float ConsumedDurability;
 };

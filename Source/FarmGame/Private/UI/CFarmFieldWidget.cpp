@@ -120,8 +120,8 @@ void UCFarmFieldWidget::UpdateCultivation_Implementation(float OldValue, float N
 	{
 		CultivateState->UpdateStateDisplay(NewValue, MaxValue);
 	}
-	UCGenericStateComponent* CultivationComp = FarmField->GetCultivationComp();
-	UE_LOG(LogTemp, Warning, TEXT("Cultivation: %.1f / %.1f"), CultivationComp->GetCurrentValue(), CultivationComp->GetMaxValue());
+	//UCGenericStateComponent* CultivationComp = FarmField->GetCultivationComp();
+	//UE_LOG(LogTemp, Warning, TEXT("Cultivation: %.1f / %.1f"), CultivationComp->GetCurrentValue(), CultivationComp->GetMaxValue());
 }
 
 void UCFarmFieldWidget::UpdateNutrition_Implementation(float OldValue, float NewValue, float MaxValue)
@@ -130,8 +130,8 @@ void UCFarmFieldWidget::UpdateNutrition_Implementation(float OldValue, float New
 	{
 		NutritionState->UpdateStateDisplay(NewValue, MaxValue);
 	}
-	UCGenericStateComponent* NutritionComp = FarmField->GetNutritionComp();
-	UE_LOG(LogTemp, Warning, TEXT("Nutrition: %.1f / %.1f"), NutritionComp->GetCurrentValue(), NutritionComp->GetMaxValue());
+	//UCGenericStateComponent* NutritionComp = FarmField->GetNutritionComp();
+	//UE_LOG(LogTemp, Warning, TEXT("Nutrition: %.1f / %.1f"), NutritionComp->GetCurrentValue(), NutritionComp->GetMaxValue());
 }
 
 void UCFarmFieldWidget::UpdateMoisture_Implementation(float OldValue, float NewValue, float MaxValue)
@@ -140,8 +140,8 @@ void UCFarmFieldWidget::UpdateMoisture_Implementation(float OldValue, float NewV
 	{
 		MoistureState->UpdateStateDisplay(NewValue, MaxValue);
 	}
-	UCGenericStateComponent* MoistureComp = FarmField->GetMoistureComp();
-	UE_LOG(LogTemp, Warning, TEXT("Moisture: %.1f / %.1f"), MoistureComp->GetCurrentValue(), MoistureComp->GetMaxValue());
+	//UCGenericStateComponent* MoistureComp = FarmField->GetMoistureComp();
+	//UE_LOG(LogTemp, Warning, TEXT("Moisture: %.1f / %.1f"), MoistureComp->GetCurrentValue(), MoistureComp->GetMaxValue());
 }
 
 

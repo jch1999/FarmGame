@@ -14,6 +14,9 @@ class FARMGAME_API UCCropWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+protected:
+	virtual void NativeOnInitialized() override;
+
 public:
 	UFUNCTION(BlueprintNativeEvent)
 	void SetCrop(ACBase_Crop* InCrop);
@@ -33,11 +36,16 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void UpdateGrowth(float OldValue, float NewValue, float MaxValue);
 
+	UFUNCTION(BlueprintNativeEvent)
+	void OnNutritionStateChanged(ENutritionState InState);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnMoistureStateChanged(EMoistureState InState);
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE  bool IsAvailable() { return Crop == nullptr; }
 
-	UButton* GetHarvestBtn() { return HarvestBtn; }
+	/*UButton* GetHarvestBtn() { return HarvestBtn; }*/
 protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category="Crop")
 	ACBase_Crop* Crop;
@@ -53,17 +61,17 @@ protected:
 	UCStateDisplayWidget* GrowthState;
 
 	// Under Lines
-	UPROPERTY(meta = (BindWidget))
+	/*UPROPERTY(meta = (BindWidget))
 	UImage* Line_Nutrition;
 	UPROPERTY(meta = (BindWidget))
 	UImage* Line_Moisture;
 	UPROPERTY(meta = (BindWidget))
 	UImage* Line_Health;
 	UPROPERTY(meta = (BindWidget))
-	UImage* Line_Growth;
+	UImage* Line_Growth;*/
 
-	UPROPERTY(meta = (BindWidget))
-	UButton* HarvestBtn;
+	/*UPROPERTY(meta = (BindWidget))
+	UButton* HarvestBtn;*/
 
 	UPROPERTY(EditDefaultsOnly, Category = "Display")
 	FVector2D Offset;

@@ -7,6 +7,7 @@
 #include "Characters/CPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "UI/CInteractRowScroll.h"
+#include "Item/CItem_Tool.h"
 
 UCInteractComponent::UCInteractComponent()
 {
@@ -41,6 +42,15 @@ void UCInteractComponent::DoActionInteract()
 	if (ActionInteractTarget == nullptr) return;
 	ICInterface_Interactable* InteractActor = Cast<ICInterface_Interactable>(ActionInteractTarget);
 	InteractActor->OnUnhovered();
+	if (ACFarmField* FarmField = Cast<ACFarmField>(ActionInteractTarget))
+	{
+		if (ACItem_Tool* Tool = Cast<ACItem_Tool>(OwnerCharacter->GetCurretnEquippedItem()))
+		{
+			Tool->UseItem();
+			ActionInteractTarget = nullptr;
+			return;
+		}
+	}
 	InteractActor->Interact(OwnerCharacter);
 
 	ActionInteractTarget = nullptr;

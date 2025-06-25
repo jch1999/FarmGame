@@ -183,6 +183,29 @@ void ACPlayer::OnPlantingAnimationFinished()
 	}
 }
 
+void ACPlayer::StartWateringAnimation()
+{
+	if (WateringAnim)
+	{
+		PlayAnimMontage(WateringAnim);
+		UE_LOG(LogTemp, Warning, TEXT("Play Plant Anim"));
+		if (ACPlayerController* MyController = Cast<ACPlayerController>(GetController()))
+		{
+			MyController->SetUnSlotChangable();
+			MyController->GetStateComponent()->SetActionMode();
+		}
+	}
+}
+
+void ACPlayer::OnWateringAnimationFinished()
+{
+	if (ACPlayerController* MyController = Cast<ACPlayerController>(GetController()))
+	{
+		MyController->SetSlotChangable();
+		MyController->GetStateComponent()->SetIdleMode();
+	}
+}
+
 UCQuickSlotBarWidget* ACPlayer::GetQuickSlotBar()
 {
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
@@ -220,6 +243,10 @@ void ACPlayer::EquipItemFromQuickSlot(int32 QuickSlotIndex)
 	// 새 아이템 생성
 	FTransform SpawnTransform;
 	CurrentEquippedItem = GetWorld()->SpawnActor<ACItemBase>(SlotData->ItemClass, SpawnTransform);
+	// Set QuickSlotIndex for CurrentEquippedItem
+	CurrentEquippedItem->SetTargetSlotIndex(TargetSlotIndex);
+	CurrentEquippedItem->SetOwnerCharacter(this);
+	CurrentEquippedItem->SetOwner(this);
 
 	if (CurrentEquippedItem)
 	{

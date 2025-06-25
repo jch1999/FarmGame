@@ -1,6 +1,4 @@
 #include "Item/CItem_Tool.h"	
-#include "NiagaraFunctionLibrary.h"
-#include "NiagaraComponent.h"
 #include "Characters/CPlayer.h"
 
 ACItem_Tool::ACItem_Tool()
@@ -9,6 +7,7 @@ ACItem_Tool::ACItem_Tool()
     UseEffect->SetupAttachment(MeshComp);
     UseEffect->SetAutoActivate(false);
 
+    ConsumedDurability = 1.0f;
     SetType(EInteractObjectType::Tool);
     SetInteractable();
     SetUsable();
@@ -16,19 +15,20 @@ ACItem_Tool::ACItem_Tool()
 
 bool ACItem_Tool::UseItem()
 {
+    if (!IsUsable()) return false;
+    if (!IsValid(GetOwnerCharacter())) return false;
+    if (ACPlayer* Player = Cast<ACPlayer>(GetOwnerCharacter()))
+    {
+        if (UCInventoryComponent* InventoryComp = Player->GetInventoryComponent())
+        {
+            InventoryComp->ReduceItemDurability(GetTargetSlotIndex(), ConsumedDurability);
+            ConsumedDurability -= ConsumedDurability;
+        }
+    }
     return false;
 }
 
-void ACItem_Tool::SetOwnerPlayer(ACPlayer* InPlayer)
+void ACItem_Tool::EndUse()
 {
-    if (InPlayer == nullptr)
-    {
-        UE_LOG(LogTemp, Error, TEXT("Set OwnerPlayer Failed. Unavailable Player!"));
-    }
-    OwnerPlayer = InPlayer;
-}
 
-const ACPlayer* ACItem_Tool::GetOwnerPlayer()
-{
-    return OwnerPlayer;
 }

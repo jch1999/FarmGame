@@ -69,6 +69,9 @@ protected:
 
 public:
 	bool AddItem(ACItemBase* InItemActor);
+	bool ReduceItemStack(int InIndex);
+	bool ReduceItemDurability(int InIndex, float ConsumedDurability);
+
 	UFUNCTION()
 	void ShowInventoryWidget();
 	UFUNCTION()

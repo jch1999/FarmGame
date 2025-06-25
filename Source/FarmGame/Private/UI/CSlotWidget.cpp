@@ -79,6 +79,18 @@ void UCSlotWidget::NativeOnDragDetected(const FGeometry& InGemoetry, const FPoin
 	OutOperation = DragOperation;
 }
 
+bool UCSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+
+	if (UCSlotDragDropOperation* Oper = Cast<UCSlotDragDropOperation>(InOperation))
+	{
+		return true;
+	}
+
+	return false;
+}
+
 void UCSlotWidget::SetParentWidget(UUserWidget* InParent)
 {
 	ParentWidget = InParent;

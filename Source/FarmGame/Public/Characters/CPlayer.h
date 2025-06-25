@@ -75,6 +75,8 @@ public:
 	// Animation
 	void StartPlantingAnimation();
 	void OnPlantingAnimationFinished();
+	void StartWateringAnimation();
+	void OnWateringAnimationFinished();
 
 	// Item
 	UCQuickSlotBarWidget* GetQuickSlotBar();
@@ -132,7 +134,10 @@ private:
 	// Animation
 	UPROPERTY(EditDefaultsOnly,Category="Animation")
 	UAnimMontage* PlantAnim;
-	
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* WateringAnim;
+
 	// EuqipedItem
 	UPROPERTY(VisibleAnywhere, Category="Item")
 	ACItemBase* CurrentEquippedItem;

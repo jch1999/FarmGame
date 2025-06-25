@@ -4,6 +4,7 @@
 #include "CGameInstance.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Components/CInventoryComponent.h"
+#include "Characters/CPlayer.h"
 
 ACItemBase::ACItemBase()
 {
@@ -24,6 +25,8 @@ ACItemBase::ACItemBase()
 
 	SetType(EInteractObjectType::Item);
 	SetInteractable();
+
+	SlotIndex = -1;
 }
 
 void ACItemBase::BeginPlay()
@@ -161,4 +164,14 @@ void ACItemBase::Interact(AActor* OtherActor)
 			}
 		}
 	}
+}
+
+void ACItemBase::SetTargetSlotIndex(int Index)
+{
+	SlotIndex = Index;
+}
+
+void ACItemBase::SetOwnerCharacter(ACharacter* InOwnerCharacter)
+{
+	OwnerCharacter = InOwnerCharacter;
 }

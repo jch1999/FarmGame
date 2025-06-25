@@ -2,13 +2,15 @@
 #include "UI/CSlotWidget.h"
 #include "Controller/CPlayerController.h"
 #include "Components/Image.h"
+#include "Characters//CPlayer.h"
+#include "Components/CInventoryComponent.h"
 
 void UCSlotDragDropOperation::Initialize(UCSlotWidget* InSourceSlot)
 {
 	SourceSlot = InSourceSlot;
 
 	OnDragged.AddDynamic(this, &UCSlotDragDropOperation::DragStart);
-	OnDragCancelled.AddDynamic(this, &UCSlotDragDropOperation::DragEnd);
+	OnDragCancelled.AddDynamic(this, &UCSlotDragDropOperation::DragCancel);
 	OnDrop.AddDynamic(this, &UCSlotDragDropOperation::DragEnd);
 }
 
@@ -29,7 +31,31 @@ void UCSlotDragDropOperation::DragStart(UDragDropOperation* InOperation)
 		}
 	}
 
-	
+}
+
+void UCSlotDragDropOperation::DragCancel(UDragDropOperation* InOperation)
+{
+	if (SourceSlot && SourceSlot->SlotType==ESlotType::Inventory_Player)
+	{
+		if (UUserWidget* OwningWidget = SourceSlot->GetTypedOuter<UUserWidget>())
+		{
+			if (APlayerController* PC = OwningWidget->GetOwningPlayer<APlayerController>())
+			{
+				if (ACPlayer* Player = Cast<ACPlayer>(PC->GetPawn()))
+				{
+					if (UCInventoryComponent* InventoryComp = Player->GetInventoryComponent())
+					{
+						InventoryComp->DropItem(SourceSlot->SlotIndex);
+					}
+				}
+
+				if (ACPlayerController* MyPC = Cast<ACPlayerController>(PC))
+				{
+					MyPC->StopDragging();
+				}
+			}
+		}
+	}
 }
 
 void UCSlotDragDropOperation::DragEnd(UDragDropOperation* InOperation)

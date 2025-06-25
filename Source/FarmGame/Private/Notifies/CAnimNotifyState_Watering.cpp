@@ -14,10 +14,7 @@ void UCAnimNotifyState_Watering::NotifyBegin(USkeletalMeshComponent* MeshComp, U
     {
         if (ACItem_Tool* Tool = Cast<ACItem_Tool>(Player->GetCurretnEquippedItem()))
         {
-            if (Tool->UseEffect)
-            {
-                Tool->UseEffect->Activate(true);
-            }
+            Tool->UseItem();
         }
     }
 }
@@ -28,10 +25,8 @@ void UCAnimNotifyState_Watering::NotifyEnd(USkeletalMeshComponent* MeshComp, UAn
     {
         if (ACItem_Tool* Tool = Cast<ACItem_Tool>(Player->GetCurretnEquippedItem()))
         {
-            if (Tool->UseEffect)
-            {
-                Tool->UseEffect->Deactivate();
-            }
+            Tool->EndUse();
         }
+        Player->OnWateringAnimationFinished();
     }
 }
