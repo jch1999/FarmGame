@@ -14,7 +14,7 @@ void UCMoistureComponent::BeginPlay()
 void UCMoistureComponent::AddMoisture(float Amount)
 {
 	Super::AddValue(Amount);
-
+	UE_LOG(LogTemp, Warning, TEXT("AddMoisture : %f"), Amount);
 	CheckState();
 }
 
@@ -35,7 +35,7 @@ void UCMoistureComponent::SetSafeRange(FVector2D InNewRange)
 
 void UCMoistureComponent::SetDryState()
 {
-	DrawDebugString(GetWorld(), GetOwner()->GetActorLocation(), "Moisture is under the safe rnage!", nullptr, FColor::Red, 0.8f);
+	//DrawDebugString(GetWorld(), GetOwner()->GetActorLocation(), "Moisture is under the safe rnage!", nullptr, FColor::Red, 0.8f);
 	ChangeState(EMoistureState::Dry);
 }
 
@@ -46,7 +46,7 @@ void UCMoistureComponent::SetEnoughState()
 
 void UCMoistureComponent::SetHumidState()
 {
-	DrawDebugString(GetWorld(), GetOwner()->GetActorLocation(), "Moisture is over the safe rnage!", nullptr, FColor::Red, 0.8f);
+	//DrawDebugString(GetWorld(), GetOwner()->GetActorLocation(), "Moisture is over the safe rnage!", nullptr, FColor::Red, 0.8f);
 	ChangeState(EMoistureState::Humid);
 }
 

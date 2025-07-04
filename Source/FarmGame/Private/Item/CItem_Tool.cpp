@@ -32,3 +32,8 @@ void ACItem_Tool::EndUse()
 {
 
 }
+
+void ACItem_Tool::PlayAnimation()
+{
+    return;
+}

@@ -37,6 +37,10 @@ void UCSlotDragDropOperation::DragCancel(UDragDropOperation* InOperation)
 {
 	if (SourceSlot && SourceSlot->SlotType==ESlotType::Inventory_Player)
 	{
+		if(SourceSlot->ItemIconImage)
+		{
+			SourceSlot->ItemIconImage->SetOpacity(1.0f);
+		}
 		if (UUserWidget* OwningWidget = SourceSlot->GetTypedOuter<UUserWidget>())
 		{
 			if (APlayerController* PC = OwningWidget->GetOwningPlayer<APlayerController>())

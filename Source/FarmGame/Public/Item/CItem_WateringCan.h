@@ -12,7 +12,7 @@ class FARMGAME_API ACItem_WateringCan : public ACItem_Tool
 public:
 	virtual bool UseItem() override;
 	virtual void EndUse() override;
-
+	virtual void PlayAnimation() override;
 public:
 	UPROPERTY(EditAnywhere,Category="Watering")
 	float CurrentAmount;

@@ -170,6 +170,9 @@ public:
 	UFUNCTION()
 	void ChangeQualityByHealth(float CureentHealth, float PrevHealth, float MaxHealth);
 
+	// Dead
+	void ChangeDead();
+
 	// Get Components
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE UCHealthComponent* const GetHealthComp() { return HealthComp; }
@@ -242,7 +245,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|Harvest")
 	EQualityType CropQuality;
-	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crop|Material")
+	UMaterialInstanceDynamic* CropMaterial;
+
 	// Interact Interface
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
 	bool bInteractable;

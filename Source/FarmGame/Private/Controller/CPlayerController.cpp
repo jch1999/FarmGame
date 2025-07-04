@@ -505,7 +505,8 @@ void ACPlayerController::ShowFarmWidget(ACFarmField* TargetField)
 
 		if (ACPlayer* CurrentPlayer = Cast<ACPlayer>(GetPawn()))
 		{
-			CurrentPlayer->StartFade(true);
+			//CurrentPlayer->StartFade(true);
+			CurrentPlayer->SetVisibility(false);
 		}
 	}
 	else
@@ -531,7 +532,8 @@ void ACPlayerController::HideFarmWidget()
 
 		if (ACPlayer* CurrentPlayer = Cast<ACPlayer>(GetPawn()))
 		{
-			CurrentPlayer->StartFade(false);
+			//CurrentPlayer->StartFade(false);
+			CurrentPlayer->SetVisibility(true);
 		}
 	}
 }

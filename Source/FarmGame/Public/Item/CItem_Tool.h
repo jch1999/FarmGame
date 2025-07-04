@@ -20,6 +20,7 @@ public:
 	// From Interface
 	virtual bool UseItem() override;
 	virtual void EndUse();
+	virtual void PlayAnimation();
 
 public:
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "FX")

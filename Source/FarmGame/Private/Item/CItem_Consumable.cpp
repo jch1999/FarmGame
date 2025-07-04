@@ -12,6 +12,7 @@ bool ACItem_Consumable::UseItem()
         if (UCInventoryComponent* InventoryComp = Player->GetInventoryComponent())
         {
             InventoryComp->ReduceItemStack(GetTargetSlotIndex());
+            ReduceAvailableCnt(1);
         }
     }
     return false;

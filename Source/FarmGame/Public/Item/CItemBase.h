@@ -55,7 +55,8 @@ public:
 	// ItemData
 	EItemID GetItemID() { return ItemID; }
 
-	void SetAvailableCnt(int32 cnt);
+	void SetAvailableCnt(int32 InCnt);
+	void ReduceAvailableCnt(int32 InCnt);
 
 	float GetCurrentDruability() { return CurrentDurability; }
 

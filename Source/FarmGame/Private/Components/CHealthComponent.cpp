@@ -33,3 +33,8 @@ void UCHealthComponent::DecreaseHealth(float InAmount)
 {
 	Super::ReduceValue(InAmount);
 }
+
+bool UCHealthComponent::IsDead()
+{
+	return GetCurrentHealth() <= 0.0f;
+}

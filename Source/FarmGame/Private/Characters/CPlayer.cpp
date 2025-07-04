@@ -81,22 +81,22 @@ void ACPlayer::BeginPlay()
 	SetInteractable();
 
 	// Fade
-	UMaterialInterface* Mat;
-	CHelpers::GetAssetDynamic(&Mat, "/Game/ThirdParty/3D_LOW_POLY_FarmerPack/Material/M_farm1_Inst");
-	if (Mat)
-	{
-		FadeMaterialInstance = UMaterialInstanceDynamic::Create(Mat, this);
-		if (FadeMaterialInstance)
-		{
-			GetMesh()->SetMaterial(0, FadeMaterialInstance);
-			//PostProcessComp->Settings.WeightedBlendables.Array.Add(FWeightedBlendable(1.0f, FadeMaterialInstance));
-		}
-	}
-	TargetOpacity = 1.0f;
-	CurrentOpacity = 1.0f;
-	FadeLerpDuration = 0.5f;
-	FadeLerpElapsed = 0.0f;
-	bFadingOut = false;
+	//UMaterialInterface* Mat;
+	//CHelpers::GetAssetDynamic(&Mat, "/Game/ThirdParty/3D_LOW_POLY_FarmerPack/Material/M_farm1_Inst");
+	//if (Mat)
+	//{
+	//	FadeMaterialInstance = UMaterialInstanceDynamic::Create(Mat, this);
+	//	if (FadeMaterialInstance)
+	//	{
+	//		GetMesh()->SetMaterial(0, FadeMaterialInstance);
+	//		//PostProcessComp->Settings.WeightedBlendables.Array.Add(FWeightedBlendable(1.0f, FadeMaterialInstance));
+	//	}
+	//}
+	//TargetOpacity = 1.0f;
+	//CurrentOpacity = 1.0f;
+	//FadeLerpDuration = 0.5f;
+	//FadeLerpElapsed = 0.0f;
+	//bFadingOut = false;
 }
 
 void ACPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -275,7 +275,12 @@ void ACPlayer::EquipItemFromQuickSlot(int32 QuickSlotIndex)
 	}
 }
 
-void ACPlayer::StartFade(bool bToTransparent)
+void ACPlayer::SetVisibility(bool bVisible)
+{
+	GetMesh()->SetVisibility(bVisible);
+}
+
+/*void ACPlayer::StartFade(bool bToTransparent)
 {
 	bFadingOut = bToTransparent;
 	TargetOpacity = bToTransparent ? 0.3f : 1.0f;
@@ -304,7 +309,7 @@ void ACPlayer::UpdateFade()
 		CurrentOpacity = TargetOpacity;
 		GetWorld()->GetTimerManager().ClearTimer(OpacityTimerHandle);
 	}
-}
+}*/
 
 void ACPlayer::SetDelayedInteractable(float DelayTime)
 {

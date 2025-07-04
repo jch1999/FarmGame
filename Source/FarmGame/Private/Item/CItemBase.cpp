@@ -175,3 +175,12 @@ void ACItemBase::SetOwnerCharacter(ACharacter* InOwnerCharacter)
 {
 	OwnerCharacter = InOwnerCharacter;
 }
+
+void ACItemBase::ReduceAvailableCnt(int32 InCnt)
+{
+	AvailableCount -= InCnt;
+	if (AvailableCount < 0)
+	{
+		AvailableCount = 0;
+	}
+}

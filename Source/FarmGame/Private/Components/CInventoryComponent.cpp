@@ -131,7 +131,22 @@ bool UCInventoryComponent::ReduceItemStack(int InIndex)
 {
 	if (InventorySlots.IsValidIndex(InIndex))
 	{
-		if ((--InventorySlots[InIndex].CurrentStack) == 0)
+		// Reduce Capacity
+		if (UGameInstance* Instance = GetOwner()->GetGameInstance())
+		{
+			if (UCGameInstance* MyInstance = Cast<UCGameInstance>(Instance))
+			{
+				TOptional<FItemData> ItemDataOpt = MyInstance->GetItemtData(InventorySlots[InIndex].ItemID);
+				if (ItemDataOpt.IsSet())
+				{
+					const FItemData& ItemData = ItemDataOpt.GetValue();
+					CurrentCapacity -= ItemData.ItemWeight;
+				}
+			}
+		}
+		--(InventorySlots[InIndex].CurrentStack);
+		UE_LOG(LogTemp, Warning, TEXT("Left Stack : %d"), InventorySlots[InIndex].CurrentStack);
+		if (InventorySlots[InIndex].CurrentStack <= 0)
 		{
 			ClearSlot(InIndex);
 		}
@@ -386,6 +401,19 @@ void UCInventoryComponent::ClearSlot(int32 InIndex)
 {
 	if (InventorySlots.IsValidIndex(InIndex))
 	{
+		// Reduce Capacity
+		if (UGameInstance* Instance = GetOwner()->GetGameInstance())
+		{
+			if (UCGameInstance* MyInstance = Cast<UCGameInstance>(Instance))
+			{
+				TOptional<FItemData> ItemDataOpt = MyInstance->GetItemtData(InventorySlots[InIndex].ItemID);
+				if (ItemDataOpt.IsSet())
+				{
+					const FItemData& ItemData = ItemDataOpt.GetValue();
+					CurrentCapacity -= InventorySlots[InIndex].CurrentStack * ItemData.ItemWeight;
+				}
+			}
+		}
 		InventorySlots[InIndex] = FInventorySlot();
 		TArray<int32> ChangedIndexes;
 		ChangedIndexes.Add(InIndex);

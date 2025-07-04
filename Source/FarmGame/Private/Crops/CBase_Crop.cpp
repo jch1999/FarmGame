@@ -40,6 +40,7 @@ ACBase_Crop::ACBase_Crop()
 	BoxComp->SetBoxExtent(FVector(64.0f, 64.0f, 96.0f));
 	BoxComp->SetRelativeLocation(FVector(0.0f, 0.0f, 96.0f));
 	BoxComp->SetCollisionProfileName(TEXT("ActionInteractObject"));
+	BoxComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	// Set Camera Component
 	CameraComp->SetRelativeLocation(FVector(-135.0f, 0.0f, 200.0f));
@@ -61,6 +62,14 @@ void ACBase_Crop::BeginPlay()
 	SetUnInteractable();
 	GrowUp();
 	SetAutoGrowTimer(UpdateTime, true, UpdateTime);
+
+	// Material
+	UMaterialInterface* Material = MeshComp->GetMaterial(0);
+	if (Material)
+	{
+		CropMaterial = UMaterialInstanceDynamic::Create(Material, this);
+		MeshComp->SetMaterial(0, CropMaterial);
+	}
 }
 
 void ACBase_Crop::SetInteractable()
@@ -192,6 +201,7 @@ void ACBase_Crop::GrowUp()
 					if (IsHarvestable())
 					{
 						SetInteractable();
+						BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 					}
 				}
 			}
@@ -234,7 +244,7 @@ void ACBase_Crop::PlayGrowthEffects()
 
 bool ACBase_Crop::IsDead()
 {
-	return HealthComp->GetCurrentHealth() <= 0.0f;
+	return HealthComp->IsDead();
 }
 
 bool ACBase_Crop::IsHarvestable()
@@ -353,6 +363,18 @@ void ACBase_Crop::ChangeQualityByHealth(float CureentHealth, float PrevHealth, f
 	}
 }
 
+void ACBase_Crop::ChangeDead()
+{
+	// Interact
+	SetInteractable();
+	BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	
+	// Stop Grow
+	GetWorld()->GetTimerManager().ClearTimer(AutoGrowTimer);
+
+	CropMaterial->SetScalarParameterValue(FName("Life"), 0.0f);
+}
+
 void ACBase_Crop::SetFarmField(ACFarmField* InFarmField)
 {
 	if (InFarmField)
@@ -363,6 +385,7 @@ void ACBase_Crop::SetFarmField(ACFarmField* InFarmField)
 
 void ACBase_Crop::AutoGrow()
 {
+	if (IsDead()) return;
 	UGameInstance* Instance = GetGameInstance();
 	if (Instance)
 	{
@@ -403,6 +426,23 @@ void ACBase_Crop::AutoGrow()
 
 					MoistureComp->AddMoisture(CurrentConsumeMoisture);
 					OwnerField->GetMoistureComp()->ReduceMoisture(CurrentConsumeMoisture);
+
+					// Change Health
+					if (NutritionComp->IsEnough() && MoistureComp->IsEnough())
+					{
+						HealthComp->IncreaseHealth(0.05f);
+					}
+					else
+					{
+						HealthComp->DecreaseHealth(0.05f);
+
+						if (HealthComp->IsDead())
+						{
+							ChangeDead();
+						}
+					}
+					float LifeValue = FMath::Clamp(HealthComp->GetCurrentRate() + 0.3f, 0.0f, 1.0f);
+					CropMaterial->SetScalarParameterValue(FName("Life"), LifeValue);
 				}
 
 				// Grow

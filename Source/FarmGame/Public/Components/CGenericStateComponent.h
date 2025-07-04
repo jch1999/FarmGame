@@ -47,16 +47,16 @@ public:
 	FStateValueChanged OnStateValueChanged;
 
 protected:
-	UPROPERTY(EditAnywhere, Category = "Nutrition")
+	UPROPERTY(EditAnywhere, Category = "Status")
 	float CurrentValue;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Nutrition")
+	UPROPERTY(EditAnywhere, Category = "Status")
 	float MaxValue;
 
-	UPROPERTY(EditAnywhere, Category = "Nutrition")
+	UPROPERTY(EditAnywhere, Category = "Status")
 	float AutoReduceAmount;
 
-	UPROPERTY(EditAnywhere, Category = "Nutrition")
+	UPROPERTY(EditAnywhere, Category = "Status")
 	FVector2D SafeRange;
 
 private:

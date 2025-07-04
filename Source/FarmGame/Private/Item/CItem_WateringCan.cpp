@@ -13,9 +13,15 @@ bool ACItem_WateringCan::UseItem()
 		{
 			if (ACFarmField* Field = Cast<ACFarmField>(InteractComp->GetActionInteractTarget()))
 			{
-				Player->StartWateringAnimation();
 				UseEffect->Activate();
-				Field->GetMoistureComp()->AddMoisture(FMath::Min(CurrentAmount, UseAmount));
+				if (UCMoistureComponent* MoistureComp = Field->GetMoistureComp())
+				{
+					MoistureComp->AddMoisture(FMath::Min(CurrentAmount, UseAmount));
+				}
+				else
+				{
+					UE_LOG(LogTemp, Error, TEXT("UseItem Error, WateringCan. MoistureComp is missing!"));
+				}
 				if (CurrentAmount < UseAmount)
 				{
 					CurrentAmount = 0.0f;
@@ -35,4 +41,12 @@ void ACItem_WateringCan::EndUse()
 {
 	Super::EndUse();
 	UseEffect->Deactivate();
+}
+
+void ACItem_WateringCan::PlayAnimation()
+{
+	if (ACPlayer* Player = Cast<ACPlayer>(GetOwnerCharacter()))
+	{
+		Player->StartWateringAnimation();
+	}
 }

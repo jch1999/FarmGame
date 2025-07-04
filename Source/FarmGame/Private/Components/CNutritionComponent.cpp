@@ -13,7 +13,7 @@ void UCNutritionComponent::BeginPlay()
 
 void UCNutritionComponent::SetFamineState()
 {
-	DrawDebugString(GetWorld(), GetOwner()->GetActorLocation(), "Nutrition is under the safe rnage!", nullptr, FColor::Red, 0.8f);
+	//DrawDebugString(GetWorld(), GetOwner()->GetActorLocation(), "Nutrition is under the safe rnage!", nullptr, FColor::Red, 0.8f);
 	ChangeState(ENutritionState::Famine);
 }
 
@@ -24,14 +24,15 @@ void UCNutritionComponent::SetEnoughState()
 
 void UCNutritionComponent::SetOverState()
 {
-	DrawDebugString(GetWorld(), GetOwner()->GetActorLocation(), "Nutrition is over the safe rnage!", nullptr, FColor::Red, 0.8f);
+	//DrawDebugString(GetWorld(), GetOwner()->GetActorLocation(), "Nutrition is over the safe rnage!", nullptr, FColor::Red, 0.8f);
 	ChangeState(ENutritionState::Over);
 }
 
 void UCNutritionComponent::AddNutrition(float Amount)
 {
 	Super::AddValue(Amount);
-	
+
+	UE_LOG(LogTemp, Warning, TEXT("AddNutrition : %f"), Amount);
 	CheckState();
 }
 

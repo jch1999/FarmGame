@@ -46,14 +46,14 @@ void UCInteractComponent::DoActionInteract()
 	{
 		if (ACItem_Tool* Tool = Cast<ACItem_Tool>(OwnerCharacter->GetCurretnEquippedItem()))
 		{
-			Tool->UseItem();
-			ActionInteractTarget = nullptr;
+			Tool->PlayAnimation();
+			//ActionInteractTarget = nullptr;
 			return;
 		}
 	}
 	InteractActor->Interact(OwnerCharacter);
 
-	ActionInteractTarget = nullptr;
+	//ActionInteractTarget = nullptr;
 }
 
 void UCInteractComponent::Scroll(float InputValue)

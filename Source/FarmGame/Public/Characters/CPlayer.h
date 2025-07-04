@@ -83,10 +83,11 @@ public:
 	void EquipItemFromQuickSlot(int32 QuickSlotIndex);
 
 	// Fade
-	void StartFade(bool bToTransparent);
+	//void StartFade(bool bToTransparent);
+	void SetVisibility(bool bVisible);
 
 private:
-	void UpdateFade();
+	//void UpdateFade();
 
 protected:
 	// Components
@@ -120,7 +121,7 @@ protected:
 	EInteractObjectType InteractType;
 
 	// Fade
-	UPROPERTY()
+	/*UPROPERTY()
 	UMaterialInstanceDynamic* FadeMaterialInstance;
 
 	FTimerHandle OpacityTimerHandle;
@@ -128,7 +129,7 @@ protected:
 	float CurrentOpacity;
 	float FadeLerpDuration;
 	float FadeLerpElapsed;
-	bool bFadingOut;
+	bool bFadingOut;*/
 
 private:
 	// Animation

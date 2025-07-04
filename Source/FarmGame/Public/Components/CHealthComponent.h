@@ -28,4 +28,5 @@ public:
 
 	void IncreaseHealth(float InAmount);
 	void DecreaseHealth(float InAmount);
+	bool IsDead();
 };
