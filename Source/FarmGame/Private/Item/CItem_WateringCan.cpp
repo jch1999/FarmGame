@@ -1,5 +1,6 @@
 #include "Item/CItem_WateringCan.h"
 #include "Farm/CFarmField.h"
+#include "Crops/CBase_Crop.h"
 #include "Components/CInteractComponent.h"
 #include "Components/CMoistureComponent.h"
 #include "Characters/CPlayer.h"
@@ -14,22 +15,30 @@ bool ACItem_WateringCan::UseItem()
 			if (ACFarmField* Field = Cast<ACFarmField>(InteractComp->GetActionInteractTarget()))
 			{
 				UseEffect->Activate();
-				if (UCMoistureComponent* MoistureComp = Field->GetMoistureComp())
+				UCMoistureComponent* MoistureComp_Field = Field->GetMoistureComp();
+				UCMoistureComponent* MoistureComp_Crop = nullptr;
+				if (IsValid(Field->GetCrop()))
 				{
-					MoistureComp->AddMoisture(FMath::Min(CurrentAmount, UseAmount));
+					MoistureComp_Crop = Field->GetCrop()->GetMoistureComp();
+					
+				}
+
+				if (IsValid(MoistureComp_Field) && IsValid(MoistureComp_Crop))
+				{
+					MoistureComp_Field->AddMoisture(FMath::Min(CurrentAmount, UseAmount) * 0.75f);
+					MoistureComp_Crop->AddMoisture(FMath::Min(CurrentAmount, UseAmount) * 0.25f);
+				}
+				else if (IsValid(MoistureComp_Field))
+				{
+					MoistureComp_Field->AddMoisture(FMath::Min(CurrentAmount, UseAmount));
 				}
 				else
 				{
 					UE_LOG(LogTemp, Error, TEXT("UseItem Error, WateringCan. MoistureComp is missing!"));
+					return false;
 				}
-				if (CurrentAmount < UseAmount)
-				{
-					CurrentAmount = 0.0f;
-				}
-				else
-				{
-					CurrentAmount -= UseAmount;
-				}
+
+				CurrentAmount = FMath::Max(0.0f, CurrentAmount - UseAmount);
 				return true;
 			}
 		}

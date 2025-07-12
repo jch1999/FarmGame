@@ -278,6 +278,10 @@ void ACPlayer::EquipItemFromQuickSlot(int32 QuickSlotIndex)
 void ACPlayer::SetVisibility(bool bVisible)
 {
 	GetMesh()->SetVisibility(bVisible);
+	if (IsValid(CurrentEquippedItem))
+	{
+		CurrentEquippedItem->GetItemMesh()->SetVisibility(bVisible);
+	}
 }
 
 /*void ACPlayer::StartFade(bool bToTransparent)

@@ -5,8 +5,6 @@
 #include "Components/CGenericStateComponent.h"
 #include "CMoistureComponent.generated.h"
 
-
-
 UENUM(BlueprintType)
 enum class EMoistureState :uint8
 {

@@ -167,8 +167,11 @@ public:
 	EQualityType GetCropQuality() { return CropQuality; }
 	void SetCropQuality(EQualityType InType);
 
+	//UFUNCTION()
+	//void ChangeQualityByHealth(float CureentHealth, float PrevHealth, float MaxHealth);
+
 	UFUNCTION()
-	void ChangeQualityByHealth(float CureentHealth, float PrevHealth, float MaxHealth);
+	void ChangeByHealthState(EHealthState InState);
 
 	// Dead
 	void ChangeDead();
@@ -191,6 +194,10 @@ public:
 private:
 	void AutoGrow();
 	void SetCropDatas();
+
+	const TOptional<FCropGrowthData> GetGrowthData();
+	const TOptional<FCropData> GetCropData();
+	const TOptional<FItemAssetData> GetCropItemData();
 
 public:
 	UPROPERTY(BlueprintAssignable)
@@ -234,8 +241,8 @@ protected:
 	int32 CurrentGrowLevel;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crop|Defualt")
 	float CurrentGrowValue;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crop|Defualt")
-	float TargetGrowthValue;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crop|Defualt")
+	//float TargetGrowthValue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|Time")
 	float UpdateTime;

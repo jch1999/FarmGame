@@ -30,17 +30,17 @@ void UCCropWidget::NativeOnInitialized()
 
 	if (HealthState)
 	{
-		UTexture2D* CultivateIcon;
-		CHelpers::GetAssetDynamic(&CultivateIcon, "/Game/ThirdParty/Icon/Icon_Health");
-		HealthState->SetStateIconTexture(CultivateIcon);
+		UTexture2D* HealthIcon;
+		CHelpers::GetAssetDynamic(&HealthIcon, "/Game/ThirdParty/Icon/Icon_Health");
+		HealthState->SetStateIconTexture(HealthIcon);
 		HealthState->SetStateIconColor(FLinearColor(150.0f, 75.0f, 0.0f));
 	}
 
 	if (GrowthState)
 	{
-		UTexture2D* CultivateIcon;
-		CHelpers::GetAssetDynamic(&CultivateIcon, "/Game/ThirdParty/Icon/Icon_Growth");
-		GrowthState->SetStateIconTexture(CultivateIcon);
+		UTexture2D* GrowthIcon;
+		CHelpers::GetAssetDynamic(&GrowthIcon, "/Game/ThirdParty/Icon/Icon_Growth");
+		GrowthState->SetStateIconTexture(GrowthIcon);
 		GrowthState->SetStateIconColor(FLinearColor(150.0f, 75.0f, 0.0f));
 	}
 }
@@ -73,6 +73,8 @@ void UCCropWidget::SetCrop_Implementation(ACBase_Crop* InCrop)
 		HealthComp->OnStateValueChanged.AddDynamic(this, &UCCropWidget::UpdateHealth);
 		UpdateHealth(0.0f, HealthComp->GetCurrentHealth(), HealthComp->GetMaxHealth());
 	}
+
+
 	if (Crop)
 	{
 		Crop->OnGrowthChanged.AddDynamic(this, &UCCropWidget::UpdateGrowth);
@@ -102,6 +104,11 @@ void UCCropWidget::ResetCrop_Implementation()
 		if (HealthComp)
 		{
 			Crop->GetHealthComp()->OnStateValueChanged.RemoveDynamic(this, &UCCropWidget::UpdateHealth);
+		}
+
+		if (Crop)
+		{
+			Crop->OnGrowthChanged.RemoveDynamic(this, &UCCropWidget::UpdateGrowth);
 		}
 		Crop = nullptr;
 	}

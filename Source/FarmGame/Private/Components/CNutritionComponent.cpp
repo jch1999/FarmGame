@@ -32,7 +32,7 @@ void UCNutritionComponent::AddNutrition(float Amount)
 {
 	Super::AddValue(Amount);
 
-	UE_LOG(LogTemp, Warning, TEXT("AddNutrition : %f"), Amount);
+	//UE_LOG(LogTemp, Warning, TEXT("AddNutrition : %f"), Amount);
 	CheckState();
 }
 

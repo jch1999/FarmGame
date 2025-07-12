@@ -65,6 +65,8 @@ public:
 	void SetOwnerCharacter(ACharacter* InOwnerCharacter);
 	ACharacter* GetOwnerCharacter() { return OwnerCharacter; }
 
+	UStaticMeshComponent* GetItemMesh() { return MeshComp; }
+
 protected:
 	// Components
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")

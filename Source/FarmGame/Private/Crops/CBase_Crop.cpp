@@ -49,6 +49,7 @@ ACBase_Crop::ACBase_Crop()
 	// Property
 	CurrentGrowLevel = 0;
 	CurrentGrowValue = 0.0f;
+	// TargetGrowthValue = 0.0f;
 	UpdateTime = 1.0f;
 
 	SetType(EInteractObjectType::Crop);
@@ -58,7 +59,8 @@ void ACBase_Crop::BeginPlay()
 {
 	Super::BeginPlay();
 
-	HealthComp->OnStateValueChanged.AddDynamic(this, &ACBase_Crop::ChangeQualityByHealth);
+	//HealthComp->OnStateValueChanged.AddDynamic(this, &ACBase_Crop::ChangeQualityByHealth);
+	HealthComp->OnHealthStateChanged.AddDynamic(this, &ACBase_Crop::ChangeByHealthState);
 	SetUnInteractable();
 	GrowUp();
 	SetAutoGrowTimer(UpdateTime, true, UpdateTime);
@@ -175,45 +177,30 @@ void ACBase_Crop::SetAutoGrowTimer(float InFirstDelay, bool InbLoop, float InLoo
 
 void ACBase_Crop::GrowUp()
 {
-	UGameInstance* Instance = GetGameInstance();
-	if (Instance)
+	const TOptional<FCropData>& CropDataOpt = GetCropData();
+	if (CropDataOpt.IsSet())
 	{
-		UCGameInstance* MyInstance = Cast<UCGameInstance>(Instance);
-		if (MyInstance)
+		FCropData CropData = CropDataOpt.GetValue();
+		if (CurrentGrowLevel == 0)
 		{
-			if (const TOptional<FCropData>& CropDataOpt = MyInstance->GetCropDefaultData(CropName))
-			{
-				if (!CropDataOpt.IsSet())
-				{
-					return;
-				}
-				else
-				{
-					const FCropData& CropData = CropDataOpt.GetValue();
-					if (CurrentGrowLevel == 0)
-					{
-						CHelpers::GetAssetDynamic(&GrowthParticleEffect, CropData.GrowUpPraticleEffectRef);
-						CHelpers::GetAssetDynamic(&GrowthSoundEffect, CropData.GrowUpSoundEffectRef);
-					}
-					CheckTrue(CurrentGrowLevel == CropData.MaxLevel);
-
-					PlayGrowthEffects();
-					if (IsHarvestable())
-					{
-						SetInteractable();
-						BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-					}
-				}
-			}
-			++CurrentGrowLevel;
-			SetCropDatas();
-
-			return;
+			CHelpers::GetAssetDynamic(&GrowthParticleEffect, CropData.GrowUpPraticleEffectRef);
+			CHelpers::GetAssetDynamic(&GrowthSoundEffect, CropData.GrowUpSoundEffectRef);
 		}
+		CheckTrue(CurrentGrowLevel == CropData.MaxLevel);
+
+		PlayGrowthEffects();
+		if (IsHarvestable())
+		{
+			SetInteractable();
+			BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		}
+
+		++CurrentGrowLevel;
+		SetCropDatas();
 	}
 	else
 	{
-		UE_LOG(LogCrop, Error, TEXT("Can't get GameInstance. %s : "), *CropName.ToString());
+		UE_LOG(LogCrop, Error, TEXT("GowthData doesn't set. %s : "), *CropName.ToString());
 	}
 }
 
@@ -253,19 +240,16 @@ bool ACBase_Crop::IsHarvestable()
 	{
 		return true;
 	}
-	UGameInstance* Instance = GetGameInstance();
-	if (Instance)
+	
+	const TOptional<FCropData>& CropDataOpt = GetCropData();
+	if (CropDataOpt.IsSet())
 	{
-		UCGameInstance* MyInstance = Cast<UCGameInstance>(Instance);
-		if (MyInstance)
-		{
-			const TOptional<FCropData>& CropDataOpt = MyInstance->GetCropDefaultData(CropName);
-			if (CropDataOpt.IsSet())
-			{
-				const FCropData& CropData = CropDataOpt.GetValue();
-				return CurrentGrowLevel == CropData.MaxLevel;
-			}
-		}
+		FCropData CropData = CropDataOpt.GetValue();
+		return CurrentGrowLevel == CropData.MaxLevel;
+	}
+	else
+	{
+		UE_LOG(LogCrop, Error, TEXT("GowthData doesn't set. %s : "), *CropName.ToString());
 	}
 	return false;
 }
@@ -280,63 +264,40 @@ void ACBase_Crop::DoHarvest()
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		UGameInstance* GI = GetGameInstance();
-		if (UCGameInstance* GameInstance = Cast<UCGameInstance>(GI))
+		const TOptional<FCropData>& DataOpt = GetCropData();
+		if (DataOpt.IsSet())
 		{
-			if (TOptional<FCropData> CropDataOpt = GameInstance->GetCropDefaultData(CropName))
+			const FCropData& Data = DataOpt.GetValue();
+			const TOptional<FItemAssetData>& ItemAssetDataOpt = GetCropItemData();
+			if (ItemAssetDataOpt.IsSet())
 			{
-				FCropData Data = CropDataOpt.GetValue();
-				TOptional<FItemAssetData> ItemAssetDataOpt;
-				switch (GetCropQuality())
+				const FItemAssetData& ItemAssetData = ItemAssetDataOpt.GetValue();
+				TSubclassOf<ACItem_Crop> CropItemClass;
+				CHelpers::GetClassDynamic(&CropItemClass, ItemAssetData.ItemClassRef);
+				if (CropItemClass)
 				{
-				case EQualityType::Low:
-				{
-					ItemAssetDataOpt = GameInstance->GetItemtAssetData(Data.IDForQuality[0]);
+					for (auto& SpawnPoint : SpawnPoints)
+					{
+						FTransform SpawnTarnsform = SpawnPoint * GetTransform();
+						ACItem_Crop* CropItem = World->SpawnActorDeferred<ACItem_Crop>(CropItemClass, SpawnTarnsform);
+						CropItem->SetAvailableCnt(1);
+						if (!CropItem)
+						{
+							UE_LOG(LogCrop, Error, TEXT("Failed to spawn crop item actor."));
+							return;
+						}
+						CropItem->FinishSpawning(SpawnTarnsform);
+					}
 				}
-				break;
-				case EQualityType::Normal:
+				else
 				{
-					ItemAssetDataOpt = GameInstance->GetItemtAssetData(Data.IDForQuality[1]);
-				}
-				break;
-				case EQualityType::High:
-				{
-					ItemAssetDataOpt = GameInstance->GetItemtAssetData(Data.IDForQuality[2]);
-				}
-				break;
-				default:
-				{
-					UE_LOG(LogCrop, Error, TEXT("Creation of crop item failed. Invalid Quality. %s"), *(UEnum::GetValueAsString(GetCropQuality())));
+					UE_LOG(LogCrop, Error, TEXT("Creation of crop item failed. Invalid Clas Ref. %s"), *(UEnum::GetValueAsString(ItemAssetData.ItemID)));
 					return;
 				}
-				break;
-				}
-				if (ItemAssetDataOpt.IsSet())
-				{
-					FItemAssetData ItemAssetData = ItemAssetDataOpt.GetValue();
-					TSubclassOf<ACItem_Crop> CropItemClass;
-					CHelpers::GetClassDynamic(&CropItemClass, ItemAssetData.ItemClassRef);
-					if (CropItemClass)
-					{
-						for (auto& SpawnPoint : SpawnPoints)
-						{
-							FTransform SpawnTarnsform = SpawnPoint * GetTransform();
-							ACItem_Crop* CropItem = World->SpawnActorDeferred<ACItem_Crop>(CropItemClass, SpawnTarnsform);
-							CropItem->SetAvailableCnt(1);
-							if (!CropItem)
-							{
-								UE_LOG(LogCrop, Error, TEXT("Failed to spawn crop item actor."));
-								return;
-							}
-							CropItem->FinishSpawning(SpawnTarnsform);
-						}
-					}
-					else
-					{
-						UE_LOG(LogCrop, Error, TEXT("Creation of crop item failed. Invalid Clas Ref. %s"), *(UEnum::GetValueAsString(ItemAssetData.ItemID)));
-						return;
-					}
-				}
+			}
+			else
+			{
+				UE_LOG(LogItem, Error, TEXT("Can't find ItemData! CropName : %s, ItemId : %s"), *(CropName.ToString()), *(UEnum::GetValueAsString(Data.IDForQuality[0])));
 			}
 		}
 	}
@@ -347,20 +308,53 @@ void ACBase_Crop::SetCropQuality(EQualityType InType)
 	CropQuality = InType;
 }
 
-void ACBase_Crop::ChangeQualityByHealth(float CureentHealth, float PrevHealth, float MaxHealth)
+//void ACBase_Crop::ChangeQualityByHealth(float CureentHealth, float PrevHealth, float MaxHealth)
+//{
+//	if (HealthComp->GetCurrentHealth() / HealthComp->GetMaxHealth() < 0.3f)
+//	{
+//		SetCropQuality(EQualityType::Low);
+//	}
+//	else if (HealthComp->GetCurrentHealth() / HealthComp->GetMaxHealth() < 0.8f)
+//	{
+//		SetCropQuality(EQualityType::Normal);
+//	}
+//	else
+//	{
+//		SetCropQuality(EQualityType::High);
+//	}
+//}
+
+void ACBase_Crop::ChangeByHealthState(EHealthState InState)
 {
-	if (HealthComp->GetCurrentHealth() / HealthComp->GetMaxHealth() < 0.3f)
+	float LifeValue = 1.0f;
+	switch (HealthComp->GetCurrentState())
 	{
-		SetCropQuality(EQualityType::Low);
+		case EHealthState::Healthy:
+		{
+			LifeValue = 1.0f;
+			SetCropQuality(EQualityType::High);
+		}
+		break;
+		case EHealthState::Sick:
+		{
+			LifeValue = 0.8f;
+			SetCropQuality(EQualityType::Normal);
+		}
+		break;
+		case EHealthState::Deadly:
+		{
+			LifeValue = 0.5f;
+			SetCropQuality(EQualityType::Low);
+		}
+		break;
+		case EHealthState::Dead:
+		{
+			LifeValue = 0.3f;
+			ChangeDead();
+		}
+		break;
 	}
-	else if (HealthComp->GetCurrentHealth() / HealthComp->GetMaxHealth() < 0.8f)
-	{
-		SetCropQuality(EQualityType::Normal);
-	}
-	else
-	{
-		SetCropQuality(EQualityType::High);
-	}
+	CropMaterial->SetScalarParameterValue(FName("Life"), LifeValue);
 }
 
 void ACBase_Crop::ChangeDead()
@@ -386,93 +380,104 @@ void ACBase_Crop::SetFarmField(ACFarmField* InFarmField)
 void ACBase_Crop::AutoGrow()
 {
 	if (IsDead()) return;
-	UGameInstance* Instance = GetGameInstance();
-	if (Instance)
+	const TOptional<FCropGrowthData>& GrowthDataOpt = GetGrowthData();
+	if (GrowthDataOpt.IsSet())
 	{
-		UCGameInstance* MyInstance = Cast<UCGameInstance>(Instance);
-		if (MyInstance)
+		const FCropGrowthData& GrowthData = GrowthDataOpt.GetValue();
+		if (GrowthData.CropName == CropName)
 		{
-			const TOptional<FCropGrowthData>& GrowthDataOpt = MyInstance->GetCropGrowthData(CropName, CurrentGrowLevel);
-			if (GrowthDataOpt.IsSet())
+			if (OwnerField)
 			{
-				const FCropGrowthData& GrowthData = GrowthDataOpt.GetValue();
-				if (OwnerField)
+				// 양분 및 수분 소비
+				float AvailableNutrition = FMath::Min(GrowthData.ConsumeNutrition, OwnerField->GetNutritionComp()->GetCurrentValue());
+				NutritionComp->AddNutrition(AvailableNutrition);
+				OwnerField->GetNutritionComp()->ReduceNutrition(AvailableNutrition);
+
+				float AvailableMoisture = FMath::Min(GrowthData.ConsumeMoisture, OwnerField->GetMoistureComp()->GetCurrentValue());
+				MoistureComp->AddMoisture(AvailableMoisture);
+				OwnerField->GetMoistureComp()->ReduceMoisture(AvailableMoisture);
+
+				// Drain Nutrition From Field
+				float LeftNutritionapacity = GrowthData.Max_Nutrition - NutritionComp->GetCurrentValue();
+				float CurrentConsumeNutrition = LeftNutritionapacity > GrowthData.ConsumeNutrition ? GrowthData.ConsumeMoisture : LeftNutritionapacity;
+
+				float FieldNutrtion = OwnerField->GetNutritionComp()->GetCurrentValue();
+				CurrentConsumeNutrition = FieldNutrtion < CurrentConsumeNutrition ? FieldNutrtion : CurrentConsumeNutrition;
+
+				NutritionComp->AddNutrition(CurrentConsumeNutrition);
+				OwnerField->GetNutritionComp()->ReduceNutrition(CurrentConsumeNutrition);
+
+				// Drain Moisture From Field
+				float LeftMoistureCapacity = GrowthData.Max_Moisture - MoistureComp->GetCurrentValue();
+				float CurrentConsumeMoisture = LeftMoistureCapacity > GrowthData.ConsumeMoisture ? GrowthData.ConsumeMoisture : LeftMoistureCapacity;
+
+				float FieldMoisture = OwnerField->GetMoistureComp()->GetCurrentValue();
+				CurrentConsumeMoisture = FieldMoisture < CurrentConsumeMoisture ? FieldMoisture : CurrentConsumeMoisture;
+
+				MoistureComp->AddMoisture(CurrentConsumeMoisture);
+				OwnerField->GetMoistureComp()->ReduceMoisture(CurrentConsumeMoisture);
+
+				// Change Health
+				if (NutritionComp->IsEnough() && MoistureComp->IsEnough())
 				{
-					// 양분 및 수분 소비
-					float AvailableNutrition = FMath::Min(GrowthData.ConsumeNutrition, OwnerField->GetNutritionComp()->GetCurrentValue());
-					NutritionComp->AddNutrition(AvailableNutrition);
-					OwnerField->GetNutritionComp()->ReduceNutrition(AvailableNutrition);
-
-					float AvailableMoisture = FMath::Min(GrowthData.ConsumeMoisture, OwnerField->GetMoistureComp()->GetCurrentValue());
-					MoistureComp->AddMoisture(AvailableMoisture);
-					OwnerField->GetMoistureComp()->ReduceMoisture(AvailableMoisture);
-
-					// Drain Nutrition From Field
-					float LeftNutritionapacity = GrowthData.Max_Nutrition - NutritionComp->GetCurrentValue();
-					float CurrentConsumeNutrition = LeftNutritionapacity > GrowthData.ConsumeNutrition ? GrowthData.ConsumeMoisture : LeftNutritionapacity;
-
-					float FieldNutrtion = OwnerField->GetNutritionComp()->GetCurrentValue();
-					CurrentConsumeNutrition = FieldNutrtion < CurrentConsumeNutrition ? FieldNutrtion : CurrentConsumeNutrition;
-
-					NutritionComp->AddNutrition(CurrentConsumeNutrition);
-					OwnerField->GetNutritionComp()->ReduceNutrition(CurrentConsumeNutrition);
-
-					// Drain Moisture From Field
-					float LeftMoistureCapacity = GrowthData.Max_Moisture - MoistureComp->GetCurrentValue();
-					float CurrentConsumeMoisture = LeftMoistureCapacity > GrowthData.ConsumeMoisture ? GrowthData.ConsumeMoisture : LeftMoistureCapacity;
-
-					float FieldMoisture = OwnerField->GetMoistureComp()->GetCurrentValue();
-					CurrentConsumeMoisture = FieldMoisture < CurrentConsumeMoisture ? FieldMoisture : CurrentConsumeMoisture;
-
-					MoistureComp->AddMoisture(CurrentConsumeMoisture);
-					OwnerField->GetMoistureComp()->ReduceMoisture(CurrentConsumeMoisture);
-
-					// Change Health
-					if (NutritionComp->IsEnough() && MoistureComp->IsEnough())
-					{
-						HealthComp->IncreaseHealth(0.05f);
-					}
-					else
-					{
-						HealthComp->DecreaseHealth(0.05f);
-
-						if (HealthComp->IsDead())
-						{
-							ChangeDead();
-						}
-					}
-					float LifeValue = FMath::Clamp(HealthComp->GetCurrentRate() + 0.3f, 0.0f, 1.0f);
-					CropMaterial->SetScalarParameterValue(FName("Life"), LifeValue);
+					HealthComp->IncreaseHealth(0.05f);
 				}
-
-				// Grow
-				float GrowUpValue = GrowthData.DefaultGrowUpValue;
-
-				// Calc Weather, Moisture, Nutrition Effect
-
-				// 성장 값 증가
-				float PrevValue = CurrentGrowValue;
-				CurrentGrowValue += GrowUpValue;
-				if (CurrentGrowValue > GrowthData.TargetGrowthValue)
+				else
 				{
-					GrowUp();
-					TargetGrowthValue = GrowthData.TargetGrowthValue;
+					HealthComp->DecreaseHealth(0.05f);
 				}
-				OnGrowthChanged.Broadcast(PrevValue, CurrentGrowValue, TargetGrowthValue);
 			}
-			else
+
+			// Grow
+			float GrowUpValue = GrowthData.DefaultGrowUpValue;
+
+			// Calc Weather, Moisture, Nutrition Effect
+
+			// 성장 값 증가
+			float PrevValue = CurrentGrowValue;
+			CurrentGrowValue += GrowUpValue;
+			if (CurrentGrowValue > GrowthData.TargetGrowthValue)
 			{
-				UE_LOG(LogCrop, Error, TEXT("GowthData doesn't set. %s : "), *CropName.ToString());
+				GrowUp();
+				// TargetGrowthValue = GrowthData.TargetGrowthValue;
+				//UE_LOG(LogTemp, Warning, TEXT("TargetGrowthValue : %f, CurrentGrowthValue : %f"), TargetGrowthValue, CurrentGrowValue);
 			}
+			OnGrowthChanged.Broadcast(PrevValue, CurrentGrowValue, GrowthData.TargetGrowthValue);
 		}
-	}
-	else
-	{
-		UE_LOG(LogCrop, Error, TEXT("Can't get GameInstance. %s : "), *CropName.ToString());
 	}
 }
 
 void ACBase_Crop::SetCropDatas()
+{
+	const TOptional<FCropGrowthData>& GrowthData = GetGrowthData();
+	if (GrowthData.IsSet())
+	{
+		const FCropGrowthData& CurrentGrowthData = GrowthData.GetValue();
+
+		UStaticMesh* MeshAsset;
+		CHelpers::GetAssetDynamic(&MeshAsset, CurrentGrowthData.MeshRef);
+		if (!IsValid(MeshAsset))
+		{
+			UE_LOG(LogCrop, Error, TEXT("Can't find Mesh Asset at %s"), *CurrentGrowthData.MeshRef);
+		}
+		else
+		{
+			MeshComp->SetStaticMesh(MeshAsset);
+		}
+		//MeshComp->SetStaticMesh(CropMeshes[CurrentGrowLevel]);
+		NutritionComp->SetSafeRange(CurrentGrowthData.SafeRange_Nutrition);
+		MoistureComp->SetSafeRange(CurrentGrowthData.SafeRange_Moisture);
+		// Set Current Health as much as Max Health when first grow up.
+		HealthComp->SetMaxHealth(CurrentGrowthData.Max_Health, CurrentGrowLevel == 1);
+	}
+	else
+	{
+		UE_LOG(LogCrop, Error, TEXT("GowthData doesn't set. %s : "), *CropName.ToString());
+	}
+	
+}
+
+const TOptional<FCropGrowthData> ACBase_Crop::GetGrowthData()
 {
 	UGameInstance* Instance = GetGameInstance();
 	if (Instance)
@@ -480,37 +485,79 @@ void ACBase_Crop::SetCropDatas()
 		UCGameInstance* MyInstance = Cast<UCGameInstance>(Instance);
 		if (MyInstance)
 		{
-			const TOptional<FCropGrowthData>& GrowthDataOpt = MyInstance->GetCropGrowthData(CropName, CurrentGrowLevel);
-			if (GrowthDataOpt.IsSet())
-			{
-				const FCropGrowthData& CurrentGrowthData = GrowthDataOpt.GetValue();
-
-				UStaticMesh* MeshAsset;
-
-				CHelpers::GetAssetDynamic(&MeshAsset, CurrentGrowthData.MeshRef);
-				if (!IsValid(MeshAsset))
-				{
-					UE_LOG(LogCrop, Error, TEXT("Can't find Mesh Asset at %s"), *CurrentGrowthData.MeshRef);
-				}
-				else
-				{
-					MeshComp->SetStaticMesh(MeshAsset);
-				}
-				//MeshComp->SetStaticMesh(CropMeshes[CurrentGrowLevel]);
-				NutritionComp->SetSafeRange(CurrentGrowthData.SafeRange_Nutrition);
-				MoistureComp->SetSafeRange(CurrentGrowthData.SafeRange_Moisture);
-				HealthComp->SetMaxHealth(CurrentGrowthData.Max_Health, true);
-			}
-			else
-			{
-				UE_LOG(LogCrop, Error, TEXT("GowthData doesn't set. %s : "), *CropName.ToString());
-			}
+			return MyInstance->GetCropGrowthData(CropName, CurrentGrowLevel);
 		}
 	}
 	else
 	{
 		UE_LOG(LogCrop, Error, TEXT("Can't get GameInstance. %s : "), *CropName.ToString());
 	}
+	return TOptional<FCropGrowthData>();
 }
 
+const TOptional<FCropData> ACBase_Crop::GetCropData()
+{
+	UGameInstance* Instance = GetGameInstance();
+	if (Instance)
+	{
+		UCGameInstance* MyInstance = Cast<UCGameInstance>(Instance);
+		if (MyInstance)
+		{
+			return MyInstance->GetCropDefaultData(CropName);
+		}
+	}
+	else
+	{
+		UE_LOG(LogCrop, Error, TEXT("Can't get GameInstance. %s : "), *CropName.ToString());
+	}
+	return TOptional<FCropData>();
+}
 
+const TOptional<FItemAssetData> ACBase_Crop::GetCropItemData()
+{
+	UGameInstance* GI = GetGameInstance();
+	if (UCGameInstance* GameInstance = Cast<UCGameInstance>(GI))
+	{
+		TOptional<FCropData> CropDataOpt = GameInstance->GetCropDefaultData(CropName);
+		if (CropDataOpt.IsSet())
+		{
+			const FCropData& Data = CropDataOpt.GetValue();
+			if (Data.CropName == CropName)
+			{
+				TOptional<FItemAssetData> ItemAssetDataOpt;
+				switch (GetCropQuality())
+				{
+				case EQualityType::Low:
+				{
+					return GameInstance->GetItemtAssetData(Data.IDForQuality[0]);
+				}
+				break;
+				case EQualityType::Normal:
+				{
+					return GameInstance->GetItemtAssetData(Data.IDForQuality[1]);
+				}
+				break;
+				case EQualityType::High:
+				{
+					return GameInstance->GetItemtAssetData(Data.IDForQuality[2]);
+				}
+				break;
+				default:
+				{
+					UE_LOG(LogCrop, Error, TEXT("Creation of crop item failed. Invalid Quality. %s"), *(UEnum::GetValueAsString(GetCropQuality())));
+				}
+				break;
+				}
+			}
+			else 
+			{
+				UE_LOG(LogCrop, Error, TEXT("Can't find CropData! CropName : %s"), *(CropName.ToString()));
+			}
+		}
+		else
+		{
+			UE_LOG(LogCrop, Error, TEXT("Can't find CropData! CropName : %s"), *(CropName.ToString()));
+		}
+	}
+	return TOptional<FItemAssetData>();
+}

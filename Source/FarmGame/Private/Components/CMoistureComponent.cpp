@@ -14,7 +14,7 @@ void UCMoistureComponent::BeginPlay()
 void UCMoistureComponent::AddMoisture(float Amount)
 {
 	Super::AddValue(Amount);
-	UE_LOG(LogTemp, Warning, TEXT("AddMoisture : %f"), Amount);
+	//UE_LOG(LogTemp, Warning, TEXT("AddMoisture : %f"), Amount);
 	CheckState();
 }
 

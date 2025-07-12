@@ -76,12 +76,25 @@ void ACFarmField::BeginPlay()
 
 void ACFarmField::SetInteractable()
 {
-	bInteractable = true;
+	if (IsValid(Crop) && Crop->IsHarvestable())
+	{
+		Crop->SetInteractable();
+	}
+	else
+	{
+		bInteractable = true;
+		BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	}
 }
 
 void ACFarmField::SetUnInteractable()
 {
+	if (IsValid(Crop) && Crop->IsHarvestable())
+	{
+		Crop->SetUnInteractable();
+	}
 	bInteractable = false;
+	BoxComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ACFarmField::SetDelayedInteractable(float DelayTime)

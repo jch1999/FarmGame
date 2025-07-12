@@ -13,6 +13,26 @@ void UCHealthComponent::BeginPlay()
 	CurrentValue = MaxValue;
 }
 
+void UCHealthComponent::SetHealthyState()
+{
+	ChangeState(EHealthState::Healthy);
+}
+
+void UCHealthComponent::SetSickState()
+{
+	ChangeState(EHealthState::Sick);
+}
+
+void UCHealthComponent::SetDeadlyState()
+{
+	ChangeState(EHealthState::Deadly);
+}
+
+void UCHealthComponent::SetDeadState()
+{
+	ChangeState(EHealthState::Dead);
+}
+
 void UCHealthComponent::SetMaxHealth(float InMaxHealth, bool bResetCurrentHealth)
 {
 	MaxValue = InMaxHealth;
@@ -27,14 +47,43 @@ void UCHealthComponent::SetMaxHealth(float InMaxHealth, bool bResetCurrentHealth
 void UCHealthComponent::IncreaseHealth(float InAmount)
 {
 	Super::AddValue(InAmount);
+	
+	CheckState();
 }
 
 void UCHealthComponent::DecreaseHealth(float InAmount)
 {
 	Super::ReduceValue(InAmount);
+
+	CheckState();
 }
 
-bool UCHealthComponent::IsDead()
+void UCHealthComponent::CheckState()
 {
-	return GetCurrentHealth() <= 0.0f;
+	if (CurrentValue <= 0.0f)
+	{
+		SetDeadState();
+		return;
+	}
+	else if (CurrentValue < SafeRange.X)
+	{
+		SetDeadlyState();
+		return;
+	}
+	else if (CurrentValue < SafeRange.Y)
+	{
+		SetSickState();
+		return;
+	}
+
+	SetHealthyState();
+}
+
+void UCHealthComponent::ChangeState(EHealthState state)
+{
+	CheckTrue(HealthState == state);
+
+	HealthState = state;
+
+	OnHealthStateChanged.Broadcast(state);
 }
