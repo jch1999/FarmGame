@@ -12,7 +12,12 @@ bool ACItem_Consumable::UseItem()
         if (UCInventoryComponent* InventoryComp = Player->GetInventoryComponent())
         {
             InventoryComp->ReduceItemStack(GetTargetSlotIndex());
-            ReduceAvailableCnt(1);
+            // ReduceAvailableCnt(1);
+            if (GetAvailableCount() == 0)
+            {
+                Player->ResetEquippedItem();
+                this->Destroy();
+            }
         }
     }
     return false;

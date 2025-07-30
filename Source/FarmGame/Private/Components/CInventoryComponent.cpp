@@ -144,10 +144,12 @@ bool UCInventoryComponent::ReduceItemStack(int InIndex)
 				}
 			}
 		}
+
 		--(InventorySlots[InIndex].CurrentStack);
 		UE_LOG(LogTemp, Warning, TEXT("Left Stack : %d"), InventorySlots[InIndex].CurrentStack);
 		if (InventorySlots[InIndex].CurrentStack <= 0)
 		{
+			UE_LOG(LogItem, Display, TEXT("Clear Slot!"));
 			ClearSlot(InIndex);
 		}
 		else
@@ -157,6 +159,10 @@ bool UCInventoryComponent::ReduceItemStack(int InIndex)
 			OnInventorySlotDataUpdated.Broadcast(ChangedIndexes);
 		}
 		return true;
+	}
+	else
+	{
+		UE_LOG(LogItem, Error, TEXT("Invalid SlotIndex! Index : %d"), InIndex);
 	}
 	return false;
 }

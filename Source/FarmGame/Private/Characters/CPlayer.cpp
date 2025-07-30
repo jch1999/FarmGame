@@ -140,6 +140,17 @@ ACItemBase* ACPlayer::GetCurretnEquippedItem()
 	return CurrentEquippedItem;
 }
 
+void ACPlayer::ResetEquippedItem()
+{
+	if (IsValid(CurrentEquippedItem))
+	{
+		InventoryComp->OnInventorySlotDataUpdated.RemoveDynamic(CurrentEquippedItem, &ACItemBase::UpdateByInventory_DataUpdated);
+		InventoryComp->OnInventorySlotSwap.RemoveDynamic(CurrentEquippedItem, &ACItemBase::UpdateByInventory_SlotSwap);
+		CurrentEquippedItem->Destroy();
+	}
+	CurrentEquippedItem = nullptr;
+}
+
 void ACPlayer::StartPlantingAnimation()
 {
 	if (PlantAnim)
@@ -226,11 +237,7 @@ void ACPlayer::EquipItemFromQuickSlot(int32 QuickSlotIndex)
 	if (!InventoryComp) return;
 	
 	// 기존 아이템 제거
-	if (CurrentEquippedItem)
-	{
-		CurrentEquippedItem->Destroy();
-		CurrentEquippedItem = nullptr;
-	}
+	ResetEquippedItem();
 
 	int32 TargetSlotIndex = QuickSlotBar->GetCurrentSlot()->TargetSlotIndex;
 	UE_LOG(LogTemp, Warning, TEXT("TargetSlotIndex :%d"), TargetSlotIndex);
@@ -244,12 +251,16 @@ void ACPlayer::EquipItemFromQuickSlot(int32 QuickSlotIndex)
 	FTransform SpawnTransform;
 	CurrentEquippedItem = GetWorld()->SpawnActor<ACItemBase>(SlotData->ItemClass, SpawnTransform);
 	// Set QuickSlotIndex for CurrentEquippedItem
-	CurrentEquippedItem->SetTargetSlotIndex(TargetSlotIndex);
-	CurrentEquippedItem->SetOwnerCharacter(this);
-	CurrentEquippedItem->SetOwner(this);
+	
 
 	if (CurrentEquippedItem)
 	{
+		CurrentEquippedItem->SetOwner(this);
+		CurrentEquippedItem->SetTargetSlotIndex(TargetSlotIndex);
+		CurrentEquippedItem->SetOwnerCharacter(this);
+		CurrentEquippedItem->SetUsable();
+		InventoryComp->OnInventorySlotDataUpdated.AddDynamic(CurrentEquippedItem, &ACItemBase::UpdateByInventory_DataUpdated);
+		InventoryComp->OnInventorySlotSwap.AddDynamic(CurrentEquippedItem, &ACItemBase::UpdateByInventory_SlotSwap);
 		if (UGameInstance* GI = GetGameInstance())
 		{
 			if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))

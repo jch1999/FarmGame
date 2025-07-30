@@ -71,14 +71,16 @@ void UCCropWidget::SetCrop_Implementation(ACBase_Crop* InCrop)
 	if (HealthComp)
 	{
 		HealthComp->OnStateValueChanged.AddDynamic(this, &UCCropWidget::UpdateHealth);
+		HealthComp->OnHealthStateChanged.AddDynamic(this, &UCCropWidget::OnHealthStateChanged);
 		UpdateHealth(0.0f, HealthComp->GetCurrentHealth(), HealthComp->GetMaxHealth());
+		OnHealthStateChanged(HealthComp->GetCurrentState());
 	}
 
-
-	if (Crop)
+	if (IsValid(Crop))
 	{
+		UE_LOG(LogCrop, Warning, TEXT("Crop Growth binding!"));
 		Crop->OnGrowthChanged.AddDynamic(this, &UCCropWidget::UpdateGrowth);
-		UpdateGrowth(0.0f, Crop->GetCurretnGrowth(), 100.0f);
+		UpdateGrowth(0.0f, Crop->GetCurretnGrowth(), Crop->GetTargetGrowth());
 	}
 }
 
@@ -96,14 +98,15 @@ void UCCropWidget::ResetCrop_Implementation()
 		UCMoistureComponent* MoistureComp = Crop->GetMoistureComp();
 		if (MoistureComp)
 		{
-			Crop->GetMoistureComp()->OnStateValueChanged.RemoveDynamic(this, &UCCropWidget::UpdateMoisture);
-			Crop->GetMoistureComp()->OnMoistureStateChanged.RemoveDynamic(this, &UCCropWidget::OnMoistureStateChanged);
+			MoistureComp->OnStateValueChanged.RemoveDynamic(this, &UCCropWidget::UpdateMoisture);
+			MoistureComp->OnMoistureStateChanged.RemoveDynamic(this, &UCCropWidget::OnMoistureStateChanged);
 		}
 
 		UCHealthComponent* HealthComp = Crop->GetHealthComp();
 		if (HealthComp)
 		{
-			Crop->GetHealthComp()->OnStateValueChanged.RemoveDynamic(this, &UCCropWidget::UpdateHealth);
+			HealthComp->OnStateValueChanged.RemoveDynamic(this, &UCCropWidget::UpdateHealth);
+			HealthComp->OnHealthStateChanged.RemoveDynamic(this, &UCCropWidget::OnHealthStateChanged);
 		}
 
 		if (Crop)
@@ -187,6 +190,31 @@ void UCCropWidget::OnMoistureStateChanged_Implementation(EMoistureState InState)
 	case EMoistureState::Humid:
 	{
 		MoistureState->SetStateIconColor(FLinearColor::Red);
+	}
+	break;
+	default:
+		break;
+	}
+}
+
+void UCCropWidget::OnHealthStateChanged_Implementation(EHealthState InState)
+{
+	switch (InState)
+	{
+	case EHealthState::Dead:
+	case EHealthState::Deadly:
+	{
+		GrowthState->SetStateIconColor(FLinearColor::Black);
+	}
+	break;
+	case EHealthState::Sick:
+	{
+		GrowthState->SetStateIconColor(FLinearColor::Red);
+	}
+	break;
+	case EHealthState::Healthy:
+	{
+		GrowthState->SetStateIconColor(FLinearColor::Green);
 	}
 	break;
 	default:

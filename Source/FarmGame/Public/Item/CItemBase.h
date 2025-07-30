@@ -28,9 +28,9 @@ public:
 	// About Item Data Inherited from ICItemInterface
 	virtual void AddAvailableCount(int32 InAmount = 1) override;
 	virtual void ReduceAvailableCount(int32 InAmount = 1) override;
-	virtual int32 GetAvailableCount() const override { return AvailableCount; }
+	virtual const int32& GetAvailableCount() const override { return AvailableCount; }
 	virtual void SetTargetSlotIndex(int Index) override;
-	virtual	int GetTargetSlotIndex() override { return SlotIndex; }
+	virtual	const int32& GetTargetSlotIndex() override { return SlotIndex; }
 	
 	// Inherited from ICInterface_Interactable
 	virtual bool IsInteractable() override { return bInteractable; }
@@ -66,6 +66,11 @@ public:
 	ACharacter* GetOwnerCharacter() { return OwnerCharacter; }
 
 	UStaticMeshComponent* GetItemMesh() { return MeshComp; }
+
+	UFUNCTION()
+	void UpdateByInventory_DataUpdated(const TArray<int32>& ChangedIndexs);
+	UFUNCTION()
+	void UpdateByInventory_SlotSwap(int32 Index1, int32 Index2);
 
 protected:
 	// Components

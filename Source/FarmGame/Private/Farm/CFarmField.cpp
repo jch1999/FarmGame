@@ -76,7 +76,7 @@ void ACFarmField::BeginPlay()
 
 void ACFarmField::SetInteractable()
 {
-	if (IsValid(Crop) && Crop->IsHarvestable())
+	if (IsValid(Crop) && (Crop->IsHarvestable()||Crop->IsDead()))
 	{
 		Crop->SetInteractable();
 	}
@@ -89,7 +89,7 @@ void ACFarmField::SetInteractable()
 
 void ACFarmField::SetUnInteractable()
 {
-	if (IsValid(Crop) && Crop->IsHarvestable())
+	if (IsValid(Crop) && (Crop->IsHarvestable() || Crop->IsDead()))
 	{
 		Crop->SetUnInteractable();
 	}
@@ -103,11 +103,11 @@ void ACFarmField::SetDelayedInteractable(float DelayTime)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(InteractTimer);
 	}
-	if (IsValid(Crop) && Crop->IsHarvestable())
+	/*if (IsValid(Crop) && Crop->IsHarvestable())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Crop is harvestable. FarmField shouldn't be interacted."));
 		return;
-	}
+	}*/
 	GetWorld()->GetTimerManager().SetTimer(InteractTimer, this, &ACFarmField::SetInteractable, DelayTime, false);
 }
 
@@ -168,6 +168,11 @@ bool ACFarmField::PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, const FVector&
 	//SetUnInteractable();
 
 	return true;
+}
+
+void ACFarmField::EraseCrop()
+{
+	Crop = nullptr;
 }
 
 void ACFarmField::FarmFieldOn()

@@ -49,7 +49,7 @@ ACBase_Crop::ACBase_Crop()
 	// Property
 	CurrentGrowLevel = 0;
 	CurrentGrowValue = 0.0f;
-	// TargetGrowthValue = 0.0f;
+	TargetGrowthValue = 0.0f;
 	UpdateTime = 1.0f;
 
 	SetType(EInteractObjectType::Crop);
@@ -58,13 +58,7 @@ ACBase_Crop::ACBase_Crop()
 void ACBase_Crop::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//HealthComp->OnStateValueChanged.AddDynamic(this, &ACBase_Crop::ChangeQualityByHealth);
-	HealthComp->OnHealthStateChanged.AddDynamic(this, &ACBase_Crop::ChangeByHealthState);
-	SetUnInteractable();
-	GrowUp();
-	SetAutoGrowTimer(UpdateTime, true, UpdateTime);
-
+	
 	// Material
 	UMaterialInterface* Material = MeshComp->GetMaterial(0);
 	if (Material)
@@ -72,16 +66,24 @@ void ACBase_Crop::BeginPlay()
 		CropMaterial = UMaterialInstanceDynamic::Create(Material, this);
 		MeshComp->SetMaterial(0, CropMaterial);
 	}
+
+	//HealthComp->OnStateValueChanged.AddDynamic(this, &ACBase_Crop::ChangeQualityByHealth);
+	HealthComp->OnHealthStateChanged.AddDynamic(this, &ACBase_Crop::ChangeByHealthState);
+	SetUnInteractable();
+	GrowUp();
+	SetAutoGrowTimer(UpdateTime, true, UpdateTime);
 }
 
 void ACBase_Crop::SetInteractable()
 {
 	bInteractable = true;
+	BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
 
 void ACBase_Crop::SetUnInteractable()
 {
 	bInteractable = false;
+	BoxComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ACBase_Crop::SetDelayedInteractable(float DelayTime)
@@ -109,46 +111,17 @@ void ACBase_Crop::SetType(EInteractObjectType InNewType)
 
 void ACBase_Crop::Interact(AActor* OtherActor)
 {
-	/*CheckFalse(bInteractable);
-
-	ACGameModeBase* GameMode = Cast<ACGameModeBase>(GetWorld()->GetAuthGameMode());
-	CheckNull(GameMode);
-
-	UCCropWidget* CropWidget = GameMode->GetCropWidget();
-	CheckNull(CropWidget);
-
-	CheckFalse(CropWidget->IsAvailable());
-
-	CropWidget->SetCrop(this);
-	CropWidget->AddToViewport();*/
 	if (IsHarvestable())
 	{
+		UE_LOG(LogCrop, Warning, TEXT("Crop harvested! CropName : %s"), *(CropName.ToString()));
 		DoHarvest();
-		Destroy();
 	}
-	// ForTest
-	else
+	else if (IsDead())
 	{
-		/*if (ACharacter* Character = Cast<ACharacter>(OtherActor))
-		{
-			float WidgetDelay = 0.0f;
-			if (AController* Controller = Character->GetController())
-			{
-				if (ACPlayerController* MyPC = Cast<ACPlayerController>(Controller))
-				{
-					CachedPlayerController = MyPC;
-					CachedPlayerController->ShowCropWidget(this);
-					WidgetDelay = CachedPlayerController->GetCameraMoveTime();
-
-					FTimerHandle TimerHandle;
-					GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ACBase_Crop::ShowCropWidget, WidgetDelay, false);
-				}
-			}
-		}*/
-		//GrowUp();
+		OwnerField->EraseCrop();
+		UE_LOG(LogCrop, Warning, TEXT("Crop is dead! CropName : %s"), *(CropName.ToString()));
+		this->Destroy();
 	}
-
-	// SetUnInteractable();
 }
 
 bool ACBase_Crop::OnHovered()
@@ -186,17 +159,25 @@ void ACBase_Crop::GrowUp()
 			CHelpers::GetAssetDynamic(&GrowthParticleEffect, CropData.GrowUpPraticleEffectRef);
 			CHelpers::GetAssetDynamic(&GrowthSoundEffect, CropData.GrowUpSoundEffectRef);
 		}
-		CheckTrue(CurrentGrowLevel == CropData.MaxLevel);
+		//CheckTrue(CurrentGrowLevel == CropData.MaxLevel);
 
 		PlayGrowthEffects();
 		if (IsHarvestable())
 		{
 			SetInteractable();
-			BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		}
 
 		++CurrentGrowLevel;
+		CurrentGrowValue = 0.0f;
 		SetCropDatas();
+
+		if (CurrentGrowLevel == 1)
+		{
+			float MoistureValue = (MoistureComp->GetSafeRange().X + MoistureComp->GetSafeRange().Y) * 0.5f;
+			MoistureComp->AddMoisture(MoistureValue);
+			float NutritionValue = (NutritionComp->GetSafeRange().X + NutritionComp->GetSafeRange().Y) * 0.5f;
+			NutritionComp->AddNutrition(NutritionValue);
+		}
 	}
 	else
 	{
@@ -235,16 +216,12 @@ bool ACBase_Crop::IsDead()
 }
 
 bool ACBase_Crop::IsHarvestable()
-{
-	if (IsDead())
-	{
-		return true;
-	}
-	
+{	
 	const TOptional<FCropData>& CropDataOpt = GetCropData();
 	if (CropDataOpt.IsSet())
 	{
 		FCropData CropData = CropDataOpt.GetValue();
+		UE_LOG(LogCrop, Display, TEXT("Current GrowLevel : %d. MaxLevel : %d"), CurrentGrowLevel, CropData.MaxLevel);
 		return CurrentGrowLevel == CropData.MaxLevel;
 	}
 	else
@@ -259,7 +236,7 @@ void ACBase_Crop::DoHarvest()
 	if (IsDead())
 	{
 		UE_LOG(LogCrop, Error, TEXT("Crop is dead!. CropName : %s"), *CropName.ToString());
-		return;
+
 	}
 	UWorld* World = GetWorld();
 	if (World)
@@ -284,7 +261,6 @@ void ACBase_Crop::DoHarvest()
 						if (!CropItem)
 						{
 							UE_LOG(LogCrop, Error, TEXT("Failed to spawn crop item actor."));
-							return;
 						}
 						CropItem->FinishSpawning(SpawnTarnsform);
 					}
@@ -292,7 +268,6 @@ void ACBase_Crop::DoHarvest()
 				else
 				{
 					UE_LOG(LogCrop, Error, TEXT("Creation of crop item failed. Invalid Clas Ref. %s"), *(UEnum::GetValueAsString(ItemAssetData.ItemID)));
-					return;
 				}
 			}
 			else
@@ -301,28 +276,14 @@ void ACBase_Crop::DoHarvest()
 			}
 		}
 	}
+	OwnerField->EraseCrop();
+	this->Destroy();
 }
 
 void ACBase_Crop::SetCropQuality(EQualityType InType)
 {
 	CropQuality = InType;
 }
-
-//void ACBase_Crop::ChangeQualityByHealth(float CureentHealth, float PrevHealth, float MaxHealth)
-//{
-//	if (HealthComp->GetCurrentHealth() / HealthComp->GetMaxHealth() < 0.3f)
-//	{
-//		SetCropQuality(EQualityType::Low);
-//	}
-//	else if (HealthComp->GetCurrentHealth() / HealthComp->GetMaxHealth() < 0.8f)
-//	{
-//		SetCropQuality(EQualityType::Normal);
-//	}
-//	else
-//	{
-//		SetCropQuality(EQualityType::High);
-//	}
-//}
 
 void ACBase_Crop::ChangeByHealthState(EHealthState InState)
 {
@@ -468,7 +429,9 @@ void ACBase_Crop::SetCropDatas()
 		NutritionComp->SetSafeRange(CurrentGrowthData.SafeRange_Nutrition);
 		MoistureComp->SetSafeRange(CurrentGrowthData.SafeRange_Moisture);
 		// Set Current Health as much as Max Health when first grow up.
+		HealthComp->SetSafeRange(FVector2D(CurrentGrowthData.Max_Health * 0.3f, CurrentGrowthData.Max_Health * 0.7f));
 		HealthComp->SetMaxHealth(CurrentGrowthData.Max_Health, CurrentGrowLevel == 1);
+		TargetGrowthValue = CurrentGrowthData.TargetGrowthValue;
 	}
 	else
 	{

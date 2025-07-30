@@ -42,6 +42,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void OnMoistureStateChanged(EMoistureState InState);
 
+	UFUNCTION(BlueprintNativeEvent)
+	void OnHealthStateChanged(EHealthState InState);
+
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE  bool IsAvailable() { return Crop == nullptr; }
 

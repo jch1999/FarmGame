@@ -46,9 +46,6 @@ public:
 	UFUNCTION()
 	void CheckPlantBtnActive(int32 InIndex);
 
-	void PositionStateDisplays();
-	//void DrawConnectionLines();
-
 	UButton* GetPlantBtn() { return PlantBtn; }
 
 private:

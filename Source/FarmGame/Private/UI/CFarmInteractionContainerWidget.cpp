@@ -28,13 +28,15 @@ void UCFarmInteractionContainerWidget::SetFarmField(ACFarmField* Field)
 
 void UCFarmInteractionContainerWidget::ResetFarmField(float DelayTime)
 {
+	if (IsValid(TargetFarmField->GetCrop()) && CropWidget && CropSlot)
+	{
+		CropWidget->ResetCrop();
+	}
 	if (FarmFieldSlot && FarmFieldWidget)
 	{
 		FarmFieldSlot->SetVisibility(ESlateVisibility::Visible);
 		FarmFieldWidget->ResetFarmField(DelayTime);
 	}
-	if (IsValid(TargetFarmField->GetCrop()) && CropWidget && CropSlot)
-	{
-		CropWidget->ResetCrop();
-	}
+	
+	TargetFarmField = nullptr;
 }

@@ -3,6 +3,7 @@
 
 UCHealthComponent::UCHealthComponent()
 {
+	
 }
 
 
@@ -40,8 +41,10 @@ void UCHealthComponent::SetMaxHealth(float InMaxHealth, bool bResetCurrentHealth
 	CheckFalse(bResetCurrentHealth);
 	float PrevHealth = CurrentValue;
 	CurrentValue = MaxValue;
-
+	UE_LOG(LogTemp, Warning, TEXT("Set Max_Health : %f"), InMaxHealth);
+	UE_LOG(LogTemp, Warning, TEXT("Now Max_Health : %f"), MaxValue);
 	OnStateValueChanged.Broadcast(PrevHealth, CurrentValue, MaxValue);
+	CheckState();
 }
 
 void UCHealthComponent::IncreaseHealth(float InAmount)

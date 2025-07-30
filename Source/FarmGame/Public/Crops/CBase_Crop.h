@@ -188,6 +188,8 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE float GetCurretnGrowth() { return CurrentGrowValue; }
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE float GetTargetGrowth() { return TargetGrowthValue; }
 
 	void SetFarmField(ACFarmField* InFarmField);
 
@@ -241,8 +243,8 @@ protected:
 	int32 CurrentGrowLevel;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crop|Defualt")
 	float CurrentGrowValue;
-	//UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crop|Defualt")
-	//float TargetGrowthValue;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crop|Defualt")
+	float TargetGrowthValue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crop|Time")
 	float UpdateTime;

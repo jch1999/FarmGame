@@ -65,6 +65,7 @@ public:
 	void ActionInteract();
 
 	ACItemBase* GetCurretnEquippedItem();
+	void ResetEquippedItem();
 
 	// Get Components
 	FORCEINLINE UCameraComponent* GetCameraComponent() const { return CameraComp; }

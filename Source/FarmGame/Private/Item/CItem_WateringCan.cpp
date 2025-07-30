@@ -7,39 +7,41 @@
 
 bool ACItem_WateringCan::UseItem()
 {
-	Super::UseItem();
-	if (ACPlayer* Player = Cast<ACPlayer>(GetOwnerCharacter()))
+	if (Super::UseItem())
 	{
-		if (UCInteractComponent* InteractComp = Player->GetInteractComponent())
+		if (ACPlayer* Player = Cast<ACPlayer>(GetOwnerCharacter()))
 		{
-			if (ACFarmField* Field = Cast<ACFarmField>(InteractComp->GetActionInteractTarget()))
+			if (UCInteractComponent* InteractComp = Player->GetInteractComponent())
 			{
-				UseEffect->Activate();
-				UCMoistureComponent* MoistureComp_Field = Field->GetMoistureComp();
-				UCMoistureComponent* MoistureComp_Crop = nullptr;
-				if (IsValid(Field->GetCrop()))
+				if (ACFarmField* Field = Cast<ACFarmField>(InteractComp->GetActionInteractTarget()))
 				{
-					MoistureComp_Crop = Field->GetCrop()->GetMoistureComp();
-					
-				}
+					UseEffect->Activate();
+					UCMoistureComponent* MoistureComp_Field = Field->GetMoistureComp();
+					UCMoistureComponent* MoistureComp_Crop = nullptr;
+					if (IsValid(Field->GetCrop()))
+					{
+						MoistureComp_Crop = Field->GetCrop()->GetMoistureComp();
 
-				if (IsValid(MoistureComp_Field) && IsValid(MoistureComp_Crop))
-				{
-					MoistureComp_Field->AddMoisture(FMath::Min(CurrentAmount, UseAmount) * 0.75f);
-					MoistureComp_Crop->AddMoisture(FMath::Min(CurrentAmount, UseAmount) * 0.25f);
-				}
-				else if (IsValid(MoistureComp_Field))
-				{
-					MoistureComp_Field->AddMoisture(FMath::Min(CurrentAmount, UseAmount));
-				}
-				else
-				{
-					UE_LOG(LogTemp, Error, TEXT("UseItem Error, WateringCan. MoistureComp is missing!"));
-					return false;
-				}
+					}
 
-				CurrentAmount = FMath::Max(0.0f, CurrentAmount - UseAmount);
-				return true;
+					if (IsValid(MoistureComp_Field) && IsValid(MoistureComp_Crop))
+					{
+						MoistureComp_Field->AddMoisture(FMath::Min(CurrentAmount, UseAmount) * 0.75f);
+						MoistureComp_Crop->AddMoisture(FMath::Min(CurrentAmount, UseAmount) * 0.25f);
+					}
+					else if (IsValid(MoistureComp_Field))
+					{
+						MoistureComp_Field->AddMoisture(FMath::Min(CurrentAmount, UseAmount));
+					}
+					else
+					{
+						UE_LOG(LogTemp, Error, TEXT("UseItem Error, WateringCan. MoistureComp is missing!"));
+						return false;
+					}
+
+					CurrentAmount = FMath::Max(0.0f, CurrentAmount - UseAmount);
+					return true;
+				}
 			}
 		}
 	}

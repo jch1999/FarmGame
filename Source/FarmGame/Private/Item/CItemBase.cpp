@@ -169,6 +169,12 @@ void ACItemBase::Interact(AActor* OtherActor)
 void ACItemBase::SetTargetSlotIndex(int Index)
 {
 	SlotIndex = Index;
+	if (IsValid(OwnerCharacter))
+	{
+		TArray<int32> Indexes;
+		Indexes.Add(SlotIndex);
+		UpdateByInventory_DataUpdated(Indexes);
+	}
 }
 
 void ACItemBase::SetOwnerCharacter(ACharacter* InOwnerCharacter)
@@ -182,5 +188,39 @@ void ACItemBase::ReduceAvailableCnt(int32 InCnt)
 	if (AvailableCount < 0)
 	{
 		AvailableCount = 0;
+	}
+}
+
+void ACItemBase::UpdateByInventory_DataUpdated(const TArray<int32>& ChangedIndexs)
+{
+	if (IsValid(OwnerCharacter))
+	{
+		if (ChangedIndexs.Contains(SlotIndex))
+		{
+			if (ACPlayer* Player = Cast<ACPlayer>(OwnerCharacter))
+			{
+				if (UCInventoryComponent* InventoryComp = Player->GetInventoryComponent())
+				{
+					const FInventorySlot& SlotData = InventoryComp->GetSlotDatas()[SlotIndex];
+					SetAvailableCnt(SlotData.CurrentStack);
+					CurrentDurability = SlotData.CurrentDurability;
+				}
+			}
+		}
+	}
+}
+
+void ACItemBase::UpdateByInventory_SlotSwap(int32 Index1, int32 Index2)
+{
+	if (IsValid(OwnerCharacter))
+	{
+		if (Index1 == SlotIndex)
+		{
+			SlotIndex = Index2;
+		}
+		else if (Index2 == SlotIndex)
+		{
+			SlotIndex = Index1;
+		}
 	}
 }
