@@ -84,6 +84,9 @@ public:
 	FORCEINLINE UCStateComponent* GetStateComponent() const { return StateComp; }
 	FORCEINLINE UCOptionComponent* GetOptionComponent() const { return OptionComp; }
 
+	UFUNCTION()
+	void OnStateChanged(EStateType PrevType, EStateType NewType);
+
 private:
 	void RebindAction();
 	void InputTest(const FInputActionValue& Value);

@@ -1,5 +1,6 @@
 #include "Item/CItem_Tool.h"	
 #include "Characters/CPlayer.h"
+#include "CGameInstance.h"
 
 ACItem_Tool::ACItem_Tool()
 {
@@ -8,6 +9,7 @@ ACItem_Tool::ACItem_Tool()
     UseEffect->SetAutoActivate(false);
 
     ConsumedDurability = 1.0f;
+    //SetMaxDurability(50.0f, true);
     SetType(EInteractObjectType::Tool);
     SetInteractable();
     SetUsable();
@@ -23,7 +25,7 @@ bool ACItem_Tool::UseItem()
         if (UCInventoryComponent* InventoryComp = Player->GetInventoryComponent())
         {
             InventoryComp->ReduceItemDurability(GetTargetSlotIndex(), ConsumedDurability);
-            CurrentDurability -= ConsumedDurability;
+            //CurrentDurability -= ConsumedDurability;
             
             return true;
         }

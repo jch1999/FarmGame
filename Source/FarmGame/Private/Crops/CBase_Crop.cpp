@@ -51,6 +51,7 @@ ACBase_Crop::ACBase_Crop()
 	CurrentGrowValue = 0.0f;
 	TargetGrowthValue = 0.0f;
 	UpdateTime = 1.0f;
+	HealthChangeValue = 0.5f;
 
 	SetType(EInteractObjectType::Crop);
 }
@@ -59,18 +60,14 @@ void ACBase_Crop::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// Material
-	UMaterialInterface* Material = MeshComp->GetMaterial(0);
-	if (Material)
-	{
-		CropMaterial = UMaterialInstanceDynamic::Create(Material, this);
-		MeshComp->SetMaterial(0, CropMaterial);
-	}
-
 	//HealthComp->OnStateValueChanged.AddDynamic(this, &ACBase_Crop::ChangeQualityByHealth);
 	HealthComp->OnHealthStateChanged.AddDynamic(this, &ACBase_Crop::ChangeByHealthState);
-	SetUnInteractable();
+
 	GrowUp();
+	
+
+	SetCropQuality(EQualityType::High);
+	SetUnInteractable();
 	SetAutoGrowTimer(UpdateTime, true, UpdateTime);
 }
 
@@ -78,6 +75,10 @@ void ACBase_Crop::SetInteractable()
 {
 	bInteractable = true;
 	BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	if (IsValid(OwnerField))
+	{
+		OwnerField->SetUnInteractable();
+	}
 }
 
 void ACBase_Crop::SetUnInteractable()
@@ -118,7 +119,10 @@ void ACBase_Crop::Interact(AActor* OtherActor)
 	}
 	else if (IsDead())
 	{
-		OwnerField->EraseCrop();
+		if (IsValid(OwnerField))
+		{
+			OwnerField->EraseCrop();
+		}
 		UE_LOG(LogCrop, Warning, TEXT("Crop is dead! CropName : %s"), *(CropName.ToString()));
 		this->Destroy();
 	}
@@ -144,7 +148,10 @@ bool ACBase_Crop::OnUnhovered()
 
 void ACBase_Crop::SetAutoGrowTimer(float InFirstDelay, bool InbLoop, float InLoopDelay)
 {
-	GetWorld()->GetTimerManager().ClearTimer(AutoGrowTimer);
+	if (GetWorld()->GetTimerManager().IsTimerActive(AutoGrowTimer))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(AutoGrowTimer);
+	}
 	GetWorld()->GetTimerManager().SetTimer(AutoGrowTimer, this, &ACBase_Crop::AutoGrow, InLoopDelay, InbLoop, InFirstDelay);
 }
 
@@ -162,14 +169,16 @@ void ACBase_Crop::GrowUp()
 		//CheckTrue(CurrentGrowLevel == CropData.MaxLevel);
 
 		PlayGrowthEffects();
+
+		++CurrentGrowLevel;
+		CurrentGrowValue = 0.0f;
+		SetCropDatas();
+
 		if (IsHarvestable())
 		{
 			SetInteractable();
 		}
 
-		++CurrentGrowLevel;
-		CurrentGrowValue = 0.0f;
-		SetCropDatas();
 
 		if (CurrentGrowLevel == 1)
 		{
@@ -177,7 +186,11 @@ void ACBase_Crop::GrowUp()
 			MoistureComp->AddMoisture(MoistureValue);
 			float NutritionValue = (NutritionComp->GetSafeRange().X + NutritionComp->GetSafeRange().Y) * 0.5f;
 			NutritionComp->AddNutrition(NutritionValue);
+
+			HealthComp->ForceState(EHealthState::Healthy);
 		}
+
+		ChangeByHealthState(HealthComp->GetCurrentState());
 	}
 	else
 	{
@@ -239,43 +252,50 @@ void ACBase_Crop::DoHarvest()
 
 	}
 	UWorld* World = GetWorld();
-	if (World)
+	if (!World) return;
+
+	const TOptional<FCropData>& DataOpt = GetCropData();
+	if (!DataOpt.IsSet())
 	{
-		const TOptional<FCropData>& DataOpt = GetCropData();
-		if (DataOpt.IsSet())
+		UE_LOG(LogCrop, Error, TEXT("GrowthData not set. CropName: %s"), *CropName.ToString());
+		return;
+	}
+
+	const FCropData& Data = DataOpt.GetValue();
+	UE_LOG(LogCrop, Log, TEXT("Current Crop Quality : %s"), *(UEnum::GetValueAsString(GetCropQuality())));
+	const TOptional<FItemAssetData>& ItemAssetDataOpt = GetCropItemData();
+	if (!ItemAssetDataOpt.IsSet())
+	{
+		UE_LOG(LogItem, Error, TEXT("Can't find ItemData! CropName : %s"), *(CropName.ToString()));
+		return;
+	}
+
+	const FItemAssetData& ItemAssetData = ItemAssetDataOpt.GetValue();
+	TSubclassOf<ACItem_Crop> CropItemClass;
+	CHelpers::GetClassDynamic(&CropItemClass, ItemAssetData.ItemClassRef);
+	if (!CropItemClass)
+	{
+		UE_LOG(LogCrop, Error, TEXT("Invalid CropItemClas Ref for %s"), *(UEnum::GetValueAsString(ItemAssetData.ItemID)));
+		return;
+	}
+
+	for (auto& SpawnPoint : SpawnPoints)
+	{
+		FTransform SpawnTarnsform = SpawnPoint * GetTransform();
+		ACItem_Crop* CropItem = World->SpawnActorDeferred<ACItem_Crop>(CropItemClass, SpawnTarnsform);
+		if (CropItem)
 		{
-			const FCropData& Data = DataOpt.GetValue();
-			const TOptional<FItemAssetData>& ItemAssetDataOpt = GetCropItemData();
-			if (ItemAssetDataOpt.IsSet())
-			{
-				const FItemAssetData& ItemAssetData = ItemAssetDataOpt.GetValue();
-				TSubclassOf<ACItem_Crop> CropItemClass;
-				CHelpers::GetClassDynamic(&CropItemClass, ItemAssetData.ItemClassRef);
-				if (CropItemClass)
-				{
-					for (auto& SpawnPoint : SpawnPoints)
-					{
-						FTransform SpawnTarnsform = SpawnPoint * GetTransform();
-						ACItem_Crop* CropItem = World->SpawnActorDeferred<ACItem_Crop>(CropItemClass, SpawnTarnsform);
-						CropItem->SetAvailableCnt(1);
-						if (!CropItem)
-						{
-							UE_LOG(LogCrop, Error, TEXT("Failed to spawn crop item actor."));
-						}
-						CropItem->FinishSpawning(SpawnTarnsform);
-					}
-				}
-				else
-				{
-					UE_LOG(LogCrop, Error, TEXT("Creation of crop item failed. Invalid Clas Ref. %s"), *(UEnum::GetValueAsString(ItemAssetData.ItemID)));
-				}
-			}
-			else
-			{
-				UE_LOG(LogItem, Error, TEXT("Can't find ItemData! CropName : %s, ItemId : %s"), *(CropName.ToString()), *(UEnum::GetValueAsString(Data.IDForQuality[0])));
-			}
+			CropItem->FinishSpawning(SpawnTarnsform);
+			CropItem->SetAvailableCnt(1);
+			UE_LOG(LogCrop, Log, TEXT("Spawned crop item %s at %s"), *CropItem->GetName(), *(SpawnTarnsform.GetLocation().ToString()));
+		}
+		else
+		{
+			UE_LOG(LogCrop, Error, TEXT("Failed to spawn crop item actor."));
 		}
 	}
+
+
 	OwnerField->EraseCrop();
 	this->Destroy();
 }
@@ -287,6 +307,9 @@ void ACBase_Crop::SetCropQuality(EQualityType InType)
 
 void ACBase_Crop::ChangeByHealthState(EHealthState InState)
 {
+	UE_LOG(LogCrop, Warning, TEXT("Crop [%s] HealthState Changed: %s"),
+		*CropName.ToString(),
+		*UEnum::GetValueAsString(InState));
 	float LifeValue = 1.0f;
 	switch (HealthComp->GetCurrentState())
 	{
@@ -316,18 +339,36 @@ void ACBase_Crop::ChangeByHealthState(EHealthState InState)
 		break;
 	}
 	CropMaterial->SetScalarParameterValue(FName("Life"), LifeValue);
+
+	float CurrentLifeValue = 0.0f;
+	CropMaterial->GetScalarParameterValue(FMaterialParameterInfo(TEXT("Life")), CurrentLifeValue);
+	UE_LOG(LogCrop, Log, TEXT("Life param set to %f"), CurrentLifeValue);
 }
 
 void ACBase_Crop::ChangeDead()
 {
 	// Interact
 	SetInteractable();
-	BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	
+	if (IsValid(BoxComp))
+	{
+		BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	}
+	else
+	{
+		UE_LOG(LogCrop, Error, TEXT("Box Component is null! CropName : %s"), *CropName.ToString());
+	}
+
 	// Stop Grow
 	GetWorld()->GetTimerManager().ClearTimer(AutoGrowTimer);
 
-	CropMaterial->SetScalarParameterValue(FName("Life"), 0.0f);
+	if (IsValid(CropMaterial))
+	{
+		CropMaterial->SetScalarParameterValue(FName("Life"), 0.0f);
+	}
+	else
+	{
+		UE_LOG(LogCrop, Error, TEXT("CropMaterial is missing! CropName: %s"), *CropName.ToString());
+	}
 }
 
 void ACBase_Crop::SetFarmField(ACFarmField* InFarmField)
@@ -340,7 +381,21 @@ void ACBase_Crop::SetFarmField(ACFarmField* InFarmField)
 
 void ACBase_Crop::AutoGrow()
 {
-	if (IsDead()) return;
+	if (IsDead() || IsHarvestable())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(AutoGrowTimer);
+		return;
+	}
+
+	if (CropMaterial)
+	{
+		float CurrentLifeValue = 0.0f;
+		CropMaterial->GetScalarParameterValue(FMaterialParameterInfo(TEXT("Life")), CurrentLifeValue);
+		UE_LOG(LogCrop, Log, TEXT("CropMaterial Life param set to %f"), CurrentLifeValue);
+		MeshComp->GetMaterial(0)->GetScalarParameterValue(FMaterialParameterInfo(TEXT("Life")), CurrentLifeValue);
+		UE_LOG(LogCrop, Log, TEXT("Current Material Life param set to %f"), CurrentLifeValue);
+	}
+
 	const TOptional<FCropGrowthData>& GrowthDataOpt = GetGrowthData();
 	if (GrowthDataOpt.IsSet())
 	{
@@ -378,15 +433,17 @@ void ACBase_Crop::AutoGrow()
 				MoistureComp->AddMoisture(CurrentConsumeMoisture);
 				OwnerField->GetMoistureComp()->ReduceMoisture(CurrentConsumeMoisture);
 
-				// Change Health
-				if (NutritionComp->IsEnough() && MoistureComp->IsEnough())
-				{
-					HealthComp->IncreaseHealth(0.05f);
-				}
-				else
-				{
-					HealthComp->DecreaseHealth(0.05f);
-				}
+				
+			}
+
+			// Change Health
+			if (NutritionComp->IsEnough() && MoistureComp->IsEnough())
+			{
+				HealthComp->IncreaseHealth(HealthChangeValue);
+			}
+			else
+			{
+				HealthComp->DecreaseHealth(HealthChangeValue);
 			}
 
 			// Grow
@@ -399,9 +456,7 @@ void ACBase_Crop::AutoGrow()
 			CurrentGrowValue += GrowUpValue;
 			if (CurrentGrowValue > GrowthData.TargetGrowthValue)
 			{
-				GrowUp();
-				// TargetGrowthValue = GrowthData.TargetGrowthValue;
-				//UE_LOG(LogTemp, Warning, TEXT("TargetGrowthValue : %f, CurrentGrowthValue : %f"), TargetGrowthValue, CurrentGrowValue);
+				GrowUp();				
 			}
 			OnGrowthChanged.Broadcast(PrevValue, CurrentGrowValue, GrowthData.TargetGrowthValue);
 		}
@@ -424,13 +479,40 @@ void ACBase_Crop::SetCropDatas()
 		else
 		{
 			MeshComp->SetStaticMesh(MeshAsset);
+			if (!CropMaterial)
+			{
+				// Material
+				UMaterialInterface* Material = MeshComp->GetMaterial(0);
+				if (Material)
+				{
+					CropMaterial = UMaterialInstanceDynamic::Create(Material, this);
+					//if (CropMaterial)
+					//{
+					//	MeshComp->SetMaterial(0, CropMaterial);
+					//	//CropMaterial->SetScalarParameterValue(TEXT("Life"), 1.0f);
+					//	//ChangeByHealthState(HealthComp->GetCurrentState());
+					//	float LifeValue = 0.0f;
+					//	CropMaterial->GetScalarParameterValue(FMaterialParameterInfo(TEXT("Life")), LifeValue);
+					//	UE_LOG(LogCrop, Log, TEXT("Life param set to %f"), LifeValue);
+					//}
+				}
+			}
+
+			if (CropMaterial)
+			{
+				MeshComp->SetMaterial(0, CropMaterial);
+				ChangeByHealthState(HealthComp->GetCurrentState());
+				UE_LOG(LogTemp, Warning, TEXT("CropMaterial ptr: %p, MeshMat ptr: %p"), CropMaterial, MeshComp->GetMaterial(0));
+			}
 		}
 		//MeshComp->SetStaticMesh(CropMeshes[CurrentGrowLevel]);
 		NutritionComp->SetSafeRange(CurrentGrowthData.SafeRange_Nutrition);
 		MoistureComp->SetSafeRange(CurrentGrowthData.SafeRange_Moisture);
+		
 		// Set Current Health as much as Max Health when first grow up.
 		HealthComp->SetSafeRange(FVector2D(CurrentGrowthData.Max_Health * 0.3f, CurrentGrowthData.Max_Health * 0.7f));
 		HealthComp->SetMaxHealth(CurrentGrowthData.Max_Health, CurrentGrowLevel == 1);
+		
 		TargetGrowthValue = CurrentGrowthData.TargetGrowthValue;
 	}
 	else
@@ -482,9 +564,13 @@ const TOptional<FItemAssetData> ACBase_Crop::GetCropItemData()
 	if (UCGameInstance* GameInstance = Cast<UCGameInstance>(GI))
 	{
 		TOptional<FCropData> CropDataOpt = GameInstance->GetCropDefaultData(CropName);
+		UE_LOG(LogCrop, Warning, TEXT("CropName: %s, Quality: %s"), *CropName.ToString(), *UEnum::GetValueAsString(GetCropQuality()));
+
 		if (CropDataOpt.IsSet())
 		{
 			const FCropData& Data = CropDataOpt.GetValue();
+			UE_LOG(LogCrop, Warning, TEXT("Using ItemID: %s"), *UEnum::GetValueAsString(Data.IDForQuality[(int32)GetCropQuality()]));
+			
 			if (Data.CropName == CropName)
 			{
 				TOptional<FItemAssetData> ItemAssetDataOpt;
@@ -512,15 +598,8 @@ const TOptional<FItemAssetData> ACBase_Crop::GetCropItemData()
 				break;
 				}
 			}
-			else 
-			{
-				UE_LOG(LogCrop, Error, TEXT("Can't find CropData! CropName : %s"), *(CropName.ToString()));
-			}
-		}
-		else
-		{
-			UE_LOG(LogCrop, Error, TEXT("Can't find CropData! CropName : %s"), *(CropName.ToString()));
 		}
 	}
+	UE_LOG(LogCrop, Error, TEXT("Can't find CropData! CropName : %s"), *(CropName.ToString()));
 	return TOptional<FItemAssetData>();
 }

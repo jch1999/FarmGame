@@ -31,6 +31,9 @@ struct FInventorySlot
 	float CurrentDurability;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float UseAmount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* ItemIcon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -78,8 +81,8 @@ public:
 	void HideInventoryWidget();
 	void ShowWarningWidget(FString Message);
 
-	void SwapSlot(int32& SlotIndex1, int32& SlotIndex2);
-	void UseItem(int32& SlotIndex);
+	void SwapSlot(const int32& SlotIndex1, const int32& SlotIndex2);
+	void UseItem(const int32& SlotIndex);
 	void DropItem(int32 InIndex);;
 	void ClearSlot(int32 InIndex);
 	FORCEINLINE const TArray<FInventorySlot>& GetSlotDatas() { return InventorySlots; }

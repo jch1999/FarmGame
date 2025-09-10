@@ -13,14 +13,5 @@ public:
 	virtual bool UseItem() override;
 	virtual void EndUse() override;
 	virtual void PlayAnimation() override;
-public:
-	UPROPERTY(EditAnywhere,Category="Watering")
-	float CurrentAmount;
-
-	UPROPERTY(EditAnywhere, Category = "Watering")
-	float UseAmount;
-
-	UPROPERTY(EditAnywhere, Category = "Watering")
-	float MaxAmount;
 
 };

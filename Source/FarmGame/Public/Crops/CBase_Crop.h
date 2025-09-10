@@ -257,6 +257,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crop|Material")
 	UMaterialInstanceDynamic* CropMaterial;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crop|Health")
+	float HealthChangeValue;
+
 	// Interact Interface
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
 	bool bInteractable;

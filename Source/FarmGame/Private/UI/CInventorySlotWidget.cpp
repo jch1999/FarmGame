@@ -38,12 +38,12 @@ bool UCInventorySlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDra
 			{
 				if (UCInventoryComponent* InventoryComp = InventoryWidget->InventoryComp)
 				{
-					switch (DragOperation->SourceSlot->SlotType)
+					switch (DragOperation->SourceSlot->GetSlotType())
 					{
 					case ESlotType::Inventory_Player:
 					{
-						UE_LOG(LogItem, Log, TEXT("SwapSlot called with SlotIndex1: %d, SlotIndex2: %d"), DragOperation->SourceSlot->SlotIndex, SlotIndex);
-						InventoryComp->SwapSlot(DragOperation->SourceSlot->SlotIndex, SlotIndex);
+						UE_LOG(LogItem, Log, TEXT("SwapSlot called with SlotIndex1: %d, SlotIndex2: %d"), DragOperation->SourceSlot->GetSlotIndex(), SlotIndex);
+						InventoryComp->SwapSlot(DragOperation->SourceSlot->GetSlotIndex(), GetSlotIndex());
 					}
 					break;
 					default:

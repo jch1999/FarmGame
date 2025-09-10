@@ -16,16 +16,20 @@ void UCSlotDragDropOperation::Initialize(UCSlotWidget* InSourceSlot)
 
 void UCSlotDragDropOperation::DragStart(UDragDropOperation* InOperation)
 {
-	if (SourceSlot && SourceSlot->ItemIconImage)
+	
+	if (SourceSlot)
 	{
-		SourceSlot->ItemIconImage->SetOpacity(0.3f); 
-		if (UUserWidget* OwningWidget = SourceSlot->GetTypedOuter<UUserWidget>())
+		if (UImage* ItemIconImage = SourceSlot->GetItemIconImage())
 		{
-			if (APlayerController* PC = OwningWidget->GetOwningPlayer<APlayerController>())
+			ItemIconImage->SetOpacity(0.3f);
+			if (UUserWidget* OwningWidget = SourceSlot->GetTypedOuter<UUserWidget>())
 			{
-				if (ACPlayerController* MyPC = Cast<ACPlayerController>(PC))
+				if (APlayerController* PC = OwningWidget->GetOwningPlayer<APlayerController>())
 				{
-					MyPC->StartDragging(SourceSlot->CurrentSlotData->ItemIcon);
+					if (ACPlayerController* MyPC = Cast<ACPlayerController>(PC))
+					{
+						MyPC->StartDragging(SourceSlot->GetSlotData()->ItemIcon);
+					}
 				}
 			}
 		}
@@ -35,11 +39,11 @@ void UCSlotDragDropOperation::DragStart(UDragDropOperation* InOperation)
 
 void UCSlotDragDropOperation::DragCancel(UDragDropOperation* InOperation)
 {
-	if (SourceSlot && SourceSlot->SlotType==ESlotType::Inventory_Player)
+	if (SourceSlot && SourceSlot->GetSlotType() == ESlotType::Inventory_Player)
 	{
-		if(SourceSlot->ItemIconImage)
+		if(UImage* ItemIconImage = SourceSlot->GetItemIconImage())
 		{
-			SourceSlot->ItemIconImage->SetOpacity(1.0f);
+			ItemIconImage->SetOpacity(1.0f);
 		}
 		if (UUserWidget* OwningWidget = SourceSlot->GetTypedOuter<UUserWidget>())
 		{
@@ -49,7 +53,7 @@ void UCSlotDragDropOperation::DragCancel(UDragDropOperation* InOperation)
 				{
 					if (UCInventoryComponent* InventoryComp = Player->GetInventoryComponent())
 					{
-						InventoryComp->DropItem(SourceSlot->SlotIndex);
+						InventoryComp->DropItem(SourceSlot->GetSlotIndex());
 					}
 				}
 
@@ -64,10 +68,12 @@ void UCSlotDragDropOperation::DragCancel(UDragDropOperation* InOperation)
 
 void UCSlotDragDropOperation::DragEnd(UDragDropOperation* InOperation)
 {
-	if (SourceSlot && SourceSlot->ItemIconImage)
+	if (SourceSlot)
 	{
-		SourceSlot->ItemIconImage->SetOpacity(1.0f);
-
+		if (UImage* ItemIconImage = SourceSlot->GetItemIconImage())
+		{
+			ItemIconImage->SetOpacity(1.0f);
+		}
 		if (UUserWidget* OwningWidget = SourceSlot->GetTypedOuter<UUserWidget>())
 		{
 			if (APlayerController* PC = OwningWidget->GetOwningPlayer<APlayerController>())

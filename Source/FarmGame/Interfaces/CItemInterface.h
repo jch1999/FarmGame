@@ -38,12 +38,16 @@ enum class EItemID :uint8
 	Carrot_Low,
 	Carrot_Normal,
 	Carrot_High,
-	// Seed
+	// Consumable
+	// Consumable - Seed
 	Seed_Tomato,
 	Seed_Berry,
 	Seed_Carrot,
+	// Consumable - Fertilizer
+	Fertilizer,
 	// Tool
 	WaterCan,
+	Plow,
 	// End
 	MAX
 };
@@ -103,7 +107,13 @@ struct FItemData : public FTableRowBase
 	float ItemWeight;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Price;
+	float SellPrice;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float PurchasePrice;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float UseAmount;
 };
 
 USTRUCT(BlueprintType)
@@ -144,8 +154,13 @@ public:
 	virtual bool UseItem() = 0;
 
 	virtual void AddAvailableCount(int32 InAmount = 1) = 0;
+	virtual void SetAvailableCount(int32 InAmount) = 0;
 	virtual void ReduceAvailableCount(int32 InAmount = 1) = 0;
 	virtual const int32& GetAvailableCount() const = 0;
 	virtual	void SetTargetSlotIndex(int Index) = 0;
 	virtual	const int32& GetTargetSlotIndex() = 0;
+	virtual void SetMaxDurability(float InDurability, bool bReset = false) = 0;
+	virtual const float& GetMaxDurability() = 0;
+	virtual const float& GetCurrentDurability() = 0;
+	virtual void SetCurrentDurability(float InDurability) = 0;
 };

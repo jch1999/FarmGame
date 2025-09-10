@@ -67,6 +67,11 @@ ACPlayerController::ACPlayerController()
 		CHelpers::GetClass(&FarmWidgetClass, "/Game/UI/WB_FarmInteractionContainer");
 	}
 	CameraMoveTime = 1.5f;
+
+	if (IsValid(StateComp))
+	{
+		StateComp->OnStateTypeChanged.AddDynamic(this, &ACPlayerController::OnStateChanged);
+	}
 }
 
 void ACPlayerController::OnPossess(APawn* aPawn)
@@ -413,6 +418,23 @@ void ACPlayerController::Test4(const FInputActionValue& Value)
 	HideWarningWidget();
 }
 
+void ACPlayerController::OnStateChanged(EStateType PrevType, EStateType NewType)
+{
+	switch (NewType)
+	{
+	case EStateType::Idle:
+		break;
+	case EStateType::Equip:
+		break;
+	case EStateType::Action:
+		break;
+	case EStateType::Max:
+		break;
+	default:
+		break;
+	}
+}
+
 void ACPlayerController::StartDragging(UTexture2D* ItemIcon)
 {
 	if (!DragIconWidget)
@@ -534,6 +556,12 @@ void ACPlayerController::HideFarmWidget()
 		{
 			//CurrentPlayer->StartFade(false);
 			CurrentPlayer->SetVisibility(true);
+
+			/*if (ICInterface_Interactable* Target = Cast<ICInterface_Interactable>(CurrentPlayer->GetInteractComponent()->GetActionInteractTarget()))
+			{
+				if (!Target->IsInteractable()) return;
+				Target->OnHovered();
+			}*/
 		}
 	}
 }

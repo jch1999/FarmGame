@@ -72,6 +72,15 @@ public:
 	void FarmFieldOn();
 	void FarmFieldOff();
 
+	void SetIsPlanting();
+	void UnsetIsPlanting();
+	bool GetIsPlanting() { return bIsPlanting; }
+
+	void SetPlantOffset(FVector InOffset);
+	FVector GetPlantOffset() { return PlantOffset; }
+	void SetWaterOffset(FVector InOffset);
+	FVector GetWaterOffset() { return WaterOffset; }
+
 	// Component
 	UFUNCTION(BlueprintPure)
 	UCCultivationComponent* const GetCultivationComp() { return CultivationComp; }
@@ -113,6 +122,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
 	EInteractObjectType InteractType;
 
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Interact")
+	FVector PlantOffset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interact")
+	FVector WaterOffset;
+
 private:
 	UMaterialInstanceDynamic* FieldMaterial; 
 
@@ -120,4 +135,6 @@ private:
 	ACPlayerController* CachedPlayerController;
 
 	FTimerHandle InteractTimer;
+
+	bool bIsPlanting;
 };

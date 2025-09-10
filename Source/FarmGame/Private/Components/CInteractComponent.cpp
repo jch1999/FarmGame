@@ -42,17 +42,21 @@ void UCInteractComponent::DoActionInteract()
 	if (ActionInteractTarget == nullptr) return;
 	ICInterface_Interactable* InteractActor = Cast<ICInterface_Interactable>(ActionInteractTarget);
 	InteractActor->OnUnhovered();
-	if (ACFarmField* FarmField = Cast<ACFarmField>(ActionInteractTarget))
-	{
-		if (ACItem_Tool* Tool = Cast<ACItem_Tool>(OwnerCharacter->GetCurretnEquippedItem()))
-		{
-			Tool->PlayAnimation();
-			//ActionInteractTarget = nullptr;
-			return;
-		}
-	}
+	//if (ACFarmField* FarmField = Cast<ACFarmField>(ActionInteractTarget))
+	//{
+	//	if (ACItem_Tool* Tool = Cast<ACItem_Tool>(OwnerCharacter->GetCurretnEquippedItem()))
+	//	{
+	//		Tool->PlayAnimation();
+	//		//ActionInteractTarget = nullptr;
+	//		return;
+	//	}
+	//}
 	InteractActor->Interact(OwnerCharacter);
 
+	/*if (ACPlayer* Player = Cast<ACPlayer>(OwnerCharacter))
+	{
+		Player->LookAtActor(ActionInteractTarget, true);
+	}*/
 	//ActionInteractTarget = nullptr;
 }
 
@@ -99,7 +103,7 @@ void UCInteractComponent::DetectInteractableObjects()
 	}
 
 	// Camera Detect
-	if (IsValid(ActionInteractTarget) || OwnerCharacter->GetDistanceTo(ActionInteractTarget) > RemoveDistance)
+	if (IsValid(ActionInteractTarget) && OwnerCharacter->GetDistanceTo(ActionInteractTarget) > RemoveDistance)
 	{
 		ICInterface_Interactable* InteractObject = Cast<ICInterface_Interactable>(ActionInteractTarget);
 		InteractObject->OnUnhovered();

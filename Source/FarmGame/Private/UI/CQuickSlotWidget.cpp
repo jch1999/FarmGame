@@ -58,11 +58,11 @@ bool UCQuickSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 		if (DragOperation->SourceSlot != this)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("QuickSlot Inserted!"));
-			switch(DragOperation->SourceSlot->SlotType)
+			switch(DragOperation->SourceSlot->GetSlotType())
 			{
 			case ESlotType::Inventory_Player:
 			{
-				TargetSlotIndex = DragOperation->SourceSlot->SlotIndex;
+				TargetSlotIndex = DragOperation->SourceSlot->GetSlotIndex();
 				UE_LOG(LogTemp, Warning, TEXT("TargetSlotIndex : %d"), TargetSlotIndex);
 				SetItem(*(DragOperation->SourceSlot->GetSlotItemData()));
 			}

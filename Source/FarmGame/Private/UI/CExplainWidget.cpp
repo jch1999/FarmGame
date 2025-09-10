@@ -97,7 +97,7 @@ void UCExplainWidget::SetItem(TWeakPtr<FInventorySlot> InSlotData)
         if (ItemDataOpt.IsSet())
         {
             FItemData ItemData = ItemDataOpt.GetValue();
-            ItemPriceText->SetText(FText::FromString(FString::FromInt(ItemData.Price)));
+            ItemPriceText->SetText(FText::FromString(FString::FromInt(ItemData.SellPrice)));
         }
     }
 }

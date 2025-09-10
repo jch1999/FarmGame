@@ -40,11 +40,13 @@ void UCSlotWidget::SetItem(const FInventorySlot& SlotData)
 			UE_LOG(LogItem, Error, TEXT("ItemIconTexture is missing! ItemID : %s"), *(UEnum::GetValueAsString(CurrentItemID)));
 		}
 		ItemCountText->SetText(FText::AsNumber(SlotData.CurrentStack));
-		if (GetSlotItemData()->CurrentDurability>0.0f)
+		UpdateDurability(GetSlotItemData()->CurrentDurability, GetSlotItemData()->MaxDurability);
+
+		/*if (GetSlotItemData()->CurrentDurability>0.0f)
 		{
 			ItemDurabilityBar->SetVisibility(ESlateVisibility::Visible);
 			ItemDurabilityBar->SetPercent(GetSlotItemData()->CurrentDurability / GetSlotItemData()->MaxDurability);
-		}
+		}*/
 	}
 }
 
@@ -89,6 +91,30 @@ bool UCSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEven
 	}
 
 	return false;
+}
+
+void UCSlotWidget::UpdateDurability(float InCurrentDurability, float InMaxDurability)
+{
+	if (ItemDurabilityBar)
+	{
+		if (FMath::IsNearlyZero(InCurrentDurability))
+		{
+			ItemDurabilityBar->SetVisibility(ESlateVisibility::Collapsed);
+		}
+		else
+		{
+			if (ItemDurabilityBar->GetVisibility() != ESlateVisibility::Visible)
+			{
+				ItemDurabilityBar->SetVisibility(ESlateVisibility::Visible);
+			}
+			ItemDurabilityBar->SetPercent(InCurrentDurability / InMaxDurability);
+		}
+	}
+}
+
+void UCSlotWidget::SetSlotIndex(int32 InIndex)
+{
+	SlotIndex = InIndex;
 }
 
 void UCSlotWidget::SetParentWidget(UUserWidget* InParent)

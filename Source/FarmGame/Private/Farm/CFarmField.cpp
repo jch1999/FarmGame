@@ -79,6 +79,7 @@ void ACFarmField::SetInteractable()
 	if (IsValid(Crop) && (Crop->IsHarvestable()||Crop->IsDead()))
 	{
 		Crop->SetInteractable();
+		SetUnInteractable();
 	}
 	else
 	{
@@ -99,6 +100,8 @@ void ACFarmField::SetUnInteractable()
 
 void ACFarmField::SetDelayedInteractable(float DelayTime)
 {
+	if (GetIsPlanting()) return;
+
 	if (GetWorld()->GetTimerManager().TimerExists(InteractTimer))
 	{
 		GetWorld()->GetTimerManager().ClearTimer(InteractTimer);
@@ -108,7 +111,20 @@ void ACFarmField::SetDelayedInteractable(float DelayTime)
 		UE_LOG(LogTemp, Warning, TEXT("Crop is harvestable. FarmField shouldn't be interacted."));
 		return;
 	}*/
-	GetWorld()->GetTimerManager().SetTimer(InteractTimer, this, &ACFarmField::SetInteractable, DelayTime, false);
+	GetWorld()->GetTimerManager().SetTimer(InteractTimer, [this]()
+		{
+			if (IsValid(Crop))
+			{
+				if (Crop->IsHarvestable() || Crop->IsDead())
+				{
+					SetUnInteractable();
+					Crop->SetInteractable();
+					return;
+				}
+			}
+			SetInteractable();
+			OnHovered();
+		}, DelayTime, false);
 }
 
 void ACFarmField::SetDelayedUninteractable(float DelayTime)
@@ -166,6 +182,8 @@ bool ACFarmField::PlantCrop(TSubclassOf<ACBase_Crop> InCropClass, const FVector&
 	NewCrop->FinishSpawning(CropTM); 
 
 	//SetUnInteractable();
+	UnsetIsPlanting();
+	SetInteractable();
 
 	return true;
 }
@@ -185,6 +203,26 @@ void ACFarmField::FarmFieldOff()
 {
 	SetUnInteractable();
 	BoxComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void ACFarmField::SetIsPlanting()
+{
+	bIsPlanting = true;
+}
+
+void ACFarmField::UnsetIsPlanting()
+{
+	bIsPlanting = false;
+}
+
+void ACFarmField::SetPlantOffset(FVector InOffset)
+{
+	PlantOffset = InOffset;
+}
+
+void ACFarmField::SetWaterOffset(FVector InOffset)
+{
+	WaterOffset = InOffset;
 }
 
 void ACFarmField::ShowFarmFieldWidget()

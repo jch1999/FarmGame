@@ -51,6 +51,8 @@ public:
 	void IncreaseHealth(float InAmount);
 	void DecreaseHealth(float InAmount);
 
+	void ForceState(EHealthState State);
+
 private:
 	void CheckState();
 	void ChangeState(EHealthState state);

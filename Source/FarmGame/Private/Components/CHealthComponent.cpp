@@ -3,7 +3,7 @@
 
 UCHealthComponent::UCHealthComponent()
 {
-	
+	SetHealthyState();
 }
 
 
@@ -12,6 +12,7 @@ void UCHealthComponent::BeginPlay()
 	Super::BeginPlay();
 
 	CurrentValue = MaxValue;
+	CheckState();
 }
 
 void UCHealthComponent::SetHealthyState()
@@ -59,6 +60,11 @@ void UCHealthComponent::DecreaseHealth(float InAmount)
 	Super::ReduceValue(InAmount);
 
 	CheckState();
+}
+
+void UCHealthComponent::ForceState(EHealthState State)
+{
+	ChangeState(State);
 }
 
 void UCHealthComponent::CheckState()

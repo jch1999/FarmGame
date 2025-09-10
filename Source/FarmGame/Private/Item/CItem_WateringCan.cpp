@@ -26,12 +26,12 @@ bool ACItem_WateringCan::UseItem()
 
 					if (IsValid(MoistureComp_Field) && IsValid(MoistureComp_Crop))
 					{
-						MoistureComp_Field->AddMoisture(FMath::Min(CurrentAmount, UseAmount) * 0.75f);
-						MoistureComp_Crop->AddMoisture(FMath::Min(CurrentAmount, UseAmount) * 0.25f);
+						MoistureComp_Field->AddMoisture(UseAmount * 0.75f);
+						MoistureComp_Crop->AddMoisture(UseAmount * 0.25f);
 					}
 					else if (IsValid(MoistureComp_Field))
 					{
-						MoistureComp_Field->AddMoisture(FMath::Min(CurrentAmount, UseAmount));
+						MoistureComp_Field->AddMoisture(UseAmount);
 					}
 					else
 					{
@@ -39,7 +39,6 @@ bool ACItem_WateringCan::UseItem()
 						return false;
 					}
 
-					CurrentAmount = FMath::Max(0.0f, CurrentAmount - UseAmount);
 					return true;
 				}
 			}

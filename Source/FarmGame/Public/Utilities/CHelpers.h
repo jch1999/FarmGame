@@ -17,6 +17,9 @@ public:
 	template<typename T>
 	static void GetAsset(T** OutAsset,FString InPath)
 	{
+		InPath.TrimStartAndEndInline();
+		UE_LOG(LogTemp, Warning, TEXT("Loading asset from path: %s"), *InPath);
+
 		ConstructorHelpers::FObjectFinder<T> Asset(*InPath);
 		/*check(Asset.Succeeded());
 		varifyF(Asset.Succeeded(),"Asset Failed");
@@ -29,6 +32,9 @@ public:
 	template<typename T>
 	static void GetAssetDynamic(T** OutAsset, FString InPath)
 	{
+		InPath.TrimStartAndEndInline();
+		UE_LOG(LogTemp, Warning, TEXT("Loading asset from path: %s"), *InPath);
+
 		T* Asset = Cast<T>(StaticLoadObject(T::StaticClass(), nullptr, *InPath));
 		ensureMsgf(Asset, TEXT("Asset not found"));
 
@@ -38,6 +44,8 @@ public:
 	template<typename T>
 	static void GetClass(TSubclassOf<T>* OutClass, FString InPath)
 	{
+		InPath.TrimStartAndEndInline();
+		UE_LOG(LogTemp, Warning, TEXT("Loading class from path: %s"), *InPath);
 
 		ConstructorHelpers::FClassFinder<T> AssetClass(*InPath);
 		ensureMsgf(AssetClass.Succeeded(), TEXT("Class not found"));
@@ -48,6 +56,9 @@ public:
 	template<typename T>
 	static void GetClassDynamic(TSubclassOf<T>* OutClass, FString InPath)
 	{
+		InPath.TrimStartAndEndInline();
+		UE_LOG(LogTemp, Warning, TEXT("Loading class from path: %s"), *InPath);
+
 		UClass* AssetClass = StaticLoadClass(T::StaticClass(), nullptr, *InPath);
 		ensureMsgf(AssetClass, TEXT("Class not found"));
 

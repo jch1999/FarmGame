@@ -52,7 +52,7 @@ bool UCInventoryWidget::Initialize()
 void UCInventoryWidget::NativeOnInitialized()
 {
     Super::NativeOnInitialized();
-    SetDesiredSizeInViewport(FVector2D(400, 300));
+    SetDesiredSizeInViewport(FVector2D(500, 500));
 }
 
 void UCInventoryWidget::ShowExplainWidget(TWeakPtr<FInventorySlot> InSlotData, FVector2D ViewPortPosition)
@@ -108,7 +108,7 @@ void UCInventoryWidget::UpdateInventorySlotCount(int32 SlotIndex)
                 UCInventorySlotWidget* SlotWidget = CreateWidget<UCInventorySlotWidget>(this, SlotWidgetClass, FName(*SlotName));
                 SlotWidget->SetParentWidget(this);
                 SlotWidget->SetItem(SlotDatas[CurrentIndex + i]);
-                SlotWidget->SlotIndex = CurrentIndex + i;
+                SlotWidget->SetSlotIndex(CurrentIndex + i);
                 Slots.Add(SlotWidget);
 
                 InventoryGridPanel->AddChildToUniformGrid(SlotWidget, GridPanelRow, GridPanelCol);

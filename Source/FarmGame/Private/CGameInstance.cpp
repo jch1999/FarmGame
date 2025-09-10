@@ -234,6 +234,7 @@ const TOptional<FItemData> UCGameInstance::GetItemtData(EItemID InItemID)
 
 const TOptional<FItemAssetData> UCGameInstance::GetItemtAssetData(EItemID InItemID)
 {
+	UE_LOG(LogItem, Warning, TEXT("Requesting ItemAssetDAta for ID: %s"), *UEnum::GetValueAsString(InItemID));
 	if (ItemAssetDataMap.Contains(InItemID))
 	{
 		return ItemAssetDataMap[InItemID];

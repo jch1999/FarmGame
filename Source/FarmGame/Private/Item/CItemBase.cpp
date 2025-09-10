@@ -22,7 +22,7 @@ ACItemBase::ACItemBase()
 	SphereComp->SetCollisionProfileName(TEXT("InteractObject"));*/
 
 	SetAvailableCnt(1);
-
+	SetMaxDurability(0.0f, false);
 	SetType(EInteractObjectType::Item);
 	SetInteractable();
 
@@ -37,12 +37,30 @@ void ACItemBase::BeginPlay()
 	if (MeshComp)
 	{
 		// Reduce Restitution
-		UPhysicalMaterial* PhysMaterial = NewObject<UPhysicalMaterial>();
-		PhysMaterial->Restitution = 0.0f; // 반발력 최소화
-		PhysMaterial->Friction = 1.2f;    // 적절한 마찰력 부여
+		UPhysicalMaterial* PhysMaterial = nullptr;// = NewObject<UPhysicalMaterial>();
+		//PhysMaterial->Restitution = 0.0f; // 반발력 최소화
+		//PhysMaterial->Friction = 1.2f;    // 적절한 마찰력 부여
+		CHelpers::GetAssetDynamic(&PhysMaterial, "/Game/Materials/PM_Item");
 		MeshComp->SetPhysMaterialOverride(PhysMaterial); 
 		MeshComp->SetLinearDamping(1.5f);   // 공기 저항 효과 적용 (기본값 0 → 1.5)
 		MeshComp->SetAngularDamping(2.0f);  // 회전 감속 효과 적용 (기본값 0 → 2.0)
+	}
+
+	// Tool 타입일 때만 Durability 초기화
+	if (InteractType == EInteractObjectType::Tool)
+	{
+		if (!HasAnyFlags(RF_Transient))
+		{
+			if (UCGameInstance* MyGI = Cast<UCGameInstance>(GetWorld()->GetGameInstance()))
+			{
+				TOptional<FItemData> ItemDataOpt = MyGI->GetItemtData(ItemID);
+				if (ItemDataOpt.IsSet())
+				{
+					SetMaxDurability(ItemDataOpt.GetValue().MaxDurability, true);
+					SetUseAmount(ItemDataOpt.GetValue().UseAmount);
+				}
+			}
+		}
 	}
 }
 
@@ -117,6 +135,11 @@ FName ACItemBase::GetInteractName()
 void ACItemBase::SetType(EInteractObjectType InNewType)
 {
 	InteractType = InNewType;
+}
+
+void ACItemBase::SetAvailableCount(int32 InAmount)
+{
+	AvailableCount = InAmount;
 }
 
 void ACItemBase::SetAvailableCnt(int32 InCnt)
@@ -203,6 +226,7 @@ void ACItemBase::UpdateByInventory_DataUpdated(const TArray<int32>& ChangedIndex
 				{
 					const FInventorySlot& SlotData = InventoryComp->GetSlotDatas()[SlotIndex];
 					SetAvailableCnt(SlotData.CurrentStack);
+					SetMaxDurability(SlotData.MaxDurability, false);
 					CurrentDurability = SlotData.CurrentDurability;
 				}
 			}
@@ -223,4 +247,22 @@ void ACItemBase::UpdateByInventory_SlotSwap(int32 Index1, int32 Index2)
 			SlotIndex = Index1;
 		}
 	}
+}
+
+void ACItemBase::SetMaxDurability(float InDurability, bool bReset)
+{
+	MaxDurability = InDurability;
+	if (bReset)
+	{
+		CurrentDurability = MaxDurability;
+	}
+}
+
+void ACItemBase::SetCurrentDurability(float InDurability)
+{
+	CurrentDurability = InDurability;
+}
+
+void SetUseAmount(float InAmount)
+{
 }

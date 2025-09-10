@@ -1,4 +1,4 @@
 ID,CropName,MaxLevel,IDForQuality,GrowUpPraticleEffectRef,GrowUpSoundEffectRef
-Tomato,Tomato,3,"(Tomato_Low, Tomato_Normal, Tomato_High)",,/Game/ThirdParty/Sound/PlantGrowth
-Berry,Berry,4,"(Berry_Low, Berry_Normal, Berry_High)",,/Game/ThirdParty/Sound/PlantGrowth
-Carrot,Carrot,3,"(Carrot_Low, Carrot_Normal, Carrot_High)",,/Game/ThirdParty/Sound/PlantGrowth
+Tomato,Tomato,3,"(Tomato_Low, Tomato_Normal, Tomato_High)",,/Game/ThirdParty/Sound/PlantGrowth_Cue
+Berry,Berry,4,"(Berry_Low, Berry_Normal, Berry_High)",,/Game/ThirdParty/Sound/PlantGrowth_Cue
+Carrot,Carrot,3,"(Carrot_Low, Carrot_Normal, Carrot_High)",,/Game/ThirdParty/Sound/PlantGrowth_Cue

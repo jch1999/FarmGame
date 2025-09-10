@@ -226,6 +226,10 @@ void UCFarmFieldWidget::CheckPlantBtnActive(int32 InIndex)
 
 void UCFarmFieldWidget::OnPlantClicked()
 {
+	if (IsValid(FarmField))
+	{
+		FarmField->SetIsPlanting();
+	}
 	if (APlayerController* PC = GetOwningPlayer())
 	{
 		if (ACPlayer* Player = Cast<ACPlayer>(PC->GetPawn()))

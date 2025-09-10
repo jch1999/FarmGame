@@ -39,7 +39,19 @@ public:
 	virtual void NativeOnDragDetected(const FGeometry& InGemoetry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 
-public:
+	UFUNCTION()
+	void UpdateDurability(float InCurrentDurability, float InMaxDurability);
+
+	void SetSlotIndex(int32 InIndex);
+	const int32& GetSlotIndex() { return SlotIndex; }
+	const ESlotType GetSlotType() { return SlotType; }
+	
+	UTextBlock* GetItemCountText() { return ItemCountText; }
+	UImage* GetItemIconImage() {return ItemIconImage; }
+	UProgressBar* GetItemDurabilityBar() { return ItemDurabilityBar; }
+	TSharedPtr<FInventorySlot>& GetSlotData() { return CurrentSlotData; }
+
+protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* ItemCountText;
 

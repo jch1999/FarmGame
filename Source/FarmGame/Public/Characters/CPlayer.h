@@ -86,9 +86,15 @@ public:
 	// Fade
 	//void StartFade(bool bToTransparent);
 	void SetVisibility(bool bVisible);
+	void LookAtActor(AActor* InActor, bool bInterp);
+	void AlignToActor(AActor* TargetActor, const FVector& Offset, bool bInterp);
 
 private:
 	//void UpdateFade();
+	void RotationInterp();
+	void OnLookAtComplete();
+	void AlignInterp();
+	void OnAlignComplete();
 
 protected:
 	// Components
@@ -145,4 +151,20 @@ private:
 	ACItemBase* CurrentEquippedItem;
 
 	FTimerHandle InteractTimer;
+
+	// For LookAt & Align
+	UPROPERTY(VisibleAnywhere,Category="Interact")
+	AActor* TargetActor;
+	TFunction<void()> PendingActionInteract;
+
+	// For LookAtActor
+	FRotator TargetRotation;
+	float InterpSpeed = 5.0f;
+	FTimerHandle RotationTimer;
+
+	// For AlignToActor
+	FVector TargetLocation;
+	float AlignInterpSpeed = 300.0f;
+	float AcceptableDistance = 5.0f;
+	FTimerHandle AlignTimer;
 };

@@ -11,7 +11,7 @@
 #include "Controller/CPlayerController.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Camera/CameraComponent.h"
-
+#include "Components/CInteractComponent.h"
 
 UCInventoryComponent::UCInventoryComponent()
 {
@@ -291,6 +291,8 @@ bool UCInventoryComponent::AddToNewSlot(ACItemBase* InItemActor, const FItemData
 			Slot.MaxDurability = InItemData.MaxDurability;
 			Slot.CurrentDurability = InItemActor->GetCurrentDruability();
 			Slot.ItemClass = InItemActor->GetClass();
+			Slot.UseAmount = InItemData.UseAmount;
+
 			if (ACItem_Consumable* Consumable = Cast<ACItem_Consumable>(InItemActor))
 			{
 				Slot.ConsumableType = Consumable->ConsumableType;
@@ -304,7 +306,7 @@ bool UCInventoryComponent::AddToNewSlot(ACItemBase* InItemActor, const FItemData
 
 			if ((InItemAssetData.ItemIconTextureRef).IsEmpty())
 			{
-				UE_LOG(LogItem, Error, TEXT("ItemIconTexture Reference is missing. ItemID : "), *(UEnum::GetValueAsString(Slot.ItemID)));
+				UE_LOG(LogItem, Error, TEXT("ItemIconTexture Reference is missing. ItemID : %s"), *(UEnum::GetValueAsString(Slot.ItemID)));
 			}
 			else
 			{
@@ -314,7 +316,7 @@ bool UCInventoryComponent::AddToNewSlot(ACItemBase* InItemActor, const FItemData
 		}
 		else
 		{
-			UE_LOG(LogItem, Error, TEXT("ItemID : "), *(UEnum::GetValueAsString(Slot.ItemID)));
+			UE_LOG(LogItem, Error, TEXT("ItemID : %s"), *(UEnum::GetValueAsString(Slot.ItemID)));
 		}
 		if (InItemActor->GetAvailableCount() <= 0)
 		{
@@ -350,7 +352,7 @@ void UCInventoryComponent::ShowWarningWidget(FString Message)
 	}
 }
 
-void UCInventoryComponent::SwapSlot(int32& SlotIndex1, int32& SlotIndex2)
+void UCInventoryComponent::SwapSlot(const int32& SlotIndex1, const int32& SlotIndex2)
 {
 	UE_LOG(LogItem, Log, TEXT("InventorySlots.Num() : %d"), InventorySlots.Num());
 	bool bCheck1 = (SlotIndex1 < 0 || SlotIndex1 >= InventorySlots.Num());
@@ -379,7 +381,7 @@ void UCInventoryComponent::SwapSlot(int32& SlotIndex1, int32& SlotIndex2)
 	OnInventorySlotDataUpdated.Broadcast(ChangedIndexes);
 }
 
-void UCInventoryComponent::UseItem(int32& SlotIndex)
+void UCInventoryComponent::UseItem(const int32& SlotIndex)
 {
 
 }
@@ -398,7 +400,20 @@ void UCInventoryComponent::DropItem(int32 InIndex)
 		}
 		ACItemBase* Item = GetWorld()->SpawnActorDeferred<ACItemBase>(ItemClass, SpawnTransform);
 		Item->FinishSpawning(SpawnTransform);
+		Item->SetMaxDurability(InventorySlots[InIndex].MaxDurability, false);
+		Item->SetCurrentDurability(InventorySlots[InIndex].CurrentDurability);
+		Item->SetAvailableCount(InventorySlots[InIndex].CurrentStack);
 
+		if (ACPlayer* Player = Cast<ACPlayer>(OwnerCharacter))
+		{
+			if (ACItemBase* EquippedItem=Player->GetCurretnEquippedItem())
+			{
+				if (EquippedItem->GetTargetSlotIndex() == InIndex)
+				{
+					Player->ResetEquippedItem();
+				}
+			}
+		}
 		ClearSlot(InIndex);
 	}
 }

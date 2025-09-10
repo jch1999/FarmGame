@@ -72,6 +72,9 @@ ACPlayer::ACPlayer()
 	/*CHelpers::CreateSceneComponent(this, &PostProcessComp, "PostProcessComp", GetMesh());
 	PostProcessComp->bUnbound = true;
 	PostProcessComp->BlendWeight = 1.0f;*/
+
+	// For LookAt & Align
+	TargetActor = nullptr;
 }
 
 void ACPlayer::BeginPlay()
@@ -155,16 +158,39 @@ void ACPlayer::StartPlantingAnimation()
 {
 	if (PlantAnim)
 	{
-		PlayAnimMontage(PlantAnim);
-		UE_LOG(LogTemp, Warning, TEXT("Play Plant Anim"));
 		if (ACPlayerController* MyController = Cast<ACPlayerController>(GetController()))
 		{
+			// 중복 재생 방지
+			if (!(MyController->GetStateComponent()->IsIdleMode()))
+			{
+				return;
+			}
 			MyController->SetUnSlotChangable();
 			MyController->GetStateComponent()->SetActionMode();
 		}
-		/*float MontageDuration = PlantAnim->GetPlayLength();
-		FTimerHandle PlantingAnimTimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(PlantingAnimTimerHandle, this, &ACPlayer::OnPlantingAnimationFinished, MontageDuration, false);*/
+		if (IsValid(InteractComp->GetActionInteractTarget()))
+		{
+			if (ACFarmField* TargetFramField = Cast<ACFarmField>(InteractComp->GetActionInteractTarget()))
+			{
+				if (PendingActionInteract)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("PendingActionInteract already set, overwriting!"));
+				}
+
+				PendingActionInteract = [this]()
+				{
+					PlayAnimMontage(PlantAnim);
+				};
+				TargetActor = TargetFramField;
+				AlignToActor(TargetFramField, TargetFramField->GetPlantOffset(), true);
+				// LookAtActor(InteractComp->GetActionInteractTarget(), true);
+				
+				UE_LOG(LogTemp, Warning, TEXT("Play Plant Anim"));
+				/*float MontageDuration = PlantAnim->GetPlayLength();
+				FTimerHandle PlantingAnimTimerHandle;
+				GetWorld()->GetTimerManager().SetTimer(PlantingAnimTimerHandle, this, &ACPlayer::OnPlantingAnimationFinished, MontageDuration, false);*/
+			}
+		}
 	}
 	else
 	{
@@ -178,8 +204,6 @@ void ACPlayer::OnPlantingAnimationFinished()
 	{
 		if (ACItem_Seed* Seed = Cast<ACItem_Seed>(CurrentEquippedItem))
 		{
-			const FInventorySlot& SlotData = GetQuickSlotBar()->GetCurrentSlotData();
-			UCGameInstance* MyGI = Cast<UCGameInstance>(GetGameInstance());
 			FarmField->PlantCrop(Seed->CropClass, Seed->PlantLocation);
 			Seed->UseItem();
 			UE_LOG(LogTemp, Warning, TEXT("Plant Crop"));
@@ -192,18 +216,46 @@ void ACPlayer::OnPlantingAnimationFinished()
 		MyController->SetSlotChangable();
 		MyController->GetStateComponent()->SetIdleMode();
 	}
+
+	if (ACFarmField* Target = Cast<ACFarmField>(InteractComp->GetActionInteractTarget()))
+	{
+		Target->SetInteractable();
+		if (!Target->IsInteractable()) return;
+		Target->OnHovered();
+	}
 }
 
 void ACPlayer::StartWateringAnimation()
 {
 	if (WateringAnim)
 	{
-		PlayAnimMontage(WateringAnim);
-		UE_LOG(LogTemp, Warning, TEXT("Play Plant Anim"));
 		if (ACPlayerController* MyController = Cast<ACPlayerController>(GetController()))
-		{
+		{// 중복 재생 방지
+			if (!(MyController->GetStateComponent()->IsIdleMode()))
+			{
+				return;
+			}
 			MyController->SetUnSlotChangable();
 			MyController->GetStateComponent()->SetActionMode();
+		}
+		if (IsValid(InteractComp->GetActionInteractTarget()))
+		{
+			if (ACFarmField* TargetFramField = Cast<ACFarmField>(InteractComp->GetActionInteractTarget()))
+			{
+				if (PendingActionInteract)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("PendingActionInteract already set, overwriting!"));
+				}
+
+				PendingActionInteract = [this]()
+				{
+					PlayAnimMontage(WateringAnim);
+				};
+				TargetActor = TargetFramField;
+				AlignToActor(TargetFramField, TargetFramField->GetWaterOffset(), true);
+				//LookAtActor(InteractComp->GetActionInteractTarget(), true);
+				UE_LOG(LogTemp, Warning, TEXT("Play Plant Anim"));
+			}
 		}
 	}
 }
@@ -214,6 +266,12 @@ void ACPlayer::OnWateringAnimationFinished()
 	{
 		MyController->SetSlotChangable();
 		MyController->GetStateComponent()->SetIdleMode();
+	}
+
+	if (ICInterface_Interactable* Target = Cast<ICInterface_Interactable>(InteractComp->GetActionInteractTarget()))
+	{
+		if (!Target->IsInteractable()) return;
+		Target->OnHovered();
 	}
 }
 
@@ -261,6 +319,10 @@ void ACPlayer::EquipItemFromQuickSlot(int32 QuickSlotIndex)
 		CurrentEquippedItem->SetUsable();
 		InventoryComp->OnInventorySlotDataUpdated.AddDynamic(CurrentEquippedItem, &ACItemBase::UpdateByInventory_DataUpdated);
 		InventoryComp->OnInventorySlotSwap.AddDynamic(CurrentEquippedItem, &ACItemBase::UpdateByInventory_SlotSwap);
+		TArray<int32> Indexes;
+		Indexes.Add(CurrentEquippedItem->GetTargetSlotIndex());
+		CurrentEquippedItem->UpdateByInventory_DataUpdated(Indexes);
+
 		if (UGameInstance* GI = GetGameInstance())
 		{
 			if (UCGameInstance* MyGI = Cast<UCGameInstance>(GI))
@@ -292,6 +354,112 @@ void ACPlayer::SetVisibility(bool bVisible)
 	if (IsValid(CurrentEquippedItem))
 	{
 		CurrentEquippedItem->GetItemMesh()->SetVisibility(bVisible);
+	}
+}
+
+void ACPlayer::LookAtActor(AActor* InActor, bool bInterp)
+{
+	if (!IsValid(InActor)) return;
+
+	// Looking at action interact target
+	FVector PlayerLocation = GetActorLocation();
+	FVector TargetActorLocation = InActor->GetActorLocation();
+	FVector DirectionVector = TargetActorLocation - PlayerLocation;
+	DirectionVector.Z = 0.0f;
+
+	TargetRotation = UKismetMathLibrary::MakeRotFromX(DirectionVector);
+	if (bInterp)
+	{
+		FRotator CurrentRotation = GetActorRotation();
+		GetWorld()->GetTimerManager().SetTimer(RotationTimer, this, &ACPlayer::RotationInterp, 0.01f, true);
+	}
+	else
+	{
+		SetActorRotation(TargetRotation);
+		OnLookAtComplete();
+	}
+}
+
+void ACPlayer::AlignToActor(AActor* InTargetActor, const FVector& Offset, bool bInterp)
+{
+	if (!IsValid(InTargetActor)) return;
+
+	TargetActor = InTargetActor;
+	TargetLocation = TargetActor->GetActorLocation() + Offset;
+
+	if (bInterp)
+	{
+		GetWorld()->GetTimerManager().SetTimer(
+			AlignTimer, this, &ACPlayer::AlignInterp, 0.01f, true
+		);
+	}
+	else
+	{
+		SetActorLocation(TargetLocation);
+		OnAlignComplete();
+	}
+}
+
+void ACPlayer::RotationInterp()
+{
+	float DeltaTime = GetWorld()->GetDeltaSeconds();
+
+	FRotator InterpRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, InterpSpeed);
+	SetActorRotation(InterpRotation);
+
+	float YawDiff = FMath::Abs(FMath::FindDeltaAngleDegrees(InterpRotation.Yaw, TargetRotation.Yaw));
+	
+	if (YawDiff <= 1.0f)
+	{
+		SetActorRotation(TargetRotation);
+		GetWorld()->GetTimerManager().ClearTimer(RotationTimer);
+
+		OnLookAtComplete();
+	}
+}
+
+void ACPlayer::OnLookAtComplete()
+{
+	// 몽타주 재생.
+	if (PendingActionInteract)
+	{
+		PendingActionInteract();
+		PendingActionInteract = nullptr;
+	}
+}
+
+void ACPlayer::AlignInterp()
+{
+	float DeltaTime = GetWorld()->GetDeltaSeconds();
+	FVector CurrentLocation = GetActorLocation();
+	FVector NewLocation = FMath::VInterpConstantTo(
+		CurrentLocation,
+		TargetLocation,
+		DeltaTime,
+		AlignInterpSpeed
+	);
+
+	SetActorLocation(NewLocation);
+
+	float Distance = FVector::Dist(NewLocation, TargetLocation);
+	if (Distance < AcceptableDistance)
+	{
+		SetActorLocation(TargetLocation);
+		GetWorld()->GetTimerManager().ClearTimer(AlignTimer);
+
+		OnAlignComplete();
+	}
+}
+
+void ACPlayer::OnAlignComplete()
+{
+	if (IsValid(TargetActor))
+	{
+		LookAtActor(TargetActor, true);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Call LookAtActor Failed! TargetActor is nullptr."));
 	}
 }
 

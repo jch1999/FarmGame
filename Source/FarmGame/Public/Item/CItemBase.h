@@ -29,9 +29,14 @@ public:
 	virtual void AddAvailableCount(int32 InAmount = 1) override;
 	virtual void ReduceAvailableCount(int32 InAmount = 1) override;
 	virtual const int32& GetAvailableCount() const override { return AvailableCount; }
+	virtual void SetAvailableCount(int32 InAmount);
 	virtual void SetTargetSlotIndex(int Index) override;
 	virtual	const int32& GetTargetSlotIndex() override { return SlotIndex; }
-	
+	virtual void SetMaxDurability(float InDurability, bool bReset);
+	virtual const float& GetMaxDurability() { return MaxDurability; }
+	virtual const float& GetCurrentDurability() { return CurrentDurability; }
+	virtual void SetCurrentDurability(float InDurability);
+
 	// Inherited from ICInterface_Interactable
 	virtual bool IsInteractable() override { return bInteractable; }
 	virtual void SetInteractable() override;
@@ -72,6 +77,9 @@ public:
 	UFUNCTION()
 	void UpdateByInventory_SlotSwap(int32 Index1, int32 Index2);
 
+	void SetUseAmount(float InAmount);
+	float GetUseAmount() { return UseAmount; }
+
 protected:
 	// Components
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
@@ -96,6 +104,9 @@ protected:
 	EQualityType ItemQuality;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemInterface")
+	float MaxDurability;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemInterface")
 	float CurrentDurability;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
@@ -103,6 +114,9 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InteractInterface")
 	EInteractObjectType InteractType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemInterface")
+	float UseAmount;
 
 private:
 	FTimerHandle InteractTimer;
