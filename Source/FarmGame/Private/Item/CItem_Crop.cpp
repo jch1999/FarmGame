@@ -4,13 +4,7 @@
 
 ACItem_Crop::ACItem_Crop()
 {
-	SetUnusable();
 	SetType(EInteractObjectType::Crop);
-}
-
-bool ACItem_Crop::UseItem()
-{
-	return false;
 }
 
 //void ACItem_Crop::Interact(AActor* OtherActor)

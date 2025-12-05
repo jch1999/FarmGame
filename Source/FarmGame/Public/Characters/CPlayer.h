@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Interfaces/CInterface_Interactable.h"
+#include "Interfaces/Interactable.h"
 #include "Components/CInventoryComponent.h"
 #include "CPlayer.generated.h"
 
@@ -21,7 +21,7 @@ class UMaterialInstanceDynamic;
 class UPostProcessComponent;
 
 UCLASS()
-class FARMGAME_API ACPlayer : public ACharacter, public ICInterface_Interactable
+class FARMGAME_API ACPlayer : public ACharacter, public IInteractable
 {
 	GENERATED_BODY()
 
@@ -78,6 +78,10 @@ public:
 	void OnPlantingAnimationFinished();
 	void StartWateringAnimation();
 	void OnWateringAnimationFinished();
+	void StartFertilizingAnimation();
+	void OnFertilizingAnimationFinished();
+	void StartHoeingAnimation();
+	void OnHoeingAnimationFinished();
 
 	// Item
 	UCQuickSlotBarWidget* GetQuickSlotBar();
@@ -87,7 +91,7 @@ public:
 	//void StartFade(bool bToTransparent);
 	void SetVisibility(bool bVisible);
 	void LookAtActor(AActor* InActor, bool bInterp);
-	void AlignToActor(AActor* TargetActor, const FVector& Offset, bool bInterp);
+	void AlignToActor(AActor* TargetActor, const float& TargetDist, bool bInterp);
 
 private:
 	//void UpdateFade();
@@ -95,6 +99,8 @@ private:
 	void OnLookAtComplete();
 	void AlignInterp();
 	void OnAlignComplete();
+
+	void OnMontageAnimFinshed();
 
 protected:
 	// Components
@@ -145,6 +151,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	UAnimMontage* WateringAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* FertilizeAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* HoeAnim;
 
 	// EuqipedItem
 	UPROPERTY(VisibleAnywhere, Category="Item")

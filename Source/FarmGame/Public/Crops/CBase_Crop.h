@@ -2,8 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Interfaces/CInterface_Interactable.h"
-#include "Interfaces/CItemInterface.h"
+#include "Interfaces/Interactable.h"
+#include "Interfaces/Item.h"
 #include "Engine/DataTable.h"
 #include "CBase_Crop.generated.h"
 
@@ -98,7 +98,7 @@ class UBoxComponent;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FGrowthChanged, float, OldValue, float, NewValue, float, MaxValue);
 
 UCLASS()
-class FARMGAME_API ACBase_Crop : public AActor, public ICInterface_Interactable
+class FARMGAME_API ACBase_Crop : public AActor, public IInteractable
 {
 	GENERATED_BODY()
 	

@@ -2,14 +2,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Interfaces/CItemInterface.h"
-#include "Interfaces/CInterface_Interactable.h"
+#include "Interfaces/Item.h"
+#include "Interfaces/Interactable.h"
 #include "CItemBase.generated.h"
 
 class USphereComponent;
 
 UCLASS(Abstract) // 직접 인스턴스화 불가능하게 설정
-class FARMGAME_API ACItemBase : public AActor, public ICItemInterface,public ICInterface_Interactable
+class FARMGAME_API ACItemBase : public AActor, public IItem,public IInteractable
 {
 	GENERATED_BODY()
 
@@ -20,11 +20,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	// Inherited from ICItemInterface
-	virtual bool IsUsable() const override { return bUsable; }
-	virtual void SetUsable() override;
-	virtual void SetUnusable() override;
-	virtual bool UseItem() override PURE_VIRTUAL(ACItemBase::UseItem, return false;);
 	// About Item Data Inherited from ICItemInterface
 	virtual void AddAvailableCount(int32 InAmount = 1) override;
 	virtual void ReduceAvailableCount(int32 InAmount = 1) override;
@@ -91,10 +86,6 @@ protected:
 	// 아이템 정보
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	EItemID ItemID;
-
-	// 사용 가능 여부
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemInterface")
-	bool bUsable;
 
 	// 현재 보유 개수
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemInterface")

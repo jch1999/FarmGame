@@ -11,8 +11,9 @@ class FARMGAME_API ACItem_Consumable : public ACItemBase
 
 public:
 	// From Interface
-	virtual bool UseItem() override;;
+	//virtual bool UseItem_Implementation() override;;
 	//virtual void Interact(AActor* OtherActor) override;
+	bool UseItem_Common();
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category ="Consumable")

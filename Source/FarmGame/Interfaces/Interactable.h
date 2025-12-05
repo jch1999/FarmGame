@@ -3,7 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "CInterface_Interactable.generated.h"
+#include "Interactable.generated.h"
 
 UENUM(BlueprintType)
 enum class EInteractObjectType :uint8
@@ -27,12 +27,12 @@ struct FInteractAssetData : public FTableRowBase
 };
 
 UINTERFACE(MinimalAPI)
-class UCInterface_Interactable : public UInterface
+class UInteractable : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class FARMGAME_API ICInterface_Interactable
+class FARMGAME_API IInteractable
 {
 	GENERATED_BODY()
 

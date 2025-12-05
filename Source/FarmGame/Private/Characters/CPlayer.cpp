@@ -10,13 +10,15 @@
 #include "Components/CInteractComponent.h"
 #include "Components/CInventoryComponent.h"
 #include "Components/PostProcessComponent.h"
-#include "Interfaces/CItemInterface.h"
+#include "Interfaces/Item.h"
 #include "CHUD.h"
 #include "UI/CHUDWidget.h"
 #include "UI/CQuickSlotBarWidget.h"
 #include "UI/CQuickSlotWidget.h"
 #include "Item/CItemBase.h"
 #include "Item/CItem_Seed.h"
+#include "Item/CItem_Fertilizer.h"
+#include "Item/CItem_Tool.h"
 #include "CGameInstance.h"
 #include "Farm/CFarmField.h"
 #include "Controller/CPlayerController.h"
@@ -75,6 +77,7 @@ ACPlayer::ACPlayer()
 
 	// For LookAt & Align
 	TargetActor = nullptr;
+	AcceptableDistance = 20.0f;
 }
 
 void ACPlayer::BeginPlay()
@@ -182,7 +185,7 @@ void ACPlayer::StartPlantingAnimation()
 					PlayAnimMontage(PlantAnim);
 				};
 				TargetActor = TargetFramField;
-				AlignToActor(TargetFramField, TargetFramField->GetPlantOffset(), true);
+				AlignToActor(TargetFramField, TargetFramField->GetPlantDist(), true);
 				// LookAtActor(InteractComp->GetActionInteractTarget(), true);
 				
 				UE_LOG(LogTemp, Warning, TEXT("Play Plant Anim"));
@@ -205,24 +208,12 @@ void ACPlayer::OnPlantingAnimationFinished()
 		if (ACItem_Seed* Seed = Cast<ACItem_Seed>(CurrentEquippedItem))
 		{
 			FarmField->PlantCrop(Seed->CropClass, Seed->PlantLocation);
-			Seed->UseItem();
+			Seed->UseItem_Common();
 			UE_LOG(LogTemp, Warning, TEXT("Plant Crop"));
 		}
 	}
 
-
-	if (ACPlayerController* MyController = Cast<ACPlayerController>(GetController()))
-	{
-		MyController->SetSlotChangable();
-		MyController->GetStateComponent()->SetIdleMode();
-	}
-
-	if (ACFarmField* Target = Cast<ACFarmField>(InteractComp->GetActionInteractTarget()))
-	{
-		Target->SetInteractable();
-		if (!Target->IsInteractable()) return;
-		Target->OnHovered();
-	}
+	OnMontageAnimFinshed();
 }
 
 void ACPlayer::StartWateringAnimation()
@@ -252,7 +243,7 @@ void ACPlayer::StartWateringAnimation()
 					PlayAnimMontage(WateringAnim);
 				};
 				TargetActor = TargetFramField;
-				AlignToActor(TargetFramField, TargetFramField->GetWaterOffset(), true);
+				AlignToActor(TargetFramField, TargetFramField->GetWaterDist(), true);
 				//LookAtActor(InteractComp->GetActionInteractTarget(), true);
 				UE_LOG(LogTemp, Warning, TEXT("Play Plant Anim"));
 			}
@@ -262,17 +253,106 @@ void ACPlayer::StartWateringAnimation()
 
 void ACPlayer::OnWateringAnimationFinished()
 {
-	if (ACPlayerController* MyController = Cast<ACPlayerController>(GetController()))
+	OnMontageAnimFinshed();
+}
+
+void ACPlayer::StartFertilizingAnimation()
+{
+	if (FertilizeAnim)
 	{
-		MyController->SetSlotChangable();
-		MyController->GetStateComponent()->SetIdleMode();
+		if (ACPlayerController* MyController = Cast<ACPlayerController>(GetController()))
+		{
+			// 중복 재생 방지
+			if (!(MyController->GetStateComponent()->IsIdleMode()))
+			{
+				return;
+			}
+			MyController->SetUnSlotChangable();
+			MyController->GetStateComponent()->SetActionMode();
+		}
+		if (IsValid(InteractComp->GetActionInteractTarget()))
+		{
+			if (ACFarmField* TargetFramField = Cast<ACFarmField>(InteractComp->GetActionInteractTarget()))
+			{
+				if (PendingActionInteract)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("PendingActionInteract already set, overwriting!"));
+				}
+
+				PendingActionInteract = [this]()
+					{
+						PlayAnimMontage(FertilizeAnim);
+					};
+				TargetActor = TargetFramField;
+				AlignToActor(TargetFramField, TargetFramField->GetFertilizeDist(), true);
+
+				UE_LOG(LogTemp, Warning, TEXT("Play Fertilize Anim"));
+			}
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Fertilize Animation is missing!"));
+	}
+}
+
+void ACPlayer::OnFertilizingAnimationFinished()
+{
+	if (ACFarmField* FarmField = Cast<ACFarmField>(InteractComp->GetActionInteractTarget()))
+	{
+		if (ACItem_Fertilizer* Fertilizer = Cast<ACItem_Fertilizer>(CurrentEquippedItem))
+		{
+			Fertilizer->UseItem();
+			UE_LOG(LogTemp, Warning, TEXT("Plant Crop"));
+		}
 	}
 
-	if (ICInterface_Interactable* Target = Cast<ICInterface_Interactable>(InteractComp->GetActionInteractTarget()))
+	OnMontageAnimFinshed();
+}
+
+void ACPlayer::StartHoeingAnimation()
+{
+	if (HoeAnim)
 	{
-		if (!Target->IsInteractable()) return;
-		Target->OnHovered();
+		if (ACPlayerController* MyController = Cast<ACPlayerController>(GetController()))
+		{
+			// 중복 재생 방지
+			if (!(MyController->GetStateComponent()->IsIdleMode()))
+			{
+				return;
+			}
+			MyController->SetUnSlotChangable();
+			MyController->GetStateComponent()->SetActionMode();
+		}
+		if (IsValid(InteractComp->GetActionInteractTarget()))
+		{
+			if (ACFarmField* TargetFramField = Cast<ACFarmField>(InteractComp->GetActionInteractTarget()))
+			{
+				if (PendingActionInteract)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("PendingActionInteract already set, overwriting!"));
+				}
+
+				PendingActionInteract = [this]()
+					{
+						PlayAnimMontage(HoeAnim);
+					};
+				TargetActor = TargetFramField;
+				AlignToActor(TargetFramField, TargetFramField->GetHoeDist(), true);
+
+				UE_LOG(LogTemp, Warning, TEXT("Play Hoe Anim"));
+			}
+		}
 	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Hoe Animation is missing!"));
+	}
+}
+
+void ACPlayer::OnHoeingAnimationFinished()
+{
+	OnMontageAnimFinshed();
 }
 
 UCQuickSlotBarWidget* ACPlayer::GetQuickSlotBar()
@@ -316,7 +396,10 @@ void ACPlayer::EquipItemFromQuickSlot(int32 QuickSlotIndex)
 		CurrentEquippedItem->SetOwner(this);
 		CurrentEquippedItem->SetTargetSlotIndex(TargetSlotIndex);
 		CurrentEquippedItem->SetOwnerCharacter(this);
-		CurrentEquippedItem->SetUsable();
+		if (IUsableItem* UsableItem = Cast<IUsableItem>(CurrentEquippedItem))
+		{
+			UsableItem->SetUsable();
+		}
 		InventoryComp->OnInventorySlotDataUpdated.AddDynamic(CurrentEquippedItem, &ACItemBase::UpdateByInventory_DataUpdated);
 		InventoryComp->OnInventorySlotSwap.AddDynamic(CurrentEquippedItem, &ACItemBase::UpdateByInventory_SlotSwap);
 		TArray<int32> Indexes;
@@ -380,12 +463,14 @@ void ACPlayer::LookAtActor(AActor* InActor, bool bInterp)
 	}
 }
 
-void ACPlayer::AlignToActor(AActor* InTargetActor, const FVector& Offset, bool bInterp)
+void ACPlayer::AlignToActor(AActor* InTargetActor, const float& TargetDist, bool bInterp)
 {
 	if (!IsValid(InTargetActor)) return;
 
 	TargetActor = InTargetActor;
-	TargetLocation = TargetActor->GetActorLocation() + Offset;
+	FVector ActorLocation = TargetActor->GetActorLocation();
+	FVector Direction = (ActorLocation - GetActorLocation()).GetSafeNormal();
+	TargetLocation = ActorLocation - Direction * TargetDist;
 
 	if (bInterp)
 	{
@@ -430,25 +515,32 @@ void ACPlayer::OnLookAtComplete()
 
 void ACPlayer::AlignInterp()
 {
-	float DeltaTime = GetWorld()->GetDeltaSeconds();
-	FVector CurrentLocation = GetActorLocation();
-	FVector NewLocation = FMath::VInterpConstantTo(
-		CurrentLocation,
-		TargetLocation,
-		DeltaTime,
-		AlignInterpSpeed
-	);
-
-	SetActorLocation(NewLocation);
-
-	float Distance = FVector::Dist(NewLocation, TargetLocation);
-	if (Distance < AcceptableDistance)
+	if (!IsValid(TargetActor))
 	{
-		SetActorLocation(TargetLocation);
+		GetWorld()->GetTimerManager().ClearTimer(AlignTimer);
+		UE_LOG(LogTemp, Error, TEXT("Target Missing! ACPlayer::AlignInterp"));
+		return;
+	}
+	
+	FVector CurrentLocation = GetActorLocation();
+	FVector TargetLocation2D = TargetLocation;
+	TargetLocation2D.Z = CurrentLocation.Z;
+
+	FVector Direction = (TargetLocation2D - CurrentLocation);
+	float Distance = Direction.Size2D();
+
+	if (Distance <= AcceptableDistance)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Align Complete! Distance : %f"), Distance);
+		GetCharacterMovement()->StopMovementImmediately();
 		GetWorld()->GetTimerManager().ClearTimer(AlignTimer);
 
 		OnAlignComplete();
+		return;
 	}
+
+	Direction.Normalize();
+	AddMovementInput(Direction, 1.0f);
 }
 
 void ACPlayer::OnAlignComplete()
@@ -463,36 +555,20 @@ void ACPlayer::OnAlignComplete()
 	}
 }
 
-/*void ACPlayer::StartFade(bool bToTransparent)
+void ACPlayer::OnMontageAnimFinshed()
 {
-	bFadingOut = bToTransparent;
-	TargetOpacity = bToTransparent ? 0.3f : 1.0f;
-	FadeLerpElapsed = 0.0f;
+	if (ACPlayerController* MyController = Cast<ACPlayerController>(GetController()))
+	{
+		MyController->SetSlotChangable();
+		MyController->GetStateComponent()->SetIdleMode();
+	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Target Opacity : %f"), TargetOpacity);
-	GetWorld()->GetTimerManager().SetTimer(OpacityTimerHandle, this, &ACPlayer::UpdateFade, 0.01f, true);
+	if (IInteractable* Target = Cast<IInteractable>(InteractComp->GetActionInteractTarget()))
+	{
+		if (!Target->IsInteractable()) return;
+		Target->OnHovered();
+	}
 }
-
-void ACPlayer::UpdateFade()
-{
-	FadeLerpElapsed += 0.01f;
-	float Alpha = FMath::Clamp(FadeLerpElapsed / FadeLerpDuration, 0.0f, 1.0f);
-	float NewOpacity = FMath::Lerp(CurrentOpacity, TargetOpacity, Alpha);
-
-	if (FadeMaterialInstance)
-	{
-		FadeMaterialInstance->SetScalarParameterValue("FadeAlpha", NewOpacity);
-		float Value = 0.0f;
-		FadeMaterialInstance->GetScalarParameterValue(FName("FadeAlpha"), Value);
-		UE_LOG(LogTemp, Warning, TEXT("Now FadeAlpha : %f"), Value);
-	}
-
-	if (Alpha >= 1.0f)
-	{
-		CurrentOpacity = TargetOpacity;
-		GetWorld()->GetTimerManager().ClearTimer(OpacityTimerHandle);
-	}
-}*/
 
 void ACPlayer::SetDelayedInteractable(float DelayTime)
 {

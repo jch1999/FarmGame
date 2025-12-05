@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Interfaces/CInterface_Interactable.h"
+#include "Interfaces/Interactable.h"
 #include "CFarmField.generated.h"
 
 class UCMoistureComponent;
@@ -17,7 +17,7 @@ class ACPlayer;
 class ACPlayerController;
 
 UCLASS()
-class FARMGAME_API ACFarmField : public AActor, public ICInterface_Interactable
+class FARMGAME_API ACFarmField : public AActor, public IInteractable
 {
 	GENERATED_BODY()
 	
@@ -75,11 +75,16 @@ public:
 	void SetIsPlanting();
 	void UnsetIsPlanting();
 	bool GetIsPlanting() { return bIsPlanting; }
+	bool IsCultivable();
 
-	void SetPlantOffset(FVector InOffset);
-	FVector GetPlantOffset() { return PlantOffset; }
-	void SetWaterOffset(FVector InOffset);
-	FVector GetWaterOffset() { return WaterOffset; }
+	void SetPlantDist(float InDist);
+	float GetPlantDist() { return PlantDist; }
+	void SetWaterDist(float InDist);
+	float GetWaterDist() { return WaterDist; }
+	void SetFertilizeDist(float InDist);
+	float GetFertilizeDist() { return FertilizeDist; }
+	void SetHoeDist(float InDist);
+	float GetHoeDist() { return HoeDist; }
 
 	// Component
 	UFUNCTION(BlueprintPure)
@@ -123,10 +128,16 @@ protected:
 	EInteractObjectType InteractType;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Interact")
-	FVector PlantOffset;
+	float PlantDist;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interact")
-	FVector WaterOffset;
+	float WaterDist;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interact")
+	float FertilizeDist;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interact")
+	float HoeDist;
 
 private:
 	UMaterialInstanceDynamic* FieldMaterial; 

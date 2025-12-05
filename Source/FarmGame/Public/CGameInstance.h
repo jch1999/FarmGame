@@ -2,8 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
-#include "Interfaces/CItemInterface.h"
-#include "Interfaces/CInterface_Interactable.h"
+#include "Interfaces/Item.h"
+#include "Interfaces/Interactable.h"
 #include "Crops/CBase_Crop.h"
 #include "CGameInstance.generated.h"
 

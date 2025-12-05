@@ -8,7 +8,7 @@
 #include "Components/TextBlock.h"
 #include "Components/ProgressBar.h"
 #include "CGameInstance.h"
-#include "Interfaces/CItemInterface.h"
+#include "Interfaces/Item.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 
 void UCSlotWidget::NativeOnInitialized()

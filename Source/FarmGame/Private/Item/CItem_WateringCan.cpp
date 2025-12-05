@@ -5,9 +5,9 @@
 #include "Components/CMoistureComponent.h"
 #include "Characters/CPlayer.h"
 
-bool ACItem_WateringCan::UseItem()
+bool ACItem_WateringCan::UseItem_Implementation()
 {
-	if (Super::UseItem())
+	if (Super::UseItem_Implementation())
 	{
 		if (ACPlayer* Player = Cast<ACPlayer>(GetOwnerCharacter()))
 		{
@@ -47,16 +47,22 @@ bool ACItem_WateringCan::UseItem()
 	return false;
 }
 
-void ACItem_WateringCan::EndUse()
+void ACItem_WateringCan::EndUse_Implementation()
 {
-	Super::EndUse();
+	Super::EndUse_Implementation();
 	UseEffect->Deactivate();
 }
 
-void ACItem_WateringCan::PlayAnimation()
+bool ACItem_WateringCan::PlayAnimation_Implementation()
 {
+	Super::PlayAnimation_Implementation();
 	if (ACPlayer* Player = Cast<ACPlayer>(GetOwnerCharacter()))
 	{
 		Player->StartWateringAnimation();
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }

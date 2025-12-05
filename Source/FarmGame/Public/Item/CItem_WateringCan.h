@@ -10,8 +10,8 @@ class FARMGAME_API ACItem_WateringCan : public ACItem_Tool
 	GENERATED_BODY()
 	
 public:
-	virtual bool UseItem() override;
-	virtual void EndUse() override;
-	virtual void PlayAnimation() override;
+	virtual bool UseItem_Implementation() override;
+	virtual void EndUse_Implementation() override;
+	virtual bool PlayAnimation_Implementation() override;
 
 };

@@ -45,6 +45,9 @@ ACFarmField::ACFarmField()
 
 	PrimaryActorTick.bCanEverTick = false;
 
+	PlantDist = 50.0f;
+	WaterDist = 100.0f;
+	HoeDist = 50.0f;
 }
 
 void ACFarmField::BeginPlay()
@@ -215,14 +218,34 @@ void ACFarmField::UnsetIsPlanting()
 	bIsPlanting = false;
 }
 
-void ACFarmField::SetPlantOffset(FVector InOffset)
+bool ACFarmField::IsCultivable()
 {
-	PlantOffset = InOffset;
+	if (IsValid(Crop))
+	{
+		return false;
+	}
+
+	return true;
 }
 
-void ACFarmField::SetWaterOffset(FVector InOffset)
+void ACFarmField::SetPlantDist(float InDist)
 {
-	WaterOffset = InOffset;
+	PlantDist = InDist;
+}
+
+void ACFarmField::SetWaterDist(float InDist)
+{
+	WaterDist = InDist;
+}
+
+void ACFarmField::SetFertilizeDist(float InDist)
+{
+	FertilizeDist = InDist;
+}
+
+void ACFarmField::SetHoeDist(float InDist)
+{
+	HoeDist = InDist;
 }
 
 void ACFarmField::ShowFarmFieldWidget()

@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "CItemInterface.generated.h"
+#include "Item.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogItem, Log, All);
 
@@ -47,7 +47,7 @@ enum class EItemID :uint8
 	Fertilizer,
 	// Tool
 	WaterCan,
-	Plow,
+	Hoe,
 	// End
 	MAX
 };
@@ -139,19 +139,15 @@ public:
 };
 
 UINTERFACE(MinimalAPI)
-class UCItemInterface : public UInterface
+class UItem : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class FARMGAME_API ICItemInterface
+class FARMGAME_API IItem
 {
 	GENERATED_BODY()
 public:
-	virtual bool IsUsable() const = 0;
-	virtual void SetUsable() = 0;
-	virtual void SetUnusable() = 0;
-	virtual bool UseItem() = 0;
 
 	virtual void AddAvailableCount(int32 InAmount = 1) = 0;
 	virtual void SetAvailableCount(int32 InAmount) = 0;

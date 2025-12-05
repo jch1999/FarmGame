@@ -403,7 +403,7 @@ void UCInventoryComponent::DropItem(int32 InIndex)
 		Item->SetMaxDurability(InventorySlots[InIndex].MaxDurability, false);
 		Item->SetCurrentDurability(InventorySlots[InIndex].CurrentDurability);
 		Item->SetAvailableCount(InventorySlots[InIndex].CurrentStack);
-
+		Item->SetUseAmount(InventorySlots[InIndex].UseAmount);
 		if (ACPlayer* Player = Cast<ACPlayer>(OwnerCharacter))
 		{
 			if (ACItemBase* EquippedItem=Player->GetCurretnEquippedItem())

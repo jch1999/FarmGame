@@ -1,5 +1,5 @@
 #include "UI/CExplainWidget.h"
-#include "Interfaces/CItemInterface.h"
+#include "Interfaces/Item.h"
 #include "Components/CInventoryComponent.h"
 #include "CGameInstance.h"
 #include "Global.h"

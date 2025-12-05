@@ -217,7 +217,7 @@ void UCInteractRowScroll::DoInteract(ACPlayer* InteractCauser)
 	{
 		if (AActor* Target = GetInteractTarget())
 		{
-			if (ICInterface_Interactable* InteractActor = Cast<ICInterface_Interactable>(Target))
+			if (IInteractable* InteractActor = Cast<IInteractable>(Target))
 			{
 				InteractActor->Interact(InteractCauser);
 			}

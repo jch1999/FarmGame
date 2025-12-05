@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Interfaces/CItemInterface.h"
+#include "Interfaces/Item.h"
 #include "CInventoryComponent.generated.h"
 
 class UUserWidget;

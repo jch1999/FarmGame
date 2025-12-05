@@ -2,15 +2,15 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "CTestInterface.generated.h"
+#include "Test.generated.h"
 
 UINTERFACE(MinimalAPI)
-class UCTestInterface : public UInterface
+class UTest : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class FARMGAME_API ICTestInterface
+class FARMGAME_API ITest
 {
 	GENERATED_BODY()
 

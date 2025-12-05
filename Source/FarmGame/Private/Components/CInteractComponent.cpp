@@ -8,6 +8,7 @@
 #include "Camera/CameraComponent.h"
 #include "UI/CInteractRowScroll.h"
 #include "Item/CItem_Tool.h"
+#include "Interfaces/UsableItem.h"
 
 UCInteractComponent::UCInteractComponent()
 {
@@ -40,24 +41,24 @@ void UCInteractComponent::DoInteract(AActor* OtherActor)
 void UCInteractComponent::DoActionInteract()
 {
 	if (ActionInteractTarget == nullptr) return;
-	ICInterface_Interactable* InteractActor = Cast<ICInterface_Interactable>(ActionInteractTarget);
-	InteractActor->OnUnhovered();
-	//if (ACFarmField* FarmField = Cast<ACFarmField>(ActionInteractTarget))
-	//{
-	//	if (ACItem_Tool* Tool = Cast<ACItem_Tool>(OwnerCharacter->GetCurretnEquippedItem()))
-	//	{
-	//		Tool->PlayAnimation();
-	//		//ActionInteractTarget = nullptr;
-	//		return;
-	//	}
-	//}
-	InteractActor->Interact(OwnerCharacter);
-
-	/*if (ACPlayer* Player = Cast<ACPlayer>(OwnerCharacter))
+	
+	if (ACFarmField* FarmField = Cast<ACFarmField>(ActionInteractTarget))
 	{
-		Player->LookAtActor(ActionInteractTarget, true);
-	}*/
-	//ActionInteractTarget = nullptr;
+		if (IUsableItem* UsableItem = Cast<IUsableItem>(OwnerCharacter->GetCurretnEquippedItem()))
+		{
+			if (UsableItem->IsUsable())
+			{
+				UsableItem->PlayAnimation();
+				//ActionInteractTarget = nullptr;
+				return;
+			}
+		}
+	}
+	if (IInteractable* InteractActor = Cast<IInteractable>(ActionInteractTarget))
+	{
+		InteractActor->OnUnhovered();
+		InteractActor->Interact(OwnerCharacter);
+	}
 }
 
 void UCInteractComponent::Scroll(float InputValue)
@@ -93,7 +94,7 @@ void UCInteractComponent::DetectInteractableObjects()
 		{
 			if (Hit.GetActor())
 			{
-				ICInterface_Interactable* OtherActor = Cast<ICInterface_Interactable>(Hit.GetActor());
+				IInteractable* OtherActor = Cast<IInteractable>(Hit.GetActor());
 				if (OtherActor && OtherActor->IsInteractable())
 				{
 					InteractableObjects.AddUnique(Hit.GetActor());
@@ -105,7 +106,7 @@ void UCInteractComponent::DetectInteractableObjects()
 	// Camera Detect
 	if (IsValid(ActionInteractTarget) && OwnerCharacter->GetDistanceTo(ActionInteractTarget) > RemoveDistance)
 	{
-		ICInterface_Interactable* InteractObject = Cast<ICInterface_Interactable>(ActionInteractTarget);
+		IInteractable* InteractObject = Cast<IInteractable>(ActionInteractTarget);
 		InteractObject->OnUnhovered();
 
 		ActionInteractTarget = nullptr;
@@ -118,7 +119,7 @@ void UCInteractComponent::DetectInteractableObjects()
 		{
 			if (OwnerCharacter->GetDistanceTo(ActionInteractTarget) > OwnerCharacter->GetDistanceTo(Hit.GetActor()))
 			{
-				if (ICInterface_Interactable* InteractObject = Cast<ICInterface_Interactable>(ActionInteractTarget))
+				if (IInteractable* InteractObject = Cast<IInteractable>(ActionInteractTarget))
 				{
 					InteractObject->OnUnhovered();
 					ActionInteractTarget = nullptr;
@@ -132,7 +133,7 @@ void UCInteractComponent::DetectInteractableObjects()
 		}
 
 		ActionInteractTarget = Hit.GetActor();
-		if (ICInterface_Interactable* InteractObject = Cast<ICInterface_Interactable>(ActionInteractTarget))
+		if (IInteractable* InteractObject = Cast<IInteractable>(ActionInteractTarget))
 		{
 			InteractObject->OnHovered();
 		}

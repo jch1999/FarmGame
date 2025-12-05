@@ -12,10 +12,10 @@ ACItem_Tool::ACItem_Tool()
     //SetMaxDurability(50.0f, true);
     SetType(EInteractObjectType::Tool);
     SetInteractable();
-    SetUsable();
+    IUsableItem::Execute_SetUsable(this);
 }
 
-bool ACItem_Tool::UseItem()
+bool ACItem_Tool::UseItem_Implementation()
 {
     if (!IsUsable()) return false;
     if (!IsValid(GetOwnerCharacter())) return false;
@@ -33,7 +33,7 @@ bool ACItem_Tool::UseItem()
     return false;
 }
 
-void ACItem_Tool::EndUse()
+void ACItem_Tool::EndUse_Implementation()
 {
     if (CurrentDurability <= 0.0f)
     {
@@ -45,7 +45,22 @@ void ACItem_Tool::EndUse()
     }
 }
 
-void ACItem_Tool::PlayAnimation()
+bool ACItem_Tool::PlayAnimation_Implementation()
 {
-    return;
+    return true;
+}
+
+bool ACItem_Tool::IsUsable_Implementation() const
+{
+    return bUsable;
+}
+
+void ACItem_Tool::SetUsable_Implementation()
+{
+    bUsable = true;
+}
+
+void ACItem_Tool::SetUnusable_Implementation()
+{
+    bUsable = false;
 }

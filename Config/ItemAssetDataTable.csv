@@ -22,3 +22,6 @@ Usage: Interact with tilled ground to plant. The ground must be empty of other c
 
 Seeds of the carrot, a root vegetable. They have a similar growth time to tomatoes and offer a unique texture and nutrients."
 WaterCan,WaterCan,/Game/Item/Tools/BP_CItem_WateringCan.BP_CItem_WateringCan_C,/Game/Item/Icons/WateringCanIcon,,,A tool for tending to your crops. Interact with FarmFields to apply water and increase their Moisture.
+Hoe,Hoe,/Game/Item/Tools/BP_CItem_Hoe,/Game/Item/Icons/HoeIcon,,,"A tool for cultivation the soil. Interact with FarmFields to increase their Cultivation.
+Cannot be used on tiles that already contain crops."
+Fertilizer,Fertilizer,/Game/Item/Consumable/BP_CItem_Fertilizer,/Game/Item/Icons/ItemIcon_Fertilizer,,,"A farming item used to enrich the soil. Interact with FarmFields to increase their Nutrition, boosting crop growth and vitality."

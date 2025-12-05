@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Interfaces/CInterface_Interactable.h"
+#include "Interfaces/Interactable.h"
 #include "CInteractComponent.generated.h"
 
 class ACHUD;

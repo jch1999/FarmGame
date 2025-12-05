@@ -64,16 +64,6 @@ void ACItemBase::BeginPlay()
 	}
 }
 
-void ACItemBase::SetUsable()
-{
-	bUsable = true;
-}
-
-void ACItemBase::SetUnusable()
-{
-	bUsable = false;
-}
-
 
 void ACItemBase::AddAvailableCount(int32 InAmount)
 {
@@ -263,6 +253,7 @@ void ACItemBase::SetCurrentDurability(float InDurability)
 	CurrentDurability = InDurability;
 }
 
-void SetUseAmount(float InAmount)
+void ACItemBase::SetUseAmount(float InAmount)
 {
+	UseAmount = InAmount;
 }

@@ -4,7 +4,7 @@
 #include "UI/CSlotDropDownWidget.h"
 #include "Global.h"
 #include "CGameInstance.h"
-#include "Interfaces/CItemInterface.h"
+#include "Interfaces/Item.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "UI/CSlotWidget.h"
 #include "Components/Image.h"

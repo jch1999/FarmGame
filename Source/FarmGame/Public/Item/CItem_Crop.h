@@ -14,7 +14,4 @@ public:
 	ACItem_Crop();
 
 public:
-	// From Interface
-	virtual bool UseItem() override;;
-	//virtual void Interact(AActor* OtherActor) override;
 };

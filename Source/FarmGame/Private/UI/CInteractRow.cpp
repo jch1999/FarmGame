@@ -3,7 +3,7 @@
 #include "Components/TextBlock.h"
 #include "Components/Overlay.h"
 #include "Components/Image.h"
-#include "Interfaces/CInterface_Interactable.h"
+#include "Interfaces/Interactable.h"
 #include "CGameInstance.h"
 #include "Global.h"
 
@@ -12,7 +12,7 @@ void UCInteractRow::SetTarget(AActor* InActor)
 	CheckNull(InActor);
 
 	TargetActor = InActor;
-	ICInterface_Interactable* Interact = Cast<ICInterface_Interactable>(InActor);
+	IInteractable* Interact = Cast<IInteractable>(InActor);
 	NameText->SetText(FText::FromName(Interact->GetInteractName()));
 	//NameText->SetText(FText::FromString(InActor->GetActorLabel()));
 
